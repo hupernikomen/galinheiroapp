@@ -9,6 +9,9 @@ const Tema = {
   ...DefaultTheme,
   colors: {
     ...DefaultTheme.colors,
+    background: '#fff',
+    principal: 'red',
+    neutro: '#22222210'
   },
 };
 

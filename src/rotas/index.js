@@ -1,17 +1,12 @@
 import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
 
-import Ionicons from 'react-native-vector-icons/Ionicons';
-
 import StackRotas from './stacks'
-import Ovos from '../pages/Ovos'
-import Lote from '../pages/Lote'
 import Custos from '../pages/Custos'
-
+import Ovos from '../pages/Ovos'
 
 import { SafeAreaView } from 'react-native-safe-area-context';
 
 import TabbarPersonalizada from '../componentes/TabbarPersonalizada'
-
 
 const Tab = createBottomTabNavigator();
 
@@ -23,7 +18,7 @@ export default function Rotas() {
       tabBar={(props) => <TabbarPersonalizada {...props}/>}
         screenOptions={{
           tabBarShowLabel: false,
-          headerShown:false,
+          
           tabBarStyle:{
             position:'absolute',
             margin:22, 
@@ -34,10 +29,9 @@ export default function Rotas() {
           }
         }}
       >
-        <Tab.Screen name="HomeStack" component={StackRotas} options={{tabBarIcon: "egg-outline"}} />
-        {/* <Tab.Screen name="Ovos" component={Ovos} options={{tabBarIcon: "bag-outline"}} /> */}
-        <Tab.Screen name="Custos" component={Custos} options={{ tabBarIcon: "repeat"}} />
-        <Tab.Screen name="Lote" component={Lote} options={{tabBarIcon: "umbrella-outline"}} />
+        <Tab.Screen name="HomeStack" component={StackRotas} options={{tabBarIcon: "home-outline", headerShown:false,}} />
+        <Tab.Screen name="Ovos" component={Ovos} options={{title: "Coleta de Ovos", tabBarIcon: "egg-outline"}} />
+        <Tab.Screen name="Custos" component={Custos} options={{ title: "Custos Diários", tabBarIcon: "repeat", }} />
       </Tab.Navigator>
     </SafeAreaView>
   );

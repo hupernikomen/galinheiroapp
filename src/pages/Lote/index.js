@@ -1,88 +1,211 @@
-import { useState, useContext } from 'react';
-import { View, Text, TextInput, StyleSheet, Pressable, Alert } from 'react-native';
-
-import { db } from '../../services/firebaseConnection/firebase'
-
-import { collection, addDoc, where, query, getDocs } from "firebase/firestore"
-
-import { GeralContext } from "../../contexts/geral";
-
-
-
-
+import { useState, useContext, useEffect } from 'react';
+import {
+  View, Text, TextInput, StyleSheet, Pressable,
+  Alert, FlatList, ActivityIndicator
+} from 'react-native';
+import { db } from '../../services/firebaseConnection/firebase';
+import { collection, addDoc, where, query, getDocs, onSnapshot } from 'firebase/firestore';
+import { GeralContext } from '../../contexts/geral';
+import { useTheme } from '@react-navigation/native';
 
 export default function Lote() {
+  const { BuscarLotes } = useContext(GeralContext);
+  const { colors } = useTheme();
 
-  const { BuscarLotes } = useContext(GeralContext)
-  const [nome, setNome] = useState('')
-  const [raca, setRaca] = useState('')
-  const [qt, setQt] = useState('')
-  
+  const [nome, setNome] = useState('');
+  const [raca, setRaca] = useState('');
+  const [qt, setQt] = useState('');
+  const [prodEstimada, setProdEstimada] = useState('');
+  const [lista, setLista] = useState([]);
+  const [loading, setLoading] = useState(true);
 
+  useEffect(() => {
+    const unsub = onSnapshot(collection(db, 'lotes'), (snapshot) => {
+      const dados = snapshot.docs.map((doc) => ({
+        id: doc.id,
+        ...doc.data(),
+      }));
 
+      dados.sort((a, b) => (b.chegada || 0) - (a.chegada || 0));
+      setLista(dados);
+      setLoading(false);
+    }, (error) => {
+      console.log('Erro ao buscar lotes:', error);
+      setLoading(false);
+    });
+
+    return () => unsub();
+  }, []);
 
   async function CadastrarLote() {
+    if (!nome || !qt) {
+      Alert.alert('Atenção', 'Preencha nome e quantidade');
+      return;
+    }
+
     try {
-      // Verifica se já existe um lote com o mesmo nome
-      const q = query(collection(db, "lotes"), where("nome", "==", nome));
+      const q = query(collection(db, 'lotes'), where('nome', '==', nome.trim()));
       const querySnapshot = await getDocs(q);
 
       if (!querySnapshot.empty) {
-        Alert.alert("Erro", "Já existe um lote com esse nome")
-        return; // ou mostre um alerta para o usuário
+        Alert.alert('Erro', 'Já existe um lote com esse nome');
+        return;
       }
 
-      await addDoc(collection(db, "lotes"), {
+      await addDoc(collection(db, 'lotes'), {
         chegada: Date.now(),
-        nome: nome,
-        raca: raca,
-        qt: Number(qt)
+        nome: nome.trim(),
+        raca: raca.trim(),
+        qt: Number(qt),
+        qtAtual: Number(qt),
+        prodEstimada: Number(prodEstimada) || 250,
+        status: 'Cria',
       });
 
-    } catch (err) {
-      console.log("Erro: " + err);
-    }
+      setNome('');
+      setRaca('');
+      setQt('');
+      setProdEstimada('');
 
-    setQt(0);
-    await BuscarLotes();
+      if (BuscarLotes) await BuscarLotes();
+    } catch (err) {
+      console.log('Erro:', err);
+      Alert.alert('Erro', 'Não foi possível cadastrar o lote');
+    }
   }
 
+  function formatarData(valor) {
+    if (!valor) return '-';
+    return new Date(Number(valor)).toLocaleDateString('pt-BR');
+  }
+
+  function renderItem({ item }) {
+    return (
+      <View style={[styles.item, { backgroundColor: colors.neutro }]}>
+        <View style={{ flex: 1 }}>
+          <Text style={styles.itemTitulo}>{item.nome}</Text>
+          <Text style={styles.itemSub}>
+            {item.raca || 'Sem raça'} · {item.qtAtual || item.qt || 0} galinhas
+          </Text>
+        </View>
+        <Text style={styles.itemData}>{formatarData(item.chegada)}</Text>
+      </View>
+    );
+  }
 
   return (
-    <View style={styles.constainer}>
-      <Text>Lote</Text>
-      <TextInput style={styles.input} placeholder='Qtd.' keyboardType="numeric" value={qt} onChangeText={setQt} />
-      <TextInput style={styles.input} placeholder='Nome' value={nome} onChangeText={setNome} />
-      <TextInput style={styles.input} placeholder='Raca' value={raca} onChangeText={setRaca} />
+    <View style={styles.container}>
+      {/* Formulário fora da FlatList (evita teclado fechar) */}
+      <View style={styles.form}>
+        <TextInput
+          style={[styles.input, { backgroundColor: colors.neutro }]}
+          placeholder="Quantidade"
+          keyboardType="numeric"
+          value={qt}
+          onChangeText={setQt}
+        />
+        <TextInput
+          style={[styles.input, { backgroundColor: colors.neutro }]}
+          placeholder="Nome do lote"
+          value={nome}
+          onChangeText={setNome}
+        />
+        <TextInput
+          style={[styles.input, { backgroundColor: colors.neutro }]}
+          placeholder="Raça"
+          value={raca}
+          onChangeText={setRaca}
+        />
+        <TextInput
+          style={[styles.input, { backgroundColor: colors.neutro }]}
+          placeholder="Produção estimada por galinha"
+          keyboardType="numeric"
+          value={prodEstimada}
+          onChangeText={setProdEstimada}
+        />
 
-      <Pressable onPress={() => CadastrarLote()} style={styles.botaoGuadar}>
-        <Text style={styles.textoGuardar}>Guardar</Text>
-      </Pressable>
+        <Pressable onPress={CadastrarLote} style={styles.botaoGuardar}>
+          <Text style={styles.textoGuardar}>Guardar</Text>
+        </Pressable>
+      </View>
 
+      {loading ? (
+        <ActivityIndicator color="red" style={{ marginTop: 20 }} />
+      ) : (
+        <FlatList
+          showsVerticalScrollIndicator={false}
+          data={lista}
+          keyExtractor={(item) => item.id}
+          renderItem={renderItem}
+          contentContainerStyle={{ paddingBottom: 100 }}
+          keyboardShouldPersistTaps="handled"
+          ListEmptyComponent={
+            <Text style={styles.vazio}>Nenhum lote cadastrado</Text>
+          }
+        />
+      )}
     </View>
   );
 }
 
 const styles = StyleSheet.create({
-  constainer: {
+  container: {
     flex: 1,
+    backgroundColor: '#fff',
     paddingHorizontal: 14,
-    marginVertical: 14
+  },
+  form: {
+    marginBottom: 14,
+    marginTop: 8,
   },
   input: {
     height: 50,
-    borderWidth: .5,
-    borderColor: '#aaa',
-    paddingHorizontal: 14
+    borderRadius: 22,
+    paddingHorizontal: 16,
+    marginBottom: 8,
+    fontSize: 16,
   },
-  botaoGuadar: {
+  botaoGuardar: {
     alignItems: 'center',
     justifyContent: 'center',
-    height: 60,
+    height: 52,
     backgroundColor: 'red',
-    marginTop: 14
+    borderRadius: 22,
+    marginTop: 6,
+    marginBottom: 10,
   },
   textoGuardar: {
-    color: "#fff"
-  }
-})
+    color: '#fff',
+    fontFamily: 'Roboto-Medium',
+    fontSize: 16,
+  },
+  item: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'flex-start',
+    padding: 21,
+    borderRadius: 22,
+    marginBottom: 4,
+  },
+  itemTitulo: {
+    fontSize: 16,
+    fontFamily: 'Roboto-Medium',
+    color: '#000',
+  },
+  itemSub: {
+    fontFamily: 'Roboto-Light',
+    fontSize: 13,
+    color: '#000',
+    marginTop: 2,
+  },
+  itemData: {
+    fontSize: 14,
+    fontFamily: 'Roboto-Light',
+    color: '#000',
+  },
+  vazio: {
+    textAlign: 'center',
+    marginTop: 30,
+    color: '#999',
+  },
+});
