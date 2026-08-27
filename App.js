@@ -3,15 +3,15 @@ import { StatusBar } from 'react-native';
 import { NavigationContainer, DefaultTheme } from '@react-navigation/native';
 import GeralProvider from './src/contexts/geral';
 
-import Rotas from './src/rotas'
+import Rotas from './src/rotas/tabs'
 
 const Tema = {
   ...DefaultTheme,
   colors: {
     ...DefaultTheme.colors,
     background: '#fff',
-    principal: 'red',
-    neutro: '#22222210'
+    principal: '#B22222',
+    neutro: '#22222215'
   },
 };
 

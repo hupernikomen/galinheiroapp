@@ -1,14 +1,14 @@
-import { StyleSheet, View, Pressable, ActivityIndicator } from "react-native";
+import { StyleSheet, View, Pressable, Text } from "react-native";
 import { Picker } from '@react-native-picker/picker';
 import { GeralContext } from "../../contexts/geral";
 import { useContext, useState, useEffect } from "react";
-import RelogioProducao from '../../componentes/RelogioProducao';
+import GraficoCiclo from '../../componentes/GraficoCiclo';
 
 import AsyncStorage from "@react-native-async-storage/async-storage";
 
 import Ionicons from 'react-native-vector-icons/Ionicons';
 
-import GraficoPizzaCustos from '../../componentes/GraficoPizza'
+import InfoHome from '../../componentes/InfoHome'
 
 
 import { db } from '../../services/firebaseConnection/firebase';
@@ -48,18 +48,12 @@ export default function Home() {
     return () => unsubLotes();
   }, []);
 
-  console.log(lote);
-  
-
-
-
 
 
   return (
     <View style={styles.container}>
 
-
-      <View style={{ width: '100%', gap: 150, height: 65, paddingHorizontal: 14, backgroundColor: '#fff', elevation: 5, flexDirection: 'row', alignItems: 'center' }}>
+      <View style={{ width: '100%', gap: 150, height: 65, paddingHorizontal: 14, backgroundColor: '#fff', flexDirection: 'row', alignItems: 'center' }}>
 
         <Picker
           style={{ flex: 1 }}
@@ -75,8 +69,8 @@ export default function Home() {
           ))}
         </Picker>
 
-        <Pressable onPress={() => navigation.navigate('Lote')} style={{ width: 40, justifyContent: 'flex-end' }}>
-          <Ionicons name={'umbrella-outline'} size={24} />
+        <Pressable onPress={() => navigation.navigate('Menu')} style={{ padding: 10, backgroundColor: colors.neutro, justifyContent: 'flex-end' }}>
+          <Ionicons name={'menu-outline'} size={24} color={'#000'} />
         </Pressable>
       </View>
 
@@ -84,28 +78,26 @@ export default function Home() {
 
         <View style={{ paddingHorizontal: 18 }}>
 
-
-
-          <View style={{ alignItems: 'center', justifyContent: 'center', marginVertical: 14 }}>
-            <RelogioProducao
+          <View style={{ alignItems: 'center', justifyContent: 'center' }}>
+            <GraficoCiclo
               totalOvosProduzidos={dadosRelogio?.totalOvosProduzidos || 0}
               producaoTotalEstimada={dadosRelogio?.producaoTotalEstimada || 0}
             />
           </View>
 
 
-
-
-          <GraficoPizzaCustos
-            totalCriacao={custoOvo?.totalCriacao || 0}
-            totalPostura={custoOvo?.totalPostura || 0}
-            custoTotal={custoOvo?.custoTotal || 0}
-          />
+<InfoHome
+  totalCriacao={custoOvo?.totalCriacao || 0}
+  totalPostura={custoOvo?.totalPostura || 0}
+  custoProjetado={custoOvo?.custoProjetado || 0}
+  precoSugerido={custoOvo?.precoSugerido || 0}
+  desempenho={custoOvo?.desempenho}
+  totalDepreciacao={custoOvo?.totalDepreciacao || 0}
+/>
 
         </View>
 
       </View>
-
 
     </View>
   );
@@ -118,8 +110,6 @@ const styles = StyleSheet.create({
   main: {
     alignItems: "center",
     justifyContent: "center",
-    flex: 1,
-    marginTop: -25
   },
   caixaInfo: {
     backgroundColor: '#fff',

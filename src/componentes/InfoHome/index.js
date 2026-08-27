@@ -1,30 +1,36 @@
+import { useTheme } from '@react-navigation/native';
 import { View, Text, StyleSheet } from 'react-native';
 
 const MARGEM = 0.60;
 
-export default function GraficoPizzaCustos({
+export default function InfoHome({
   totalCriacao = 0,
   totalPostura = 0,
-  custoTotal = 0,
+  custoProjetado = 0,
+  precoSugerido = 0,
+  desempenho = null,
+  totalDepreciacao = 0,
+
 }) {
   const total = totalCriacao + totalPostura;
   const percCriacao = total > 0 ? (totalCriacao / total) * 100 : 0;
   const percPostura = total > 0 ? (totalPostura / total) * 100 : 0;
-  const precoSugerido = Number(custoTotal) * (1 + MARGEM);
+
+  const { colors } = useTheme()
 
   return (
     <View style={styles.container}>
 
       {/* Barra de proporção */}
       <View style={styles.barra}>
-        <View style={[styles.fatia, { flex: percCriacao || 0.01, backgroundColor: 'red' }]} />
+        <View style={[styles.fatia, { flex: percCriacao || 0.01, backgroundColor: colors.principal }]} />
         <View style={[styles.fatia, { flex: percPostura || 0.01, backgroundColor: '#f39c12' }]} />
       </View>
 
       {/* Legenda */}
       <View style={styles.legenda}>
         <View style={styles.legendaItem}>
-          <View style={[styles.bolinha, { backgroundColor: 'red' }]} />
+          <View style={[styles.bolinha, { backgroundColor: colors.principal }]} />
           <Text style={styles.legendaTexto}>
             Criação  R$ {Number(totalCriacao).toFixed(2)}  ({percCriacao.toFixed(0)}%)
           </Text>
@@ -41,10 +47,27 @@ export default function GraficoPizzaCustos({
       {/* Preço sugerido */}
       <View style={styles.caixaPreco}>
         <Text style={styles.precoLabel}>Preço sugerido / ovo</Text>
-        <Text style={styles.precoValor}>R$ {precoSugerido.toFixed(2)}</Text>
-        <Text style={styles.precoSub}>
-          Custo R$ {Number(custoTotal).toFixed(2)} + {(MARGEM * 100).toFixed(0)}% margem
+        <Text style={styles.precoValor}>
+          R$ {Number(precoSugerido).toFixed(2)}
         </Text>
+        <Text style={styles.precoSub}>
+          Custo projetado R$ {Number(custoProjetado).toFixed(3)}
+          {' + '}
+          {(MARGEM * 100).toFixed(0)}% margem
+        </Text>
+
+        {desempenho == null ? (
+          <Text style={styles.precoSub}>Ainda em criação — sem meta de ovos</Text>
+        ) : (
+          <Text style={styles.precoSub}>
+            Produção: {(desempenho * 100).toFixed(0)}% do esperado
+            {desempenho < 0.8
+              ? ' — abaixo da meta'
+              : desempenho > 1.1
+                ? ' — acima da meta'
+                : ''}
+          </Text>
+        )}
       </View>
     </View>
   );
@@ -68,7 +91,7 @@ const styles = StyleSheet.create({
   },
   legenda: {
     marginTop: 14,
-    gap: 8,
+    gap: 4,
   },
   legendaItem: {
     flexDirection: 'row',
@@ -98,9 +121,9 @@ const styles = StyleSheet.create({
     color: '#666',
   },
   precoValor: {
-    fontFamily: 'Roboto-Bold',
-    fontSize: 24,
-    color: 'red',
+    letterSpacing: -.5,
+    fontFamily: 'Roboto-Black',
+    fontSize: 22,
     marginTop: 4,
   },
   precoSub: {

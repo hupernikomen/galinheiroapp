@@ -1,7 +1,9 @@
 import { useContext } from 'react';
-import { View, Text, StyleSheet, ActivityIndicator } from 'react-native';
+import { View, Text, StyleSheet, ActivityIndicator, Pressable } from 'react-native';
 import { GeralContext } from '../../contexts/geral';
-import { useTheme } from '@react-navigation/native';
+import { useNavigation, useTheme } from '@react-navigation/native';
+
+import Ionicons from 'react-native-vector-icons/Ionicons';
 
 const VIDA_TOTAL_SEMANAS = 90;
 
@@ -20,6 +22,8 @@ const FASES = [
 ];
 
 export default function RelogioProducao() {
+
+  const navigation = useNavigation()
   const { lote } = useContext(GeralContext);
 
   const { colors } = useTheme()
@@ -64,21 +68,9 @@ export default function RelogioProducao() {
   const marcosVisuais = MARCOS.filter(m => m.semana > 0 && m.semana < VIDA_TOTAL_SEMANAS);
   const tracos = Array.from({ length: VIDA_TOTAL_SEMANAS }, (_, i) => i);
 
-  
-  if (!lote) {
-    return (
-      <View style={{ flex: 1, backgroundColor: '#fff', alignItems: 'center', justifyContent: 'center' }}>
-        <ActivityIndicator color={'red'} size={40} />
-      </View>
-    )
-  }
 
   return (
-    <View style={styles.container}>
-
-
-
-
+    <Pressable onPress={() => navigation.navigate('Marcos')} style={styles.container}>
       <View style={styles.relogio}>
 
         {/* Traços de cada semana */}
@@ -97,7 +89,7 @@ export default function RelogioProducao() {
             >
               <View style={[
                 styles.traco, { backgroundColor: colors.neutro },
-                isPassado && styles.tracoPassado,
+                isPassado && [styles.tracoPassado, { backgroundColor: colors.principal }],
                 isTransicao && styles.tracoFase,
                 isTransicao && isPassado && styles.tracoFasePassado,
               ]} />
@@ -105,10 +97,6 @@ export default function RelogioProducao() {
           );
         })}
 
-        {/* Marco zero */}
-        <View style={styles.bolinhaZero} />
-
-        {/* Marcos intermediários */}
         {marcosVisuais.map((marco) => {
           const anguloMarco = (marco.semana / VIDA_TOTAL_SEMANAS) * 360;
           const isProximo = proximoMarco?.semana === marco.semana;
@@ -129,7 +117,6 @@ export default function RelogioProducao() {
           );
         })}
 
-        {/* Bolinha que gira */}
         <View
           style={[
             styles.bolinhaContainer,
@@ -142,57 +129,58 @@ export default function RelogioProducao() {
         </View>
 
         {/* Centro vermelho */}
-        <View style={styles.circuloProducao}>
+        <View style={[styles.ciclo, { backgroundColor: colors.principal }]}>
 
           {!!faseAtual && (
             <Text style={styles.fase}>{faseAtual}</Text>
           )}
           <Text style={styles.mensagem}>{mensagem}</Text>
         </View>
+
       </View>
-    </View>
+    </Pressable>
   );
 }
 
 const styles = StyleSheet.create({
   container: {
-    alignItems: 'center',
+    marginTop: 52
   },
   relogio: {
-    width: 180,
-    height: 180,
+    width: 220,
+    height: 220,
     justifyContent: 'center',
     alignItems: 'center',
-    marginBottom: 25
+    marginBottom: 45,
   },
   tracoContainer: {
     position: 'absolute',
-    width: 200,
-    height: 200,
+    zIndex: 99,
+    width: 220,
+    height: 220,
     justifyContent: 'flex-start',
     alignItems: 'center',
   },
   traco: {
     width: 1,
     height: 8,
-    marginTop: -15,
+    marginTop: -5,
   },
   tracoPassado: {
-    width: 2,
-    backgroundColor: 'red',
+    width: 3,
   },
   tracoFase: {
     width: 2,
-    height: 14,
-    backgroundColor: '#222',
-    marginTop: -20,
+    height: 15,
+    backgroundColor: '#fff',
+    marginTop: -5,
   },
   tracoFasePassado: {
-    backgroundColor: '#c0392b',
+    backgroundColor: '#f5dd08ff',
   },
   bolinhaZero: {
     position: 'absolute',
-    top: -38,
+    top: -30,
     width: 10,
     height: 10,
     borderRadius: 8,
@@ -203,31 +191,30 @@ const styles = StyleSheet.create({
   },
   marcoContainer: {
     position: 'absolute',
-    width: 180,
-    height: 180,
+    width: 220,
+    height: 220,
     justifyContent: 'flex-start',
     alignItems: 'center',
-    zIndex: 5,
   },
   marco: {
     width: 6,
     height: 6,
     borderRadius: 6,
     backgroundColor: '#22222235',
-    marginTop: -38,
+    marginTop: -15,
   },
   marcoProximo: {
     backgroundColor: '#f39c12',
     width: 6,
     height: 6,
     borderRadius: 8,
-    marginTop: -38,
+    marginTop: -15,
   },
   bolinhaContainer: {
     position: 'absolute',
     zIndex: 999,
-    width: 180,
-    height: 180,
+    width: 220,
+    height: 220,
     justifyContent: 'flex-start',
     alignItems: 'center',
   },
@@ -235,7 +222,7 @@ const styles = StyleSheet.create({
     width: 35,
     aspectRatio: 1,
     borderRadius: 20,
-    marginTop: -65,
+    marginTop: -55,
     alignItems: 'center',
     justifyContent: 'center',
   },
@@ -244,28 +231,28 @@ const styles = StyleSheet.create({
     color: '#000',
     fontWeight: 'bold',
   },
-  circuloProducao: {
+  ciclo: {
     position: 'absolute',
+    zIndex: 0,
     padding: 16,
     width: 220,
     aspectRatio: 1,
     borderRadius: 110,
     alignItems: 'center',
     justifyContent: 'center',
-    backgroundColor: 'red',
-    elevation: 20,
+    elevation: 15,
   },
   mensagem: {
-    fontFamily: 'Roboto-Medium',
+    fontFamily: 'Roboto-Regular',
     textAlign: 'center',
-    fontSize: 17,
+    fontSize: 15,
     color: '#fff',
     lineHeight: 22,
   },
   fase: {
-    fontFamily: 'Roboto-Regular',
+    fontFamily: 'Roboto-Bold',
     textAlign: 'center',
-    fontSize: 15,
+    fontSize: 20,
     color: '#ffe5e5',
     marginBottom: 6,
     marginTop: -20

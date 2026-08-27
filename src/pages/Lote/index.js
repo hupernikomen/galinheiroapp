@@ -79,19 +79,72 @@ export default function Lote() {
     return new Date(Number(valor)).toLocaleDateString('pt-BR');
   }
 
-  function renderItem({ item }) {
-    return (
-      <View style={[styles.item, { backgroundColor: colors.neutro }]}>
-        <View style={{ flex: 1 }}>
-          <Text style={styles.itemTitulo}>{item.nome}</Text>
-          <Text style={styles.itemSub}>
-            {item.raca || 'Sem raça'} · {item.qtAtual || item.qt || 0} galinhas
-          </Text>
-        </View>
-        <Text style={styles.itemData}>{formatarData(item.chegada)}</Text>
+
+  async function FinalizarLote(id) {
+  Alert.alert(
+    'Finalizar lote',
+    'Este lote deixará de receber a depreciação dos investimentos.',
+    [
+      { text: 'Cancelar', style: 'cancel' },
+      {
+        text: 'Finalizar',
+        style: 'destructive',
+        onPress: async () => {
+          try {
+            await updateDoc(doc(db, 'lotes', id), {
+              status: 'Finalizado',
+              finalizadoEm: Date.now(),
+            });
+          } catch (e) {
+            console.log(e);
+            Alert.alert('Erro', 'Não foi possível finalizar');
+          }
+        },
+      },
+    ]
+  );
+}
+
+function renderItem({ item }) {
+  const finalizado = item.status === 'Finalizado';
+
+  return (
+    <View style={[styles.item, { backgroundColor: colors.neutro }]}>
+      <View style={{ flex: 1 }}>
+        <Text style={styles.itemTitulo}>{item.nome}</Text>
+        <Text style={styles.itemSub}>
+          {item.raca || 'Sem raça'} · {item.qtAtual || item.qt || 0} galinhas
+        </Text>
+        <Text style={styles.itemSub}>
+          {finalizado ? 'Finalizado' : (item.status || 'Ativo')}
+        </Text>
       </View>
-    );
-  }
+
+      <View style={{ alignItems: 'flex-end', gap: 8 }}>
+        <Text style={styles.itemData}>{formatarData(item.chegada)}</Text>
+        {!finalizado && (
+          <Pressable onPress={() => FinalizarLote(item.id)}>
+            <Text style={{ color: 'red', fontSize: 13 }}>Finalizar</Text>
+          </Pressable>
+        )}
+      </View>
+    </View>
+  );
+}
+
+  // function renderItem({ item }) {
+  //   return (
+  //     <View style={[styles.item, { backgroundColor: colors.neutro }]}>
+  //       <View style={{ flex: 1 }}>
+  //         <Text style={styles.itemTitulo}>{item.nome}</Text>
+  //         <Text style={styles.itemSub}>
+  //           {item.raca || 'Sem raça'} · {item.qtAtual || item.qt || 0} galinhas
+  //         </Text>
+  //       </View>
+  //       <Text style={styles.itemData}>{formatarData(item.chegada)}</Text>
+  //     </View>
+  //   );
+  // }
 
   return (
     <View style={styles.container}>

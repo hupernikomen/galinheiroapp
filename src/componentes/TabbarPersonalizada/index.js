@@ -4,12 +4,12 @@ import Ionicons from 'react-native-vector-icons/Ionicons';
 
 export default function TabbarPersonalizada({ state, descriptors, navigation }) {
 
-  const { colors } = useTheme()
+const {colors} = useTheme()
 
   return (
     <View style={styles.container}>
 
-      <View style={[styles.content, { backgroundColor: colors.neutro }]}>
+      <View style={[styles.content, {backgroundColor:colors.neutro}]}>
         {state.routes.map((route, index) => {
           const { options } = descriptors[route.key]
 
@@ -47,7 +47,7 @@ export default function TabbarPersonalizada({ state, descriptors, navigation }) 
             >
 
               <View style={{ alignItems: "center", padding: 2, }}>
-                <View style={{ padding: 14, backgroundColor: isFocused ? '#ff0000' : '#ffffffff', borderRadius: 30, elevation: isFocused ? 5 : 0 }}>
+                <View style={{ padding: 14, backgroundColor: isFocused ? colors.principal : '#ffffffff', borderRadius: 30, elevation: isFocused ? 5 : 0 }}>
 
                   <Ionicons name={options.tabBarIcon} size={24} color={isFocused ? "#fff" : '#00000035'} />
 
@@ -80,7 +80,7 @@ const styles = StyleSheet.create({
     justifyContent: "center",
     position: "absolute",
     marginBottom: 28,
-    bottom: 0,
+    bottom: -10,
     padding: 4,
     borderRadius: 35,
   },

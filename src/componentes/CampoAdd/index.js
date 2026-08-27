@@ -11,9 +11,7 @@ import { collection, addDoc } from "firebase/firestore"
 export default function CampoAdd({ data = null, setData, qt, setQt }) {
 
 
-  const {
-    lote,
-  } = useContext(GeralContext);
+  const { lote } = useContext(GeralContext);
 
   const [mostrarData, setMostrarData] = useState(false);
 
