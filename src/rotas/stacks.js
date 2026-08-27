@@ -4,7 +4,8 @@ import Home from '../pages/Home'
 import Lote from '../pages/Lote'
 import Info from '../pages/Info'
 import Coleta from '../pages/Ovos/coleta'
-import Marcos from '../pages/Marco'
+import Marcos from '../pages/Marcos'
+import NovoMarco from '../pages/Marcos/novoMarco'
 import Menu from '../pages/Menu'
 import NovoCusto from '../pages/Custos/novoCusto'
 
@@ -19,6 +20,7 @@ export default function StackRotas() {
       <Stack.Screen name='Info' component={Info} options={{}} />
       <Stack.Screen name="Coleta" component={Coleta} />
       <Stack.Screen name="Marcos" component={Marcos} />
+      <Stack.Screen name="NovoMarco" component={NovoMarco} options={{title: 'Novo Marco'}} />
       <Stack.Screen name="Menu" component={Menu} />
       <Stack.Screen
         name="NovoCusto"

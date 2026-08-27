@@ -1,13 +1,15 @@
-import { useContext } from 'react';
-import { View, Text, StyleSheet, ActivityIndicator, Pressable } from 'react-native';
+import { useContext, useEffect, useState, useCallback } from 'react';
+import { View, Text, StyleSheet, Pressable } from 'react-native';
 import { GeralContext } from '../../contexts/geral';
-import { useNavigation, useTheme } from '@react-navigation/native';
-
-import Ionicons from 'react-native-vector-icons/Ionicons';
+import { useNavigation, useTheme, useFocusEffect } from '@react-navigation/native';
+import { db } from '../../services/firebaseConnection/firebase';
+import { collection, onSnapshot } from 'firebase/firestore';
+import AsyncStorage from '@react-native-async-storage/async-storage';
 
 const VIDA_TOTAL_SEMANAS = 90;
+const CHAVE_PADRAO = '@usarMarcosPadrao';
 
-const MARCOS = [
+const MARCOS_PADRAO = [
   { semana: 0, mensagem: 'Início do lote' },
   { semana: 18, mensagem: 'Início da postura' },
   { semana: 70, mensagem: 'Comprar novo Lote' },
@@ -22,18 +24,54 @@ const FASES = [
 ];
 
 export default function RelogioProducao() {
-
-  const navigation = useNavigation()
+  const navigation = useNavigation();
   const { lote } = useContext(GeralContext);
+  const { colors } = useTheme();
 
-  const { colors } = useTheme()
+  const [usarPadrao, setUsarPadrao] = useState(true);
+  const [marcosBanco, setMarcosBanco] = useState([]);
+
+  useFocusEffect(
+    useCallback(() => {
+      AsyncStorage.getItem(CHAVE_PADRAO).then((res) => {
+        if (res !== null) setUsarPadrao(res === 'true');
+      });
+    }, [])
+  );
+
+  useEffect(() => {
+    const unsub = onSnapshot(collection(db, 'marcos'), (snapshot) => {
+      const dados = snapshot.docs.map((d) => ({
+        id: d.id,
+        semana: Number(d.data().semana) || 0,
+        mensagem: d.data().mensagem || '',
+      }));
+      setMarcosBanco(dados);
+    });
+    return () => unsub();
+  }, []);
+
+  // Lista final: padrão (se ligado) + banco
+  const marcos = (() => {
+    const mapa = new Map();
+    if (usarPadrao) {
+      MARCOS_PADRAO.forEach((m) => mapa.set(m.semana, { ...m }));
+    }
+    marcosBanco.forEach((m) => mapa.set(m.semana, m));
+    return Array.from(mapa.values()).sort((a, b) => a.semana - b.semana);
+  })();
 
   function calcularSemanas() {
     if (!lote?.chegada) return 0;
 
-    const dataChegada = lote.chegada?.toDate
-      ? lote.chegada.toDate()
-      : new Date(Number(lote.chegada));
+    let dataChegada;
+    if (lote.chegada?.toDate) {
+      dataChegada = lote.chegada.toDate();
+    } else {
+      let ts = Number(lote.chegada);
+      if (ts > 0 && ts < 10000000000) ts = ts * 1000;
+      dataChegada = new Date(ts);
+    }
 
     const hoje = new Date();
     dataChegada.setHours(0, 0, 0, 0);
@@ -44,17 +82,16 @@ export default function RelogioProducao() {
   }
 
   function obterProximoMarco(semanas) {
-    const marcosOrdenados = [...MARCOS].sort((a, b) => a.semana - b.semana);
-    return marcosOrdenados.find(m => m.semana > semanas) || null;
+    const ordenados = [...marcos].sort((a, b) => a.semana - b.semana);
+    return ordenados.find((m) => m.semana > semanas) || null;
   }
 
   function obterFaseAtual(semanas) {
-    const fase = FASES.find(f => semanas >= f.inicio && semanas <= f.fim);
+    const fase = FASES.find((f) => semanas >= f.inicio && semanas <= f.fim);
     return fase ? fase.nome : '';
   }
 
-  const semanasTransicao = FASES.map(f => f.inicio).filter(s => s > 0);
-
+  const semanasTransicao = FASES.map((f) => f.inicio).filter((s) => s > 0);
   const semanas = calcularSemanas();
   const progresso = Math.min(semanas / VIDA_TOTAL_SEMANAS, 1);
   const angulo = progresso * 360;
@@ -65,14 +102,17 @@ export default function RelogioProducao() {
     ? `Semana ${proximoMarco.semana}\n${proximoMarco.mensagem}`
     : 'Ciclo finalizado';
 
-  const marcosVisuais = MARCOS.filter(m => m.semana > 0 && m.semana < VIDA_TOTAL_SEMANAS);
+  const marcosVisuais = marcos.filter(
+    (m) => m.semana > 0 && m.semana < VIDA_TOTAL_SEMANAS
+  );
   const tracos = Array.from({ length: VIDA_TOTAL_SEMANAS }, (_, i) => i);
 
-
   return (
-    <Pressable onPress={() => navigation.navigate('Marcos')} style={styles.container}>
+    <Pressable
+      onPress={() => navigation.navigate('Marcos')}
+      style={styles.container}
+    >
       <View style={styles.relogio}>
-
         {/* Traços de cada semana */}
         {tracos.map((semana) => {
           const anguloTraco = (semana / VIDA_TOTAL_SEMANAS) * 360;
@@ -87,56 +127,67 @@ export default function RelogioProducao() {
                 { transform: [{ rotate: `${anguloTraco}deg` }] },
               ]}
             >
-              <View style={[
-                styles.traco, { backgroundColor: colors.neutro },
-                isPassado && [styles.tracoPassado, { backgroundColor: colors.principal }],
-                isTransicao && styles.tracoFase,
-                isTransicao && isPassado && styles.tracoFasePassado,
-              ]} />
+              <View
+                style={[
+                  styles.traco,
+                  { backgroundColor: colors.neutro },
+                  isPassado && [
+                    styles.tracoPassado,
+                    { backgroundColor: colors.principal },
+                  ],
+                  isTransicao && styles.tracoFase,
+                  isTransicao && isPassado && styles.tracoFasePassado,
+                ]}
+              />
             </View>
           );
         })}
 
+        {/* Marcos visuais */}
         {marcosVisuais.map((marco) => {
           const anguloMarco = (marco.semana / VIDA_TOTAL_SEMANAS) * 360;
           const isProximo = proximoMarco?.semana === marco.semana;
 
           return (
             <View
-              key={marco.semana}
+              key={`marco-${marco.semana}-${marco.mensagem}`}
               style={[
                 styles.marcoContainer,
                 { transform: [{ rotate: `${anguloMarco}deg` }] },
               ]}
             >
-              <View style={[
-                styles.marco,
-                isProximo && styles.marcoProximo
-              ]} />
+              <View
+                style={[styles.marco, isProximo && styles.marcoProximo]}
+              />
             </View>
           );
         })}
 
+        {/* Bolinha que gira */}
         <View
           style={[
             styles.bolinhaContainer,
             { transform: [{ rotate: `${angulo}deg` }] },
           ]}
         >
-          <View style={[styles.bolinha, { backgroundColor: colors.neutro, transform: [{ rotate: `-${angulo}deg` }] }]}>
+          <View
+            style={[
+              styles.bolinha,
+              {
+                backgroundColor: colors.neutro,
+                transform: [{ rotate: `-${angulo}deg` }],
+              },
+            ]}
+          >
             <Text style={styles.textoSemanas}>{semanas}s</Text>
           </View>
         </View>
 
-        {/* Centro vermelho */}
+        {/* Centro */}
         <View style={[styles.ciclo, { backgroundColor: colors.principal }]}>
-
-          {!!faseAtual && (
-            <Text style={styles.fase}>{faseAtual}</Text>
-          )}
+          {!!faseAtual && <Text style={styles.fase}>{faseAtual}</Text>}
           <Text style={styles.mensagem}>{mensagem}</Text>
         </View>
-
       </View>
     </Pressable>
   );
@@ -144,7 +195,7 @@ export default function RelogioProducao() {
 
 const styles = StyleSheet.create({
   container: {
-    marginTop: 52
+    marginTop: 52,
   },
   relogio: {
     width: 220,
@@ -177,17 +228,6 @@ const styles = StyleSheet.create({
   },
   tracoFasePassado: {
     backgroundColor: '#f5dd08ff',
-  },
-  bolinhaZero: {
-    position: 'absolute',
-    top: -30,
-    width: 10,
-    height: 10,
-    borderRadius: 8,
-    backgroundColor: '#000',
-    borderWidth: 2,
-    borderColor: '#fff',
-    zIndex: 10,
   },
   marcoContainer: {
     position: 'absolute',
@@ -255,6 +295,6 @@ const styles = StyleSheet.create({
     fontSize: 20,
     color: '#ffe5e5',
     marginBottom: 6,
-    marginTop: -20
+    marginTop: -20,
   },
 });

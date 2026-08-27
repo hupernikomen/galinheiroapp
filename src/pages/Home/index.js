@@ -69,8 +69,8 @@ export default function Home() {
           ))}
         </Picker>
 
-        <Pressable onPress={() => navigation.navigate('Menu')} style={{ padding: 10, backgroundColor: colors.neutro, justifyContent: 'flex-end' }}>
-          <Ionicons name={'menu-outline'} size={24} color={'#000'} />
+        <Pressable onPress={() => navigation.navigate('Info')} style={{ padding: 10, backgroundColor: colors.neutro, justifyContent: 'flex-end' }}>
+          <Ionicons name={'information-outline'} size={22} color={'#000'} />
         </Pressable>
       </View>
 
@@ -86,14 +86,14 @@ export default function Home() {
           </View>
 
 
-<InfoHome
-  totalCriacao={custoOvo?.totalCriacao || 0}
-  totalPostura={custoOvo?.totalPostura || 0}
-  custoProjetado={custoOvo?.custoProjetado || 0}
-  precoSugerido={custoOvo?.precoSugerido || 0}
-  desempenho={custoOvo?.desempenho}
-  totalDepreciacao={custoOvo?.totalDepreciacao || 0}
-/>
+          <InfoHome
+            totalCriacao={custoOvo?.totalCriacao || 0}
+            totalPostura={custoOvo?.totalPostura || 0}
+            custoProjetado={custoOvo?.custoProjetado || 0}
+            precoSugerido={custoOvo?.precoSugerido || 0}
+            desempenho={custoOvo?.desempenho}
+            totalDepreciacao={custoOvo?.totalDepreciacao || 0}
+          />
 
         </View>
 
