@@ -4,12 +4,12 @@ import Ionicons from 'react-native-vector-icons/Ionicons';
 
 export default function TabbarPersonalizada({ state, descriptors, navigation }) {
 
-const {colors} = useTheme()
+  const { colors } = useTheme()
 
   return (
     <View style={styles.container}>
 
-      <View style={[styles.content, {backgroundColor:colors.neutro}]}>
+      <View style={[styles.content, { backgroundColor: colors.neutro }]}>
         {state.routes.map((route, index) => {
           const { options } = descriptors[route.key]
 
@@ -19,13 +19,23 @@ const {colors} = useTheme()
             const event = navigation.emit({
               type: 'tabPress',
               target: route.key,
-              canPreventDefault: true
-            })
+              canPreventDefault: true,
+            });
 
-            if (!isFocused && !event.canPreventDefault) {
-              navigation.navigate(route.name, {}, { merge: true })
+            if (event.defaultPrevented) return;
+
+            const isFocused = state.index === index;
+
+            if (isFocused) {
+              // Já está na aba → tenta ir à raiz da stack
+              navigation.navigate(route.name, {
+                screen: route.name === 'HomeStack' ? 'Home' : undefined,
+              });
+              return;
             }
-          }
+
+            navigation.navigate(route.name);
+          };
 
           const onLongPress = () => {
             navigation.emit({

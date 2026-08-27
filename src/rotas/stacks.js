@@ -6,6 +6,7 @@ import Info from '../pages/Info'
 import Coleta from '../pages/Ovos/coleta'
 import Marcos from '../pages/Marco'
 import Menu from '../pages/Menu'
+import NovoCusto from '../pages/Custos/novoCusto'
 
 const Stack = createNativeStackNavigator()
 
@@ -15,10 +16,15 @@ export default function StackRotas() {
 
       <Stack.Screen name='Home' component={Home} options={{ headerShown: false }} />
       <Stack.Screen name='Lote' component={Lote} options={{ title: "Registro de Lotes" }} />
-      <Stack.Screen name='Info' component={Info} options={{  }} />
+      <Stack.Screen name='Info' component={Info} options={{}} />
       <Stack.Screen name="Coleta" component={Coleta} />
       <Stack.Screen name="Marcos" component={Marcos} />
       <Stack.Screen name="Menu" component={Menu} />
+      <Stack.Screen
+        name="NovoCusto"
+        component={NovoCusto}
+        options={{ title: 'Novo custo' }}
+      />
 
     </Stack.Navigator>
   )

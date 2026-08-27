@@ -1,38 +1,32 @@
-import {
-  View, Text, TextInput, StyleSheet, Pressable,
-  FlatList, ActivityIndicator, Alert
-} from 'react-native';
+import { View, Text, StyleSheet, FlatList, ActivityIndicator, Pressable } from 'react-native';
 import { useContext, useState, useEffect } from 'react';
 import { GeralContext } from '../../contexts/geral';
 import { db } from '../../services/firebaseConnection/firebase';
-import { collection, addDoc, query, where, onSnapshot } from 'firebase/firestore';
-import { Picker } from '@react-native-picker/picker';
-import { useTheme } from '@react-navigation/native';
-
-// Categorias de custo (planejamento)
-const CATEGORIAS = [
-  { label: 'Variável (dia a dia)', value: 'Variavel' },
-  { label: 'Fixo (mensal)', value: 'Fixo' },
-  { label: 'Capital (depreciação)', value: 'Capital' },
-];
-
-// Sugestões por categoria (opcional no placeholder)
-const SUGESTOES = {
-  Variavel: 'Ex: ração, vacina, embalagem, cama',
-  Fixo: 'Ex: mão de obra, energia, água, combustível',
-  Capital: 'Ex: depreciação galpão, equipamentos, plantel',
-};
+import { collection, query, where, onSnapshot } from 'firebase/firestore';
+import { useNavigation, useTheme } from '@react-navigation/native';
+import Ionicons from 'react-native-vector-icons/Ionicons';
 
 export default function Custos() {
   const { lote } = useContext(GeralContext);
   const { colors } = useTheme();
+  const navigation = useNavigation();
 
-  const [descricao, setDescricao] = useState('');
-  const [valor, setValor] = useState('');
-  const [idade, setIdade] = useState('Criacao');       // fase do lote
-  const [categoria, setCategoria] = useState('Variavel'); // tipo do custo
   const [lista, setLista] = useState([]);
   const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    navigation.setOptions({
+      headerRight: () => (
+        <Pressable
+          onPress={() => navigation.navigate('HomeStack', { screen: 'NovoCusto' })}
+          // se a tela de cadastro tiver outro nome, ajuste aqui
+          style={{ marginRight: 16 }}
+        >
+          <Ionicons name="add" size={26} color="#000" />
+        </Pressable>
+      ),
+    });
+  }, [navigation]);
 
   useEffect(() => {
     if (!lote?.id) {
@@ -65,37 +59,6 @@ export default function Custos() {
     return () => unsub();
   }, [lote?.id]);
 
-  async function CadastrarCusto() {
-    if (!lote?.id) {
-      Alert.alert('Atenção', 'Selecione um lote primeiro');
-      return;
-    }
-
-    if (!descricao || !valor) {
-      Alert.alert('Atenção', 'Preencha descrição e valor');
-      return;
-    }
-
-    try {
-      await addDoc(collection(db, 'custos'), {
-        data: Date.now(),
-        loteId: lote.id,
-        descricao: descricao.trim(),
-        valor: Number(valor),
-        idade: idade,           // Criacao | Postura (cálculo do ovo)
-        categoria: categoria,   // Variavel | Fixo | Capital
-      });
-
-      setDescricao('');
-      setValor('');
-      setIdade('Criacao');
-      setCategoria('Variavel');
-    } catch (error) {
-      console.log('Erro:', error);
-      Alert.alert('Erro', 'Não foi possível salvar o custo');
-    }
-  }
-
   function formatarData(valor) {
     if (!valor) return '-';
     return new Date(Number(valor)).toLocaleDateString('pt-BR');
@@ -114,7 +77,7 @@ export default function Custos() {
 
   function renderItem({ item }) {
     return (
-      <View style={[styles.item, { backgroundColor: colors.neutro }]}>
+      <View style={styles.item}>
         <View style={{ flex: 1 }}>
           <Text style={styles.itemTitulo}>{item.descricao}</Text>
           <Text style={styles.itemSub}>
@@ -133,61 +96,26 @@ export default function Custos() {
 
   return (
     <View style={styles.container}>
-      <View style={styles.form}>
-        <TextInput
-          style={[styles.input, { backgroundColor: colors.neutro }]}
-          placeholder={SUGESTOES[categoria] || 'Descrição'}
-          value={descricao}
-          onChangeText={setDescricao}
-        />
-        <TextInput
-          style={[styles.input, { backgroundColor: colors.neutro }]}
-          placeholder="Valor"
-          keyboardType="numeric"
-          value={valor}
-          onChangeText={setValor}
-        />
-
-        {/* Fase: influencia o custo do ovo */}
-        <View style={[styles.pickerBox, { backgroundColor: colors.neutro }]}>
-          <Picker
-            selectedValue={idade}
-            onValueChange={setIdade}
-            style={styles.picker}
-          >
-            <Picker.Item label="Fase: Criação" value="Criacao" />
-            <Picker.Item label="Fase: Postura" value="Postura" />
-          </Picker>
-        </View>
-
-        {/* Categoria: organização do planejamento */}
-        <View style={[styles.pickerBox, { backgroundColor: colors.neutro }]}>
-          <Picker
-            selectedValue={categoria}
-            onValueChange={setCategoria}
-            style={styles.picker}
-          >
-            {CATEGORIAS.map((c) => (
-              <Picker.Item key={c.value} label={c.label} value={c.value} />
-            ))}
-          </Picker>
-        </View>
-
-        <Pressable onPress={CadastrarCusto} style={styles.botaoGuardar}>
-          <Text style={styles.textoGuardar}>Guardar</Text>
-        </Pressable>
-      </View>
-
       {loading ? (
-        <ActivityIndicator color="red" style={{ marginTop: 20 }} />
+        <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center' }}>
+          <ActivityIndicator color="red" />
+        </View>
       ) : (
         <FlatList
-          showsVerticalScrollIndicator={false}
           data={lista}
           keyExtractor={(item) => item.id}
           renderItem={renderItem}
-          contentContainerStyle={{ paddingBottom: 100 }}
-          keyboardShouldPersistTaps="handled"
+          showsVerticalScrollIndicator={false}
+          ItemSeparatorComponent={
+            <View
+              style={{
+                borderColor: colors.neutro,
+                borderBottomWidth: 0.3,
+                marginVertical: 14,
+              }}
+            />
+          }
+          contentContainerStyle={{ paddingBottom: 100, paddingTop: 21 }}
           ListEmptyComponent={
             <Text style={styles.vazio}>
               {!lote ? 'Selecione um lote' : 'Nenhum custo cadastrado'}
@@ -203,70 +131,32 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
     backgroundColor: '#fff',
-    paddingHorizontal: 14,
-  },
-  form: {
-    marginBottom: 14,
-    marginTop: 8,
-  },
-  input: {
-    height: 50,
-    borderRadius: 22,
-    paddingHorizontal: 16,
-    marginBottom: 8,
-    fontSize: 16,
-  },
-  pickerBox: {
-    borderRadius: 22,
-    marginBottom: 8,
-    overflow: 'hidden',
-    paddingHorizontal: 8,
-  },
-  picker: {
-    height: 50,
-    width: '100%',
-  },
-  botaoGuardar: {
-    alignItems: 'center',
-    justifyContent: 'center',
-    height: 52,
-    backgroundColor: 'red',
-    borderRadius: 22,
-    marginTop: 6,
-    marginBottom: 10,
-  },
-  textoGuardar: {
-    color: '#fff',
-    fontFamily: 'Roboto-Medium',
-    fontSize: 16,
   },
   item: {
+    paddingHorizontal: 21,
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'flex-start',
-    padding: 21,
-    borderRadius: 22,
-    marginBottom: 4,
   },
   itemTitulo: {
-    fontSize: 16,
+    fontSize: 15,
     fontFamily: 'Roboto-Medium',
     color: '#000',
   },
   itemSub: {
     fontFamily: 'Roboto-Light',
     fontSize: 13,
-    color: '#000',
+    color: '#222',
     marginTop: 2,
   },
   itemValor: {
-    fontSize: 16,
+    fontSize: 15,
     fontFamily: 'Roboto-Medium',
     color: '#000',
   },
   itemData: {
-    fontSize: 13,
     fontFamily: 'Roboto-Light',
+    fontSize: 13,
     color: '#000',
     marginTop: 2,
   },
