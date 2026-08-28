@@ -1,10 +1,15 @@
-import { View, Text, StyleSheet, FlatList, ActivityIndicator, Pressable } from 'react-native';
+import {
+  View, Text, StyleSheet, FlatList, ActivityIndicator,
+  Pressable
+} from 'react-native';
 import { useContext, useState, useEffect } from 'react';
 import { GeralContext } from '../../contexts/geral';
 import { db } from '../../services/firebaseConnection/firebase';
 import { collection, query, where, onSnapshot } from 'firebase/firestore';
 import { useNavigation, useTheme } from '@react-navigation/native';
 import Ionicons from 'react-native-vector-icons/Ionicons';
+import { formatarData, formatarValor, formatarMoeda } from '../../utils/format';
+import { confirmDelete } from '../../utils/confirmDelete';
 
 export default function Custos() {
   const { lote } = useContext(GeralContext);
@@ -19,7 +24,6 @@ export default function Custos() {
       headerRight: () => (
         <Pressable
           onPress={() => navigation.navigate('HomeStack', { screen: 'NovoCusto' })}
-          // se a tela de cadastro tiver outro nome, ajuste aqui
           style={{ marginRight: 16 }}
         >
           <Ionicons name="add" size={26} color="#000" />
@@ -43,9 +47,9 @@ export default function Custos() {
     );
 
     const unsub = onSnapshot(q, (snapshot) => {
-      const dados = snapshot.docs.map((doc) => ({
-        id: doc.id,
-        ...doc.data(),
+      const dados = snapshot.docs.map((d) => ({
+        id: d.id,
+        ...d.data(),
       }));
 
       dados.sort((a, b) => (b.data || 0) - (a.data || 0));
@@ -59,14 +63,14 @@ export default function Custos() {
     return () => unsub();
   }, [lote?.id]);
 
-  function formatarData(valor) {
-    if (!valor) return '-';
-    return new Date(Number(valor)).toLocaleDateString('pt-BR');
-  }
+  // function formatarData(valor) {
+  //   if (!valor) return '-';
+  //   return new Date(Number(valor)).toLocaleDateString('pt-BR');
+  // }
 
-  function formatarValor(v) {
-    return Number(v || 0).toFixed(2);
-  }
+  // function formatarValor(v) {
+  //   return Number(v || 0).toFixed(2);
+  // }
 
   function labelCategoria(cat) {
     if (cat === 'Variavel') return 'Variável';
@@ -74,6 +78,36 @@ export default function Custos() {
     if (cat === 'Capital') return 'Capital';
     return cat || '-';
   }
+
+
+
+  // exclusão
+
+
+  // na UI
+
+
+  // function excluirCusto(item) {
+  //   Alert.alert(
+  //     'Excluir custo',
+  //     `Remover "${item.descricao}" (R$ ${formatarValor(item.valor)})?`,
+  //     [
+  //       { text: 'Cancelar', style: 'cancel' },
+  //       {
+  //         text: 'Excluir',
+  //         style: 'destructive',
+  //         onPress: async () => {
+  //           try {
+  //             await deleteDoc(doc(db, 'custos', item.id));
+  //           } catch (e) {
+  //             console.log(e);
+  //             Alert.alert('Erro', 'Não foi possível excluir');
+  //           }
+  //         },
+  //       },
+  //     ]
+  //   );
+  // }
 
   function renderItem({ item }) {
     return (
@@ -86,18 +120,29 @@ export default function Custos() {
             {labelCategoria(item.categoria)}
           </Text>
         </View>
-        <View style={{ alignItems: 'flex-end' }}>
-          <Text style={styles.itemValor}>R$ {formatarValor(item.valor)}</Text>
-          <Text style={styles.itemData}>{formatarData(item.data)}</Text>
+        <View style={styles.direita}>
+          {/* <Text style={styles.itemValor}>R$ {formatarValor(item.valor)}</Text>
+          <Text style={styles.itemData}>{formatarData(item.data)}</Text> */}
+
+          <Text>{formatarData(item.data)}</Text>
+          <Text>{formatarMoeda(item.valor)}</Text>
+          <Pressable onPress={() => confirmDelete(
+            'custos',
+            item.id,
+            'Excluir custo',
+            `Remover "${item.descricao}" (${formatarMoeda(item.valor)})?`
+          )} hitSlop={12}>
+            <Ionicons name="trash-outline" size={20} color="#c0392b" />
+          </Pressable>
         </View>
-      </View>
+      </View >
     );
   }
 
   return (
     <View style={styles.container}>
       {loading ? (
-        <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center' }}>
+        <View style={styles.loading}>
           <ActivityIndicator color="red" />
         </View>
       ) : (
@@ -132,11 +177,16 @@ const styles = StyleSheet.create({
     flex: 1,
     backgroundColor: '#fff',
   },
+  loading: {
+    flex: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
   item: {
     paddingHorizontal: 21,
     flexDirection: 'row',
     justifyContent: 'space-between',
-    alignItems: 'flex-start',
+    alignItems: 'center',
   },
   itemTitulo: {
     fontSize: 15,
@@ -149,6 +199,10 @@ const styles = StyleSheet.create({
     color: '#222',
     marginTop: 2,
   },
+  direita: {
+    alignItems: 'flex-end',
+    gap: 6,
+  },
   itemValor: {
     fontSize: 15,
     fontFamily: 'Roboto-Medium',
@@ -158,7 +212,6 @@ const styles = StyleSheet.create({
     fontFamily: 'Roboto-Light',
     fontSize: 13,
     color: '#000',
-    marginTop: 2,
   },
   vazio: {
     textAlign: 'center',

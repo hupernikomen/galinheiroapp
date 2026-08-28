@@ -186,7 +186,21 @@ export default function RelogioProducao() {
         {/* Centro */}
         <View style={[styles.ciclo, { backgroundColor: colors.principal }]}>
           {!!faseAtual && <Text style={styles.fase}>{faseAtual}</Text>}
-          <Text style={styles.mensagem}>{mensagem}</Text>
+
+          {proximoMarco ? (
+            <View style={styles.mensagemBox}>
+              <View style={styles.linhaSemana}>
+                {/* Mesma cor do marcoProximo */}
+                <View style={styles.bolinhaProximoMsg} />
+                <Text style={styles.mensagem}>
+                  Semana {proximoMarco.semana}
+                </Text>
+              </View>
+              <Text style={styles.mensagem}>{proximoMarco.mensagem}</Text>
+            </View>
+          ) : (
+            <Text style={styles.mensagem}>Ciclo finalizado</Text>
+          )}
         </View>
       </View>
     </Pressable>
@@ -296,5 +310,20 @@ const styles = StyleSheet.create({
     color: '#ffe5e5',
     marginBottom: 6,
     marginTop: -20,
+  },
+  mensagemBox: {
+    alignItems: 'center',
+  },
+  linhaSemana: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    gap: 6,
+  },
+  bolinhaProximoMsg: {
+    width: 6,
+    height: 6,
+    borderRadius: 4,
+    backgroundColor: '#f39c12', // igual styles.marcoProximo
   },
 });

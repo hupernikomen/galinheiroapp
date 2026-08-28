@@ -1,15 +1,18 @@
 import { useState, useContext } from 'react';
 import {
-  View, Text, TextInput, Pressable, StyleSheet,
+  View, StyleSheet,
   Alert, Platform
 } from 'react-native';
-import Ionicons from 'react-native-vector-icons/Ionicons';
 import DateTimePicker from '@react-native-community/datetimepicker';
 import { Picker } from '@react-native-picker/picker';
 import { GeralContext } from '../../contexts/geral';
 import { db } from '../../services/firebaseConnection/firebase';
 import { collection, addDoc } from 'firebase/firestore';
-import { useNavigation, useTheme } from '@react-navigation/native';
+import { useNavigation } from '@react-navigation/native';
+
+import InputApp from '../../componentes/InputApp';
+import BotaoPrincipal from '../../componentes/BotaoPrincipal';
+import SeletorData from '../../componentes/SeletorData';
 
 const CATEGORIAS = [
   { label: 'Variável (dia a dia)', value: 'Variavel' },
@@ -17,15 +20,10 @@ const CATEGORIAS = [
   { label: 'Capital (depreciação)', value: 'Capital' },
 ];
 
-const SUGESTOES = {
-  Variavel: 'Ex: pintainhas, ração, embalagem',
-  Fixo: 'Ex: mão de obra, energia, água',
-  Capital: 'Ex: depreciação galpão, equipamentos',
-};
+
 
 export default function NovoCusto() {
   const { lote } = useContext(GeralContext);
-  const { colors } = useTheme();
   const navigation = useNavigation();
 
   const [descricao, setDescricao] = useState('');
@@ -48,10 +46,6 @@ export default function NovoCusto() {
     }
   }
 
-  function abrirCalendario() {
-    setMostrarData(false);
-    setTimeout(() => setMostrarData(true), 50);
-  }
 
   async function CadastrarCusto() {
     if (!descricao.trim() || !valor) {
@@ -100,27 +94,18 @@ export default function NovoCusto() {
 
   return (
     <View style={styles.container}>
-      <TextInput
+      <InputApp
         value={descricao}
         onChangeText={setDescricao}
-        placeholder={SUGESTOES[categoria] || 'Descrição'}
-        style={styles.input}
+        placeholder="Descrição"
       />
-
-      <TextInput
+      <InputApp
         value={valor}
         onChangeText={setValor}
         placeholder="Valor (R$)"
         keyboardType="numeric"
-        style={styles.input}
       />
-
-      <Pressable onPress={abrirCalendario} style={styles.botaoInput}>
-        <Text style={styles.dataTexto}>
-          {data?.toLocaleDateString('pt-BR')}
-        </Text>
-        <Ionicons name="calendar-outline" size={24} color={colors.principal} />
-      </Pressable>
+      <SeletorData data={data} setData={setData} />
 
       <View style={styles.pickerBox}>
         <Picker
@@ -145,12 +130,7 @@ export default function NovoCusto() {
         </Picker>
       </View>
 
-      <Pressable
-        onPress={CadastrarCusto}
-        style={[styles.botaoSalvar, { backgroundColor: colors.principal }]}
-      >
-        <Text style={styles.botaoSalvarTexto}>Salvar custo</Text>
-      </Pressable>
+      <BotaoPrincipal titulo="Salvar custo" onPress={CadastrarCusto} />
 
       {mostrarData && (
         <DateTimePicker
@@ -171,29 +151,7 @@ const styles = StyleSheet.create({
     backgroundColor: '#fff',
     padding: 16,
   },
-  input: {
-    height: 50,
-    borderRadius: 22,
-    paddingHorizontal: 16,
-    backgroundColor: '#22222215',
-    fontSize: 16,
-    marginBottom: 12,
-  },
-  botaoInput: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'space-between',
-    gap: 10,
-    height: 50,
-    borderRadius: 22,
-    paddingHorizontal: 16,
-    backgroundColor: '#22222215',
-    marginBottom: 12,
-  },
-  dataTexto: {
-    fontSize: 16,
-    color: '#333',
-  },
+
   pickerBox: {
     height: 50,
     borderRadius: 22,
@@ -206,15 +164,5 @@ const styles = StyleSheet.create({
   picker: {
     width: '100%',
   },
-  botaoSalvar: {
-    height: 52,
-    borderRadius: 22,
-    alignItems: 'center',
-    justifyContent: 'center',
-    marginTop: 4,
-  },
-  botaoSalvarTexto: {
-    color: '#fff',
-    fontSize: 16,
-  },
+
 });

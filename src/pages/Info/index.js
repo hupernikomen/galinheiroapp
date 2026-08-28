@@ -59,7 +59,7 @@ export default function Info() {
       {SECOES.map((item, index) => (
         <View
           key={index}
-          style={[styles.card, { backgroundColor: colors.neutro || '#22222215' }]}
+          style={[styles.card, { backgroundColor: colors.neutro }]}
         >
           <View style={styles.tituloRow}>
             <View
