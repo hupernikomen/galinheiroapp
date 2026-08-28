@@ -93,7 +93,7 @@ export default function NovoLote() {
       <InputApp
         value={prodEstimada}
         onChangeText={setProdEstimada}
-        placeholder="Produção estimada por galinha"
+        placeholder="Produção estimada"
       />
 
 
