@@ -3,7 +3,7 @@ import { StatusBar } from 'react-native';
 import { NavigationContainer, DefaultTheme } from '@react-navigation/native';
 import GeralProvider from './src/contexts/geral';
 
-import Rotas from './src/rotas/tabs'
+import Rotas from './src/rotas'
 
 const Tema = {
   ...DefaultTheme,

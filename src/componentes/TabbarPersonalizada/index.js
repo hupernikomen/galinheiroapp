@@ -3,17 +3,14 @@ import { TouchableOpacity, View, StyleSheet } from 'react-native';
 import Ionicons from 'react-native-vector-icons/Ionicons';
 
 export default function TabbarPersonalizada({ state, descriptors, navigation }) {
-
-  const { colors } = useTheme()
+  const { colors } = useTheme();
 
   return (
     <View style={styles.container}>
-
       <View style={[styles.content, { backgroundColor: colors.neutro }]}>
         {state.routes.map((route, index) => {
-          const { options } = descriptors[route.key]
-
-          const isFocused = state.index === index
+          const { options } = descriptors[route.key];
+          const isFocused = state.index === index;
 
           const onPress = () => {
             const event = navigation.emit({
@@ -24,30 +21,22 @@ export default function TabbarPersonalizada({ state, descriptors, navigation }) 
 
             if (event.defaultPrevented) return;
 
-            const isFocused = state.index === index;
-
-            if (isFocused) {
-              // Já está na aba → tenta ir à raiz da stack
-              navigation.navigate(route.name, {
-                screen: route.name === 'HomeStack' ? 'Home' : undefined,
-              });
-              return;
+            if (!isFocused) {
+              navigation.navigate(route.name);
             }
-
-            navigation.navigate(route.name);
           };
 
           const onLongPress = () => {
             navigation.emit({
-              type: "tabLongPress",
-              target: route.key
-            })
-          }
+              type: 'tabLongPress',
+              target: route.key,
+            });
+          };
 
           return (
             <TouchableOpacity
-              key={index}
-              accessibilityRole='button'
+              key={route.key}
+              accessibilityRole="button"
               accessibilityState={isFocused ? { selected: true } : {}}
               accessibilityLabel={options.tabBarAccessibilityLabel}
               testID={options.tabBarTestID}
@@ -55,48 +44,47 @@ export default function TabbarPersonalizada({ state, descriptors, navigation }) 
               onLongPress={onLongPress}
               style={styles.buttonTab}
             >
-
-              <View style={{ alignItems: "center", padding: 2, }}>
-                <View style={{ padding: 14, backgroundColor: isFocused ? colors.principal : '#ffffffff', borderRadius: 30, elevation: isFocused ? 5 : 0 }}>
-
-                  <Ionicons name={options.tabBarIcon} size={24} color={isFocused ? "#fff" : '#00000035'} />
-
+              <View style={{ alignItems: 'center', padding: 2 }}>
+                <View
+                  style={{
+                    padding: 14,
+                    backgroundColor: isFocused ? colors.principal : '#ffffffff',
+                    borderRadius: 30,
+                    elevation: isFocused ? 5 : 0,
+                  }}
+                >
+                  <Ionicons
+                    name={options.tabBarIcon}
+                    size={24}
+                    color={isFocused ? '#fff' : '#00000035'}
+                  />
                 </View>
               </View>
-
             </TouchableOpacity>
-          )
+          );
         })}
       </View>
     </View>
-
   );
-
-
 }
 
 const styles = StyleSheet.create({
-
   container: {
-    alignItems: "center",
-    justifyContent: "center",
-    backgroundColor: 'blue'
-
+    alignItems: 'center',
+    justifyContent: 'center',
   },
   content: {
-    flexDirection: "row",
-    marginBottom: 24,
+    flexDirection: 'row',
     alignItems: 'center',
-    justifyContent: "center",
-    position: "absolute",
-    marginBottom: 28,
+    justifyContent: 'center',
+    position: 'absolute',
     bottom: -10,
+    marginBottom: 28,
     padding: 4,
     borderRadius: 35,
   },
   buttonTab: {
-    alignItems: "center",
-    justifyContent: "center",
-
-  }
-})
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+});

@@ -6,8 +6,11 @@ import { db } from '../../services/firebaseConnection/firebase';
 import { collection, addDoc } from 'firebase/firestore';
 import { useNavigation, useTheme } from '@react-navigation/native';
 
+import InputApp from '../../componentes/InputApp';
+import BotaoPrincipal from '../../componentes/BotaoPrincipal';
+
 export default function NovoInvestimento() {
-  const { colors } = useTheme();
+
   const navigation = useNavigation();
 
   const [descricao, setDescricao] = useState('');
@@ -49,33 +52,26 @@ export default function NovoInvestimento() {
 
   return (
     <View style={styles.container}>
-      <TextInput
+      <InputApp
         value={descricao}
         onChangeText={setDescricao}
         placeholder="Descrição (ex: Galpão)"
-        style={styles.input}
       />
-      <TextInput
+      <InputApp
         value={valorTotal}
         onChangeText={setValorTotal}
         placeholder="Valor total"
-        keyboardType="numeric"
-        style={styles.input}
       />
-      <TextInput
+      <InputApp
         value={vidaUtilAnos}
         onChangeText={setVidaUtilAnos}
         placeholder="Vida útil (anos)"
-        keyboardType="numeric"
-        style={styles.input}
       />
 
-      <Pressable
-        onPress={Cadastrar}
-        style={[styles.botaoSalvar, { backgroundColor: colors.principal }]}
-      >
-        <Text style={styles.botaoSalvarTexto}>Salvar investimento</Text>
-      </Pressable>
+
+     <BotaoPrincipal titulo="Salvar" onPress={Cadastrar} />
+
+
     </View>
   );
 }
@@ -86,22 +82,5 @@ const styles = StyleSheet.create({
     backgroundColor: '#fff',
     padding: 16,
   },
-  input: {
-    height: 50,
-    borderRadius: 22,
-    paddingHorizontal: 16,
-    backgroundColor: '#22222215',
-    fontSize: 16,
-    marginBottom: 12,
-  },
-  botaoSalvar: {
-    height: 52,
-    borderRadius: 22,
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
-  botaoSalvarTexto: {
-    color: '#fff',
-    fontSize: 16,
-  },
+
 });

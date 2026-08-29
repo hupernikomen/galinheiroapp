@@ -75,8 +75,6 @@ export default function InfoHome({
 
 const styles = StyleSheet.create({
   container: {
-    width: '100%',
-    paddingHorizontal: 8,
     marginVertical: 16,
   },
   barra: {
@@ -84,7 +82,6 @@ const styles = StyleSheet.create({
     borderRadius: 8,
     flexDirection: 'row',
     overflow: 'hidden',
-    backgroundColor: '#eee',
   },
   fatia: {
     height: '100%',

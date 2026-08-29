@@ -6,6 +6,10 @@ import { db } from '../../services/firebaseConnection/firebase';
 import { collection, addDoc } from 'firebase/firestore';
 import { useNavigation, useTheme } from '@react-navigation/native';
 
+import InputApp from '../../componentes/InputApp';
+import BotaoPrincipal from '../../componentes/BotaoPrincipal';
+
+
 export default function NovoMarco() {
   const { colors } = useTheme();
   const navigation = useNavigation();
@@ -51,25 +55,22 @@ export default function NovoMarco() {
 
   return (
     <View style={styles.container}>
-      <TextInput
+
+      <InputApp
         value={semana}
         onChangeText={setSemana}
         placeholder="Semana (ex: 18)"
-        keyboardType="numeric"
-        style={styles.input}
       />
-      <TextInput
+      <InputApp
         value={mensagem}
         onChangeText={setMensagem}
         placeholder="Mensagem (ex: Início da postura)"
-        style={styles.input}
       />
-      <Pressable
-        onPress={Salvar}
-        style={[styles.botaoSalvar, { backgroundColor: colors.principal }]}
-      >
-        <Text style={styles.botaoSalvarTexto}>Salvar marco</Text>
-      </Pressable>
+
+
+
+      <BotaoPrincipal titulo="Salvar" onPress={Salvar} />
+
     </View>
   );
 }
@@ -80,22 +81,5 @@ const styles = StyleSheet.create({
     backgroundColor: '#fff',
     padding: 16,
   },
-  input: {
-    height: 50,
-    borderRadius: 22,
-    paddingHorizontal: 16,
-    backgroundColor: '#22222215',
-    fontSize: 16,
-    marginBottom: 12,
-  },
-  botaoSalvar: {
-    height: 52,
-    borderRadius: 22,
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
-  botaoSalvarTexto: {
-    color: '#fff',
-    fontSize: 16,
-  },
+
 });

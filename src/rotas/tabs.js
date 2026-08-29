@@ -1,64 +1,66 @@
 import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
+import { SafeAreaView } from 'react-native-safe-area-context';
+import TabbarPersonalizada from '../componentes/TabbarPersonalizada';
 
-import StackRotas from './stacks'
-import Custos from '../pages/Custos'
-import Ovos from '../pages/Ovos'
+import Home from '../pages/Home';
+import Ovos from '../pages/Ovos';
+import Custos from '../pages/Custos';
 import Investimentos from '../pages/Investimentos';
 import Lote from '../pages/Lote';
 
-import { CommonActions } from '@react-navigation/native';
-
-import { SafeAreaView } from 'react-native-safe-area-context';
-
-import TabbarPersonalizada from '../componentes/TabbarPersonalizada'
-
 const Tab = createBottomTabNavigator();
 
-export default function Rotas() {
-
+export default function Tabs() {
   return (
-    <SafeAreaView style={{ flex: 1 }}>
+    <SafeAreaView style={{ flex: 1 }} edges={['bottom', 'left', 'right']}>
       <Tab.Navigator
         tabBar={(props) => <TabbarPersonalizada {...props} />}
         screenOptions={{
           tabBarShowLabel: false,
-          tabBarStyle: {
-            position: 'absolute',
-            margin: 22,
-            backgroundColor: 'red',
-            padding: 14,
-            borderWidth: 0,
-            borderRadius: 14
-          }
+          headerShown: false,
         }}
       >
         <Tab.Screen
-          name="HomeStack"
-          component={StackRotas}
-          options={{ tabBarIcon: 'home-outline', headerShown: false }}
-          listeners={({ navigation, route }) => ({
-            tabPress: (e) => {
-              // Se já estiver nesta aba, reseta a stack para a Home
-              const state = navigation.getState();
-              const tab = state.routes.find((r) => r.key === route.key);
-
-              if (tab?.state && tab.state.index > 0) {
-                e.preventDefault();
-                navigation.dispatch({
-                  ...CommonActions.reset({
-                    index: 0,
-                    routes: [{ name: 'Home' }], // nome da tela inicial do Stack
-                  }),
-                  target: tab.state.key,
-                });
-              }
-            },
-          })}
+          name="Home"
+          component={Home}
+          options={{ tabBarIcon: 'home-outline', headerShown: true, title:'Controle Galinheiro' }}
         />
-        <Tab.Screen name="Ovos" component={Ovos} options={{ title: 'Registros de Coleta de Ovos', tabBarIcon: 'egg-outline' }} />
-        <Tab.Screen name="Custos" component={Custos} options={{ title: "Custos Diários", tabBarIcon: "shapes-outline", }} />
-        <Tab.Screen name="Investimentos" component={Investimentos} options={{ tabBarIcon: 'storefront-outline' }}/>
-        <Tab.Screen name="Lote" component={Lote} options={{ tabBarIcon: 'cube-outline' }}/>
+        <Tab.Screen
+          name="Ovos"
+          component={Ovos}
+          options={{
+            title: 'Registros de Coleta de Ovos',
+            headerShown: true,
+            tabBarIcon: 'egg-outline',
+          }}
+        />
+        <Tab.Screen
+          name="Custos"
+          component={Custos}
+          options={{
+            title: 'Custos Diários',
+            headerShown: true,
+            tabBarIcon: 'shapes-outline',
+          }}
+        />
+        <Tab.Screen
+          name="Investimentos"
+          component={Investimentos}
+          options={{
+            title: 'Custos Diários',
+            headerShown: true,
+            tabBarIcon: 'storefront-outline',
+          }}
+        />
+        <Tab.Screen
+          name="Lote"
+          component={Lote}
+          options={{
+            title: 'Custos Diários',
+            headerShown: true,
+            tabBarIcon: 'cube-outline',
+          }}
+        />
       </Tab.Navigator>
     </SafeAreaView>
   );

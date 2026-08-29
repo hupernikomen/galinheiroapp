@@ -109,7 +109,13 @@ export default function RelogioProducao() {
 
   return (
     <Pressable
-      onPress={() => navigation.navigate('Marcos')}
+      onPress={() => {
+        const root =
+          navigation.getParent()?.getParent?.() ||
+          navigation.getParent?.() ||
+          navigation;
+        root.navigate('Marcos');
+      }}
       style={styles.container}
     >
       <View style={styles.relogio}>
@@ -212,8 +218,8 @@ const styles = StyleSheet.create({
     marginTop: 52,
   },
   relogio: {
-    width: 220,
-    height: 220,
+    width: 200,
+    height: 200,
     justifyContent: 'center',
     alignItems: 'center',
     marginBottom: 45,
@@ -221,8 +227,8 @@ const styles = StyleSheet.create({
   tracoContainer: {
     position: 'absolute',
     zIndex: 99,
-    width: 220,
-    height: 220,
+    width: 200,
+    height: 200,
     justifyContent: 'flex-start',
     alignItems: 'center',
   },
@@ -245,8 +251,8 @@ const styles = StyleSheet.create({
   },
   marcoContainer: {
     position: 'absolute',
-    width: 220,
-    height: 220,
+    width: 200,
+    height: 200,
     justifyContent: 'flex-start',
     alignItems: 'center',
   },
@@ -267,8 +273,8 @@ const styles = StyleSheet.create({
   bolinhaContainer: {
     position: 'absolute',
     zIndex: 999,
-    width: 220,
-    height: 220,
+    width: 200,
+    height: 200,
     justifyContent: 'flex-start',
     alignItems: 'center',
   },
@@ -289,7 +295,7 @@ const styles = StyleSheet.create({
     position: 'absolute',
     zIndex: 0,
     padding: 16,
-    width: 220,
+    width: 200,
     aspectRatio: 1,
     borderRadius: 110,
     alignItems: 'center',
