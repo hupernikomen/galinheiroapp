@@ -15,7 +15,7 @@ export default function Ovos() {
   const [lista, setLista] = useState([]);
   const [loading, setLoading] = useState(true);
 
-  useHeaderAdd('Coleta', 'Lista de Coletas');
+  useHeaderAdd('Coleta', 'Coletas');
 
   useEffect(() => {
     if (!lote?.id) {

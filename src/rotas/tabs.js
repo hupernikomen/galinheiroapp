@@ -14,17 +14,13 @@ export default function Tabs() {
   return (
     <SafeAreaView style={{ flex: 1 }} edges={['bottom', 'left', 'right']}>
       <Tab.Navigator
+      initialRouteName='Home'
         tabBar={(props) => <TabbarPersonalizada {...props} />}
         screenOptions={{
           tabBarShowLabel: false,
           headerShown: false,
         }}
       >
-        <Tab.Screen
-          name="Home"
-          component={Home}
-          options={{ tabBarIcon: 'home-outline', headerShown: true, title:'Controle Galinheiro' }}
-        />
         <Tab.Screen
           name="Ovos"
           component={Ovos}
@@ -38,9 +34,14 @@ export default function Tabs() {
           component={Custos}
           options={{
             headerShown: true,
-            tabBarIcon: 'shapes-outline',
+            tabBarIcon: 'card-outline',
           }}
         />
+          <Tab.Screen
+            name="Home"
+            component={Home}
+            options={{ tabBarIcon: 'home-outline', headerShown: true, title:'Meu Galinheiro' }}
+          />
         <Tab.Screen
           name="Investimentos"
           component={Investimentos}

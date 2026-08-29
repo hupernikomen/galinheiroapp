@@ -51,7 +51,7 @@ export default function InfoHome({
           R$ {Number(precoSugerido).toFixed(2)}
         </Text>
         <Text style={styles.precoSub}>
-          Custo projetado R$ {Number(custoProjetado).toFixed(3)}
+          Custo projetado R$ {Number(custoProjetado).toFixed(2)}
           {' + '}
           {(MARGEM * 100).toFixed(0)}% margem
         </Text>
