@@ -1,10 +1,12 @@
 import { useEffect } from 'react';
 import { Pressable } from 'react-native';
-import { useNavigation } from '@react-navigation/native';
+import { useNavigation, useTheme } from '@react-navigation/native';
 import Ionicons from 'react-native-vector-icons/Ionicons';
 
 export default function useHeaderAdd(nomeTela, title) {
   const navigation = useNavigation();
+
+  const { colors } = useTheme()
 
   useEffect(() => {
     navigation.setOptions({
@@ -20,9 +22,9 @@ export default function useHeaderAdd(nomeTela, title) {
 
             root.navigate(nomeTela);
           }}
-          style={{ marginRight: 16 }}
+          style={{ marginRight: 16, backgroundColor: colors.neutro, padding:10 }}
         >
-          <Ionicons name="add" size={26} color="#000" />
+          <Ionicons name="add" size={22} color="#000" />
         </Pressable>
       ),
     });

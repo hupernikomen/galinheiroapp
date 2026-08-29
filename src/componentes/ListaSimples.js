@@ -30,8 +30,8 @@ export default function ListaSimples({
       ItemSeparatorComponent={
         <View
           style={{
-            borderColor: colors.neutro || '#22222215',
-            borderBottomWidth: 0.3,
+            borderColor: colors.neutro || '#22222255',
+            borderBottomWidth: 1,
             marginVertical: 14,
           }}
         />

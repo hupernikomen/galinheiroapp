@@ -8,12 +8,15 @@ import ListaSimples from '../../componentes/ListaSimples';
 import ItemLista from '../../componentes/ItemLista';
 import { formatarData } from '../../utils/format';
 import { confirmDelete } from '../../utils/confirmDelete';
+import { useTheme } from '@react-navigation/native';
 
 export default function Lote() {
   const [lista, setLista] = useState([]);
   const [loading, setLoading] = useState(true);
 
-useHeaderAdd('NovoLote', 'Registro de Lotes');
+  const { colors } = useTheme()
+
+  useHeaderAdd('NovoLote', 'Lotes');
 
   useEffect(() => {
     const unsub = onSnapshot(
@@ -77,14 +80,13 @@ useHeaderAdd('NovoLote', 'Registro de Lotes');
                   <Text style={styles.data}>{formatarData(item.chegada)}</Text>
                   {!finalizado && (
                     <Pressable onPress={() => FinalizarLote(item.id)}>
-                      <Text style={styles.finalizar}>Finalizar</Text>
+                      <Text style={[styles.finalizar, { color: colors.principal }]}>Finalizar</Text>
                     </Pressable>
                   )}
                 </View>
               }
               onExcluir={() =>
                 confirmDelete(
-                  'lotes',
                   item.id,
                   'Excluir lote',
                   `Remover permanentemente o lote "${item.nome}"?`
@@ -102,5 +104,4 @@ const styles = StyleSheet.create({
   container: { flex: 1, backgroundColor: '#fff' },
   vazio: { textAlign: 'center', marginTop: 30, color: '#999' },
   data: { fontFamily: 'Roboto-Light', fontSize: 13, color: '#000' },
-  finalizar: { color: 'red', fontSize: 13 },
 });

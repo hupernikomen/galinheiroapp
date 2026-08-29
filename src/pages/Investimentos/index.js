@@ -13,7 +13,7 @@ export default function Investimentos() {
   const [lista, setLista] = useState([]);
   const [loading, setLoading] = useState(true);
 
-useHeaderAdd('NovoInvestimento', 'Investimentos');
+useHeaderAdd('NovoInvestimento', 'Estrutura');
 
   useEffect(() => {
     const unsub = onSnapshot(

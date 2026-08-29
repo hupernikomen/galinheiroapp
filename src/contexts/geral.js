@@ -26,8 +26,14 @@ function GeralProvider({ children }) {
     producaoTotalEstimada: 0,
   });
 
-  // Lista de lotes em tempo real + último lote salvo
+
+  const [appPronto, setAppPronto] = useState(false);
+
+
+  // no useEffect que carrega lotes + AsyncStorage:
   useEffect(() => {
+    let cancelado = false;
+
     const unsubLotes = onSnapshot(collection(db, 'lotes'), (snapshot) => {
       const dados = snapshot.docs.map((d) => ({
         id: d.id,
@@ -36,17 +42,28 @@ function GeralProvider({ children }) {
       setListaLotes(dados);
     });
 
-    AsyncStorage.getItem('@lote').then((res) => {
-      if (res) {
-        try {
-          setLote(JSON.parse(res));
-        } catch (e) {
-          console.log('Erro ao ler lote salvo:', e);
+    AsyncStorage.getItem('@lote')
+      .then((res) => {
+        if (cancelado) return;
+        if (res) {
+          try {
+            setLote(JSON.parse(res));
+          } catch (e) {
+            console.log(e);
+          }
         }
-      }
-    });
+      })
+      .finally(() => {
+        if (!cancelado) {
+          // pequeno delay opcional para o primeiro snapshot
+          setTimeout(() => setAppPronto(true), 300);
+        }
+      });
 
-    return () => unsubLotes();
+    return () => {
+      cancelado = true;
+      unsubLotes();
+    };
   }, []);
 
   // Quando o lote muda: escuta ovos/custos e recalcula
@@ -130,6 +147,7 @@ function GeralProvider({ children }) {
   return (
     <GeralContext.Provider
       value={{
+        appPronto,
         load,
         lote,
         setLote: salvarLote,

@@ -29,7 +29,6 @@ export default function Tabs() {
           name="Ovos"
           component={Ovos}
           options={{
-            title: 'Registros de Coleta de Ovos',
             headerShown: true,
             tabBarIcon: 'egg-outline',
           }}
@@ -38,7 +37,6 @@ export default function Tabs() {
           name="Custos"
           component={Custos}
           options={{
-            title: 'Custos Diários',
             headerShown: true,
             tabBarIcon: 'shapes-outline',
           }}
@@ -47,7 +45,6 @@ export default function Tabs() {
           name="Investimentos"
           component={Investimentos}
           options={{
-            title: 'Custos Diários',
             headerShown: true,
             tabBarIcon: 'storefront-outline',
           }}
@@ -56,7 +53,6 @@ export default function Tabs() {
           name="Lote"
           component={Lote}
           options={{
-            title: 'Custos Diários',
             headerShown: true,
             tabBarIcon: 'cube-outline',
           }}
