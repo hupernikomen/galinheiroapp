@@ -1,5 +1,11 @@
-import { useContext, useEffect, useState, useCallback } from 'react';
-import { View, Text, StyleSheet, Pressable } from 'react-native';
+import { useContext, useEffect, useState, useCallback, useRef } from 'react';
+import {
+  View,
+  Text,
+  StyleSheet,
+  Pressable,
+  FlatList,
+} from 'react-native';
 import { GeralContext } from '../../contexts/geral';
 import { useNavigation, useTheme, useFocusEffect } from '@react-navigation/native';
 import { db } from '../../services/firebaseConnection/firebase';
@@ -8,6 +14,7 @@ import AsyncStorage from '@react-native-async-storage/async-storage';
 
 const VIDA_TOTAL_SEMANAS = 90;
 const CHAVE_PADRAO = '@usarMarcosPadrao';
+const TAMANHO = 220;
 
 const MARCOS_PADRAO = [
   { semana: 0, mensagem: 'Início do lote' },
@@ -30,6 +37,8 @@ export default function RelogioProducao() {
 
   const [usarPadrao, setUsarPadrao] = useState(true);
   const [marcosBanco, setMarcosBanco] = useState([]);
+  const [indiceMarco, setIndiceMarco] = useState(0);
+  const listaRef = useRef(null);
 
   useFocusEffect(
     useCallback(() => {
@@ -51,7 +60,6 @@ export default function RelogioProducao() {
     return () => unsub();
   }, []);
 
-  // Lista final: padrão (se ligado) + banco
   const marcos = (() => {
     const mapa = new Map();
     if (usarPadrao) {
@@ -69,7 +77,7 @@ export default function RelogioProducao() {
       dataChegada = lote.chegada.toDate();
     } else {
       let ts = Number(lote.chegada);
-      if (ts > 0 && ts < 10000000000) ts = ts * 1000;
+      if (ts > 0 && ts < 10000000000) ts *= 1000;
       dataChegada = new Date(ts);
     }
 
@@ -81,11 +89,6 @@ export default function RelogioProducao() {
     return dias <= 0 ? 1 : Math.ceil(dias / 7);
   }
 
-  function obterProximoMarco(semanas) {
-    const ordenados = [...marcos].sort((a, b) => a.semana - b.semana);
-    return ordenados.find((m) => m.semana > semanas) || null;
-  }
-
   function obterFaseAtual(semanas) {
     const fase = FASES.find((f) => semanas >= f.inicio && semanas <= f.fim);
     return fase ? fase.nome : '';
@@ -95,31 +98,43 @@ export default function RelogioProducao() {
   const semanas = calcularSemanas();
   const progresso = Math.min(semanas / VIDA_TOTAL_SEMANAS, 1);
   const angulo = progresso * 360;
-  const proximoMarco = obterProximoMarco(semanas);
   const faseAtual = obterFaseAtual(semanas);
 
-  const mensagem = proximoMarco
-    ? `Semana ${proximoMarco.semana}\n${proximoMarco.mensagem}`
-    : 'Ciclo finalizado';
+  const marcoFocado = marcos[indiceMarco] || null;
+  const semanaFoco = marcoFocado?.semana;
 
-  const marcosVisuais = marcos.filter(
-    (m) => m.semana > 0 && m.semana < VIDA_TOTAL_SEMANAS
-  );
+  useEffect(() => {
+    if (!marcos.length) return;
+    const idx = marcos.findIndex((m) => m.semana > semanas);
+    const inicial = idx >= 0 ? idx : marcos.length - 1;
+    setIndiceMarco(inicial);
+    setTimeout(() => {
+      listaRef.current?.scrollToIndex({ index: inicial, animated: false });
+    }, 100);
+  }, [marcos.length, lote?.id]);
+
   const tracos = Array.from({ length: VIDA_TOTAL_SEMANAS }, (_, i) => i);
 
+  function abrirMarcos() {
+    const root =
+      navigation.getParent()?.getParent?.() ||
+      navigation.getParent?.() ||
+      navigation;
+    root.navigate('Marcos');
+  }
+
+  function onScrollMarcos(e) {
+    const x = e.nativeEvent.contentOffset.x;
+    const idx = Math.round(x / TAMANHO);
+    if (idx >= 0 && idx < marcos.length && idx !== indiceMarco) {
+      setIndiceMarco(idx);
+    }
+  }
+
   return (
-    <Pressable
-      onPress={() => {
-        const root =
-          navigation.getParent()?.getParent?.() ||
-          navigation.getParent?.() ||
-          navigation;
-        root.navigate('Marcos');
-      }}
-      style={styles.container}
-    >
+    <View style={styles.container}>
       <View style={styles.relogio}>
-        {/* Traços de cada semana */}
+        {/* Traços */}
         {tracos.map((semana) => {
           const anguloTraco = (semana / VIDA_TOTAL_SEMANAS) * 360;
           const isPassado = semana <= semanas;
@@ -128,11 +143,13 @@ export default function RelogioProducao() {
           return (
             <View
               key={semana}
+              pointerEvents="box-none"
               style={[
                 styles.tracoContainer,
                 { transform: [{ rotate: `${anguloTraco}deg` }] },
               ]}
             >
+             // no map dos traços — ordem dos estilos importa
               <View
                 style={[
                   styles.traco,
@@ -149,28 +166,30 @@ export default function RelogioProducao() {
           );
         })}
 
-        {/* Marcos visuais */}
-        {marcosVisuais.map((marco) => {
-          const anguloMarco = (marco.semana / VIDA_TOTAL_SEMANAS) * 360;
-          const isProximo = proximoMarco?.semana === marco.semana;
+        {/* Pontos dos marcos */}
+        {marcos
+          .filter((m) => m.semana > 0 && m.semana < VIDA_TOTAL_SEMANAS)
+          .map((marco) => {
+            const anguloMarco = (marco.semana / VIDA_TOTAL_SEMANAS) * 360;
+            const isFoco = marco.semana === semanaFoco;
 
-          return (
-            <View
-              key={`marco-${marco.semana}-${marco.mensagem}`}
-              style={[
-                styles.marcoContainer,
-                { transform: [{ rotate: `${anguloMarco}deg` }] },
-              ]}
-            >
+            return (
               <View
-                style={[styles.marco, isProximo && styles.marcoProximo]}
-              />
-            </View>
-          );
-        })}
+                key={`marco-${marco.semana}-${marco.mensagem}`}
+                pointerEvents="box-none"
+                style={[
+                  styles.marcoContainer,
+                  { transform: [{ rotate: `${anguloMarco}deg` }] },
+                ]}
+              >
+                <View style={[styles.marco, isFoco && styles.marcoFocado]} />
+              </View>
+            );
+          })}
 
-        {/* Bolinha que gira */}
+        {/* Bolinha da idade */}
         <View
+          pointerEvents="box-none"
           style={[
             styles.bolinhaContainer,
             { transform: [{ rotate: `${angulo}deg` }] },
@@ -193,68 +212,101 @@ export default function RelogioProducao() {
         <View style={[styles.ciclo, { backgroundColor: colors.principal }]}>
           {!!faseAtual && <Text style={styles.fase}>{faseAtual}</Text>}
 
-          {proximoMarco ? (
-            <View style={styles.mensagemBox}>
-              <View style={styles.linhaSemana}>
-                {/* Mesma cor do marcoProximo */}
-                <View style={styles.bolinhaProximoMsg} />
-                <Text style={styles.mensagem}>
-                  Semana {proximoMarco.semana}
+          <FlatList
+            ref={listaRef}
+            data={marcos}
+            keyExtractor={(item, i) => `${item.semana}-${item.mensagem}-${i}`}
+            horizontal
+            pagingEnabled
+            showsHorizontalScrollIndicator={false}
+            onMomentumScrollEnd={onScrollMarcos}
+            onScrollToIndexFailed={() => { }}
+            style={styles.listaMarcos}
+            getItemLayout={(_, index) => ({
+              length: TAMANHO,
+              offset: TAMANHO * index,
+              index,
+            })}
+            renderItem={({ item }) => (
+              <View style={styles.slide}>
+                <View style={styles.linhaSemana}>
+                  <View style={styles.bolinhaProximoMsg} />
+                  <Text style={styles.mensagem}>Semana {item.semana}</Text>
+                </View>
+                <Text style={styles.mensagem} numberOfLines={3}>
+                  {item.mensagem}
                 </Text>
               </View>
-              <Text style={styles.mensagem}>{proximoMarco.mensagem}</Text>
-            </View>
-          ) : (
-            <Text style={styles.mensagem}>Ciclo finalizado</Text>
-          )}
+            )}
+          />
+
+          <View style={styles.dots}>
+            {marcos.map((_, i) => (
+              <View
+                key={i}
+                style={[styles.dot, i === indiceMarco && styles.dotAtivo]}
+              />
+            ))}
+          </View>
+
+          <Pressable onPress={abrirMarcos} style={styles.botaoMais} hitSlop={16}>
+            <Text style={styles.botaoMaisTexto}>+</Text>
+          </Pressable>
         </View>
       </View>
-    </Pressable>
+    </View>
   );
 }
 
 const styles = StyleSheet.create({
   container: {
-    marginTop: 52,
+    marginTop: 32,
+    alignItems: 'center',
   },
   relogio: {
-    width: 200,
-    height: 200,
+    width: TAMANHO,
+    height: TAMANHO,
     justifyContent: 'center',
     alignItems: 'center',
-    marginBottom: 45,
+    marginBottom: 32,
   },
   tracoContainer: {
     position: 'absolute',
-    zIndex: 99,
-    width: 200,
-    height: 200,
+    zIndex: 15,
+    width: TAMANHO,
+    height: TAMANHO,
     justifyContent: 'flex-start',
     alignItems: 'center',
   },
   traco: {
-    width: 1,
+    width: 1.5,
     height: 8,
-    marginTop: -5,
+    marginTop: -6,
+    borderRadius: 1,
   },
   tracoPassado: {
-    width: 3,
+    width: 3.5,
   },
   tracoFase: {
-    width: 2,
-    height: 15,
-    backgroundColor: '#fff',
-    marginTop: -5,
+    width: 1,
+    height: 14,
+    marginTop: -1,
+    backgroundColor: '#fff', // visível no fundo branco
+    borderRadius: 1,
   },
   tracoFasePassado: {
-    backgroundColor: '#f5dd08ff',
+    backgroundColor: '#f5dd08',
+    width: 3,
+    height: 16,
+    marginTop: -10,
   },
   marcoContainer: {
     position: 'absolute',
-    width: 200,
-    height: 200,
+    width: TAMANHO,
+    height: TAMANHO,
     justifyContent: 'flex-start',
     alignItems: 'center',
+    zIndex: 3,
   },
   marco: {
     width: 6,
@@ -263,18 +315,20 @@ const styles = StyleSheet.create({
     backgroundColor: '#22222235',
     marginTop: -15,
   },
-  marcoProximo: {
-    backgroundColor: '#f39c12',
-    width: 6,
-    height: 6,
+  marcoFocado: {
+    width: 12,
+    height: 12,
     borderRadius: 8,
-    marginTop: -15,
+    backgroundColor: '#f39c12',
+    marginTop: -18,
+    borderWidth: 2,
+    borderColor: '#fff',
   },
   bolinhaContainer: {
     position: 'absolute',
-    zIndex: 999,
-    width: 200,
-    height: 200,
+    zIndex: 4,
+    width: TAMANHO,
+    height: TAMANHO,
     justifyContent: 'flex-start',
     alignItems: 'center',
   },
@@ -293,43 +347,87 @@ const styles = StyleSheet.create({
   },
   ciclo: {
     position: 'absolute',
-    zIndex: 0,
-    padding: 16,
-    width: 200,
-    aspectRatio: 1,
-    borderRadius: 110,
+    zIndex: 10,
+    width: TAMANHO,
+    height: TAMANHO,
+    borderRadius: TAMANHO / 2,
     alignItems: 'center',
     justifyContent: 'center',
     elevation: 15,
-  },
-  mensagem: {
-    fontFamily: 'Roboto-Regular',
-    textAlign: 'center',
-    fontSize: 15,
-    color: '#fff',
-    lineHeight: 22,
+    overflow: 'hidden',
+    paddingTop: 20,
+    paddingBottom: 8,
   },
   fase: {
     fontFamily: 'Roboto-Bold',
     textAlign: 'center',
-    fontSize: 20,
-    color: '#ffe5e5',
-    marginBottom: 6,
-    marginTop: -20,
+    fontSize: 15,
+    color: '#fff',
+    marginBottom: 2,
   },
-  mensagemBox: {
+  listaMarcos: {
+    width: TAMANHO,
+    maxHeight: 70,
+    flexGrow: 0,
+  },
+  slide: {
+    width: TAMANHO,
+    paddingHorizontal: 22,
     alignItems: 'center',
+    justifyContent: 'center',
   },
   linhaSemana: {
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'center',
     gap: 6,
+    marginBottom: 4,
   },
   bolinhaProximoMsg: {
     width: 6,
     height: 6,
     borderRadius: 4,
-    backgroundColor: '#f39c12', // igual styles.marcoProximo
+    backgroundColor: '#f39c12',
+  },
+  mensagem: {
+    fontFamily: 'Roboto-Regular',
+    textAlign: 'center',
+    fontSize: 14,
+    color: '#fff',
+    lineHeight: 20,
+  },
+  dots: {
+    flexDirection: 'row',
+    justifyContent: 'center',
+    gap: 4,
+    marginTop: 6,
+    marginBottom: 4,
+  },
+  dot: {
+    width: 5,
+    height: 5,
+    borderRadius: 3,
+    backgroundColor: 'rgba(255,255,255,0.35)',
+  },
+  dotAtivo: {
+    backgroundColor: '#fff',
+    width: 8,
+  },
+  botaoMais: {
+    width: 32,
+    height: 32,
+    borderRadius: 16,
+    backgroundColor: 'rgba(255,255,255,0.3)',
+    alignItems: 'center',
+    justifyContent: 'center',
+    marginTop: 14,
+    zIndex: 20,
+  },
+  botaoMaisTexto: {
+    color: '#fff',
+    fontSize: 22,
+    fontWeight: '600',
+    lineHeight: 24,
+    textAlign: 'center',
   },
 });

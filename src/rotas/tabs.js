@@ -22,6 +22,11 @@ export default function Tabs() {
         }}
       >
         <Tab.Screen
+          name="Home"
+          component={Home}
+          options={{ tabBarIcon: 'home-outline', headerShown: true, title:'Meu Galinheiro' }}
+        />
+        <Tab.Screen
           name="Ovos"
           component={Ovos}
           options={{
@@ -37,11 +42,6 @@ export default function Tabs() {
             tabBarIcon: 'card-outline',
           }}
         />
-          <Tab.Screen
-            name="Home"
-            component={Home}
-            options={{ tabBarIcon: 'home-outline', headerShown: true, title:'Meu Galinheiro' }}
-          />
         <Tab.Screen
           name="Investimentos"
           component={Investimentos}
