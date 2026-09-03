@@ -128,7 +128,7 @@ export default function TabbarPersonalizada({ state, descriptors, navigation }) 
               >
                 <Ionicons
                   name={options.tabBarIcon}
-                  size={isFocused ? 26 : 22}
+                  size={24}
                   color={isFocused ? '#fff' : '#00000040'}
                 />
               </Animated.View>
@@ -159,7 +159,7 @@ const styles = StyleSheet.create({
   },
   pill: {
     position: 'absolute',
-    left: 0,
+    left: -1,
     width: PILL_SIZE,
     height: PILL_SIZE,
     borderRadius: PILL_SIZE / 2,

@@ -3,6 +3,7 @@ import { useState, useEffect } from 'react';
 import { db } from '../../services/firebaseConnection/firebase';
 import { collection, onSnapshot, doc, updateDoc } from 'firebase/firestore';
 
+
 import useHeaderAdd from '../../hooks/useHeaderAdd';
 import ListaSimples from '../../componentes/ListaSimples';
 import ItemLista from '../../componentes/ItemLista';
@@ -17,6 +18,7 @@ export default function Lote() {
   const { colors } = useTheme()
 
   useHeaderAdd('NovoLote', 'Lotes');
+
 
   useEffect(() => {
     const unsub = onSnapshot(
@@ -70,7 +72,6 @@ export default function Lote() {
         }
         renderItem={({ item }) => {
           const finalizado = item.status === 'Finalizado';
-
           return (
             <ItemLista
               titulo={item.nome}
@@ -85,11 +86,13 @@ export default function Lote() {
                   )}
                 </View>
               }
+
               onExcluir={() =>
                 confirmDelete(
+                  'lotes',
                   item.id,
                   'Excluir lote',
-                  `Remover permanentemente o lote "${item.nome}"?`
+                  `Remover "${item.nome}"?`
                 )
               }
             />

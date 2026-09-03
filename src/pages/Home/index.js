@@ -1,65 +1,60 @@
-import { StyleSheet, View, Pressable, Text } from "react-native";
+import { StyleSheet, View, Pressable } from 'react-native';
 import { Picker } from '@react-native-picker/picker';
-import { GeralContext } from "../../contexts/geral";
-import { useContext, useState, useEffect } from "react";
+import { GeralContext } from '../../contexts/geral';
+import { useContext, useState, useEffect } from 'react';
 import GraficoCiclo from '../../componentes/GraficoCiclo';
-
-import AsyncStorage from "@react-native-async-storage/async-storage";
-
+import AsyncStorage from '@react-native-async-storage/async-storage';
 import Ionicons from 'react-native-vector-icons/Ionicons';
-
-import InfoHome from '../../componentes/InfoHome'
-
-
+import InfoHome from '../../componentes/InfoHome';
 import { db } from '../../services/firebaseConnection/firebase';
-import { collection, onSnapshot, } from "firebase/firestore";
-import { useNavigation, useTheme } from "@react-navigation/native";
+import { collection, onSnapshot } from 'firebase/firestore';
+import { useNavigation } from '@react-navigation/native';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
+
+// altura aproximada da sua TabbarPersonalizada (bolinha + margem inferior)
+const ALTURA_TABBAR = 78;
 
 export default function Home() {
-  const {
-    lote,
-    setLote,
-    custoOvo,
-    dadosRelogio,
-  } = useContext(GeralContext);
-
+  const { lote, setLote, custoOvo, dadosRelogio } = useContext(GeralContext);
   const [listaLotes, setListaLotes] = useState([]);
+  const navigation = useNavigation();
+  const insets = useSafeAreaInsets();
 
-  const { colors } = useTheme()
+  // espaço livre acima da tab bar
+  const paddingBottomMain = ALTURA_TABBAR + Math.max(insets.bottom, 8);
 
-
-  const navigation = useNavigation()
-
-  // Carrega lista de lotes em tempo real + lote salvo
   useEffect(() => {
-    const unsubLotes = onSnapshot(collection(db, "lotes"), (snapshot) => {
-      const dados = snapshot.docs.map(doc => ({
+    navigation.setOptions({
+      headerRight: () => (
+        <Pressable onPress={() => navigation.navigate('Menu')} style={{ padding: 14 }}>
+          <Ionicons name="menu" size={24} />
+        </Pressable>
+      ),
+    });
+
+    const unsubLotes = onSnapshot(collection(db, 'lotes'), (snapshot) => {
+      const dados = snapshot.docs.map((doc) => ({
         id: doc.id,
-        ...doc.data()
+        ...doc.data(),
       }));
       setListaLotes(dados);
     });
 
-    // Carrega último lote selecionado
-    AsyncStorage.getItem('@lote').then(res => {
+    AsyncStorage.getItem('@lote').then((res) => {
       if (res) setLote(JSON.parse(res));
     });
 
     return () => unsubLotes();
   }, []);
 
-
-
   return (
     <View style={styles.container}>
-
-      <View style={{ width: '100%', gap: 150, height: 65, paddingHorizontal: 14, backgroundColor: '#fff', flexDirection: 'row', alignItems: 'center' }}>
-
+      <View style={styles.topo}>
         <Picker
-          style={{ flex: 1 }}
+          style={styles.picker}
           selectedValue={lote?.id || ''}
           onValueChange={(itemValue) => {
-            const loteSelecionado = listaLotes.find(l => l.id === itemValue);
+            const loteSelecionado = listaLotes.find((l) => l.id === itemValue);
             setLote(loteSelecionado);
           }}
         >
@@ -68,24 +63,17 @@ export default function Home() {
             <Picker.Item key={item.id} label={item?.nome} value={item?.id} />
           ))}
         </Picker>
-
-        <Pressable onPress={() => navigation.navigate('Info')} style={{ padding: 10, backgroundColor: colors.neutro, justifyContent: 'flex-end' }}>
-          <Ionicons name={'information-outline'} size={22} color={'#000'} />
-        </Pressable>
       </View>
 
-      <View style={styles.main}>
+      <View style={[styles.main, { paddingBottom: paddingBottomMain }]}>
+        <View style={styles.blocoGrafico}>
+          <GraficoCiclo
+            totalOvosProduzidos={dadosRelogio?.totalOvosProduzidos || 0}
+            producaoTotalEstimada={dadosRelogio?.producaoTotalEstimada || 0}
+          />
+        </View>
 
-        <View style={{ paddingHorizontal: 18 }}>
-
-          <View style={{ alignItems: 'center', justifyContent: 'center' }}>
-            <GraficoCiclo
-              totalOvosProduzidos={dadosRelogio?.totalOvosProduzidos || 0}
-              producaoTotalEstimada={dadosRelogio?.producaoTotalEstimada || 0}
-            />
-          </View>
-
-
+        <View style={styles.blocoInfo}>
           <InfoHome
             totalCriacao={custoOvo?.totalCriacao || 0}
             totalPostura={custoOvo?.totalPostura || 0}
@@ -94,11 +82,8 @@ export default function Home() {
             desempenho={custoOvo?.desempenho}
             totalDepreciacao={custoOvo?.totalDepreciacao || 0}
           />
-
         </View>
-
       </View>
-
     </View>
   );
 }
@@ -106,31 +91,30 @@ export default function Home() {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
+    backgroundColor: '#fff',
+  },
+  topo: {
+    paddingHorizontal: 14,
+    paddingTop: 4,
+    paddingBottom: 8,
+  },
+  picker: {
+    width: '100%',
+    height: 50,
   },
   main: {
-    alignItems: "center",
-    justifyContent: "center",
+    flex: 1,
+    paddingHorizontal: 18,
+    justifyContent: 'space-evenly',
+    alignItems: 'center',
   },
-  caixaInfo: {
-    backgroundColor: '#fff',
-    elevation: 3,
-    margin: 5,
-    padding: 18,
-    borderRadius: 12
+  blocoGrafico: {
+    width: '100%',
+    alignItems: 'center',
+    justifyContent: 'center',
   },
-  tituloCaixaInfo: {
-    fontFamily: 'Roboto-Bold',
-    fontSize: 18,
-    fontWeight: 600
-  },
-  conteudoCaixaInfo: {
-    fontFamily: 'Roboto-Light',
-    color: '#000'
-  },
-  subInfo: {
-    fontFamily: 'Roboto-Light',
-    fontSize: 12,
-    color: '#666',
-    marginTop: 4,
+  blocoInfo: {
+    width: '100%',
+    alignItems: 'center',
   },
 });
