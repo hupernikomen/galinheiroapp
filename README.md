@@ -24,3 +24,4 @@ O preço sugerido é esse custo total + a margem de lucro que você definir.
 
 adb tcpip 5555
 adb connect 192.168.0.104:5555
+npx react-native build-android --mode=release
