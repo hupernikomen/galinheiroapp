@@ -40,10 +40,10 @@ const styles = StyleSheet.create({
     alignItems: 'center',
   },
   marco: {
-    width: 6,
-    height: 10,
+    width: 4,
+    height: 4,
     borderRadius: 6,
-    marginTop: -18,
+    marginTop: -14,
     marginLeft:-1
   },
   marcoFoco: {

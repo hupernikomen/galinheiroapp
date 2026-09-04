@@ -13,7 +13,7 @@ import RelogioCentro from './RelogioCentro';
 
 const VIDA_TOTAL_SEMANAS = 91;
 const CHAVE_PADRAO = '@usarMarcosPadrao';
-const TAMANHO = 220;
+const TAMANHO = 230;
 const INTERVALO_SLIDER_MS = 5000;
 const DURACAO_RELOGIO_MS = 500;
 const DELAY_INICIO_MS = 2000;
@@ -175,7 +175,6 @@ export default function RelogioProducao() {
           progressNative={progressNative}
           anguloFinal={anguloFinal}
           semanaTexto={semanaTexto}
-          corFundo={colors.neutro}
         />
 
         <RelogioCentro
@@ -194,7 +193,7 @@ export default function RelogioProducao() {
 
 const styles = StyleSheet.create({
   container: {
-    marginTop: 32,
+    marginTop: 50,
     alignItems: 'center',
   },
   relogio: {

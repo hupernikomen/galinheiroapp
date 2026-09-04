@@ -157,7 +157,7 @@ const styles = StyleSheet.create({
   dots: {
     flexDirection: 'row',
     justifyContent: 'center',
-    gap: 6,
+    gap: 3,
     marginTop: 6,
     marginBottom: 4,
   },
@@ -169,6 +169,6 @@ const styles = StyleSheet.create({
   },
   dotAtivo: {
     backgroundColor: '#fff',
-    width: 6,
+    width: 7,
   },
 });

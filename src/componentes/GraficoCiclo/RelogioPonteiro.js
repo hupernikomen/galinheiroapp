@@ -1,3 +1,4 @@
+import { useTheme } from '@react-navigation/native';
 import { Text, StyleSheet, Animated } from 'react-native';
 
 export default function RelogioPonteiro({
@@ -5,8 +6,8 @@ export default function RelogioPonteiro({
   progressNative,
   anguloFinal,
   semanaTexto,
-  corFundo,
 }) {
+  const { colors } = useTheme()
   const spin = progressNative.interpolate({
     inputRange: [0, 1],
     outputRange: ['0deg', `${anguloFinal}deg`],
@@ -27,7 +28,7 @@ export default function RelogioPonteiro({
       <Animated.View
         style={[
           styles.bolinha,
-          { backgroundColor: corFundo, transform: [{ rotate: spinInverse }] },
+          { backgroundColor: colors.neutro, transform: [{ rotate: spinInverse }] },
         ]}
       >
         <Text style={styles.texto}>{semanaTexto}s</Text>
@@ -44,7 +45,7 @@ const styles = StyleSheet.create({
     alignItems: 'center',
   },
   bolinha: {
-    width: 30,
+    width: 25,
     aspectRatio: 1,
     borderRadius: 20,
     marginTop: -45,
@@ -52,8 +53,7 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
   },
   texto: {
-    fontFamily: 'Roboto-Regular',
-    color: '#000',
-    fontWeight: 'bold',
+    fontFamily: 'Roboto-Medium',
+    fontSize: 12
   },
 });

@@ -12,8 +12,8 @@ const Tema = {
   colors: {
     ...DefaultTheme.colors,
     background: '#fff',
-    principal: '#B22222',
-    neutro: '#22222215'
+    principal: '#66796b',
+    neutro: '#efdfcc'
   },
 };
 

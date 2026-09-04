@@ -4,7 +4,7 @@ import TabbarPersonalizada from '../componentes/TabbarPersonalizada';
 
 import Home from '../pages/Home';
 import Ovos from '../pages/Ovos';
-import Custos from '../pages/Custos';
+import Menu from '../pages/Menu';
 
 const Tab = createBottomTabNavigator();
 
@@ -22,7 +22,7 @@ export default function Tabs() {
         <Tab.Screen
           name="Home"
           component={Home}
-          options={{ tabBarIcon: 'home-outline', headerShown: true, title:'Meu Galinheiro' }}
+          options={{ tabBarIcon: 'home-outline', headerShown: true, title:'' }}
         />
         <Tab.Screen
           name="Ovos"
@@ -33,11 +33,11 @@ export default function Tabs() {
           }}
         />
         <Tab.Screen
-          name="Custos"
-          component={Custos}
+          name="Menu"
+          component={Menu}
           options={{
             headerShown: true,
-            tabBarIcon: 'card-outline',
+            tabBarIcon: 'menu-outline',
           }}
         />
 

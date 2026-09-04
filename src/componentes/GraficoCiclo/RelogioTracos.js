@@ -48,7 +48,6 @@ export default function RelogioTracos({
               style={[
                 styles.traco,
                 { backgroundColor: corNeutra },
-                isTransicao && styles.tracoFaseBase,
               ]}
             />
             {podeAnimar && (
@@ -86,6 +85,5 @@ const styles = StyleSheet.create({
     borderRadius: 1,
   },
   tracoPassado: { width: 2 },
-  tracoFaseBase: { width: 2, height: 14, top: -8 },
   tracoFasePassado: { width: 3, height: 16, top: -10 },
 });

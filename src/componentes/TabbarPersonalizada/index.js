@@ -65,7 +65,7 @@ export default function TabbarPersonalizada({ state, descriptors, navigation }) 
 
   return (
     <View style={styles.container}>
-      <View style={[styles.content, { borderColor: colors.neutro, borderWidth: 1.5 }]}>
+      <View style={[styles.content, { backgroundColor: colors.neutro }]}>
         {/* Bolinha que desliza (cor principal) */}
         <Animated.View
           pointerEvents="none"
@@ -128,8 +128,8 @@ export default function TabbarPersonalizada({ state, descriptors, navigation }) 
               >
                 <Ionicons
                   name={options.tabBarIcon}
-                  size={24}
-                  color={isFocused ? '#fff' : '#00000040'}
+                  size={20}
+                  color={isFocused ? '#fff' : "#333"}
                 />
               </Animated.View>
             </TouchableOpacity>
@@ -152,10 +152,8 @@ const styles = StyleSheet.create({
     position: 'absolute',
     bottom: -10,
     marginBottom: 28,
-    paddingHorizontal: 2,
-    paddingVertical: 2,
+    padding: 4,
     borderRadius: 35,
-    overflow: 'hidden',
   },
   pill: {
     position: 'absolute',
@@ -163,7 +161,6 @@ const styles = StyleSheet.create({
     width: PILL_SIZE,
     height: PILL_SIZE,
     borderRadius: PILL_SIZE / 2,
-    elevation: 4,
     zIndex: 0,
   },
   buttonTab: {
