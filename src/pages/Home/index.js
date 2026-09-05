@@ -4,7 +4,7 @@ import { GeralContext } from '../../contexts/geral';
 import { useContext, useEffect } from 'react';
 import GraficoCiclo from '../../componentes/GraficoCiclo';
 import InfoHome from '../../componentes/InfoHome';
-import { useNavigation } from '@react-navigation/native';
+import { useNavigation, useTheme } from '@react-navigation/native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import Ionicons from 'react-native-vector-icons/Ionicons';
 
@@ -17,6 +17,8 @@ export default function Home() {
   const insets = useSafeAreaInsets();
 
   const paddingBottomMain = ALTURA_TABBAR + Math.max(insets.bottom, 8);
+
+  const { colors } = useTheme()
 
   useEffect(() => {
     navigation.setOptions({
@@ -52,7 +54,7 @@ export default function Home() {
           onPress={() => navigation.navigate('Menu')}
           style={{ padding: 14 }}
         >
-          <Ionicons name="menu" size={24} color="#000" />
+          <Ionicons name="person-circle" size={40} color={colors.neutro} />
         </Pressable>
       ),
     });
@@ -62,7 +64,7 @@ export default function Home() {
     <View style={styles.container}>
       <View style={[styles.main, { paddingBottom: paddingBottomMain }]}>
         <View style={styles.blocoGrafico}>
-          <GraficoCiclo/>
+          <GraficoCiclo />
         </View>
 
         <View style={styles.blocoInfo}>

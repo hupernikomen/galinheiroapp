@@ -26,7 +26,7 @@ function AppNavigator() {
   if (!authPronto) {
     return (
       <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center', backgroundColor: '#fff' }}>
-        <ActivityIndicator size="large" color="#66796b" />
+        <ActivityIndicator size="large" color={Tema.colors.principal} />
       </View>
     );
   }

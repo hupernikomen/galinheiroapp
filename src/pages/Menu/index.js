@@ -60,8 +60,6 @@ export default function Menu() {
   const insets = useSafeAreaInsets();
   const { user, logout } = useAuth();
 
-  console.log(user);
-  
 
   function irPara(rota) {
     // Ajuste o nome se a rota estiver na Tab ou em outra Stack

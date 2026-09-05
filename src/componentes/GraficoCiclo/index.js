@@ -16,8 +16,8 @@ import AsyncStorage from '@react-native-async-storage/async-storage';
 
 const VIDA_TOTAL_SEMANAS = 90.1;
 const CHAVE_PADRAO = '@usarMarcosPadrao';
-const TAMANHO = 220;
-const INTERVALO_SLIDER_MS = 3000;
+const TAMANHO = 230;
+const INTERVALO_SLIDER_MS = 5000;
 const DURACAO_RELOGIO_MS = 500;
 const DELAY_INICIO_MS = 2000;
 
@@ -384,7 +384,7 @@ const styles = StyleSheet.create({
   relogio: {
     justifyContent: 'center',
     alignItems: 'center',
-    marginBottom: 32,
+    marginBottom: 60,
   },
   tracoContainer: {
     position: 'absolute',
@@ -448,8 +448,6 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     elevation: 15,
     overflow: 'hidden',
-    paddingTop: 20,
-    paddingBottom: 8,
   },
   fase: {
     fontFamily: 'Roboto-Bold',
