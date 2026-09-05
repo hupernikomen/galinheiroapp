@@ -4,12 +4,10 @@ import {
   StyleSheet,
   Pressable,
   ScrollView,
-  Alert,
 } from 'react-native';
-import { useNavigation, useTheme } from '@react-navigation/native';
+import { useNavigation } from '@react-navigation/native';
 import Ionicons from 'react-native-vector-icons/Ionicons';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
-import { useAuth } from '../../contexts/AuthContext';
 
 const ITENS = [
   {
@@ -20,6 +18,12 @@ const ITENS = [
         subtitulo: 'Cadastro e gestão dos lotes',
         icone: 'cube-outline',
         rota: 'Lote',
+      },
+      {
+        titulo: 'Coleta de ovos',
+        subtitulo: 'Registros de produção',
+        icone: 'egg-outline',
+        rota: 'Ovos',
       },
       {
         titulo: 'Custos',
@@ -56,101 +60,52 @@ const ITENS = [
 
 export default function Menu() {
   const navigation = useNavigation();
-  const { colors } = useTheme();
   const insets = useSafeAreaInsets();
-  const { user, logout } = useAuth();
-
 
   function irPara(rota) {
-    // Ajuste o nome se a rota estiver na Tab ou em outra Stack
     navigation.navigate(rota);
-  }
-
-  function confirmarSair() {
-    Alert.alert('Sair', 'Deseja sair da sua conta?', [
-      { text: 'Cancelar', style: 'cancel' },
-      {
-        text: 'Sair',
-        style: 'destructive',
-        onPress: async () => {
-          try {
-            await logout();
-          } catch (e) {
-            Alert.alert('Erro', e?.message || 'Não foi possível sair');
-          }
-        },
-      },
-    ]);
   }
 
   return (
     <ScrollView
       style={styles.container}
       contentContainerStyle={{
-        paddingTop: 8,
+        paddingTop: 12,
         paddingBottom: 40 + insets.bottom,
       }}
       showsVerticalScrollIndicator={false}
     >
-      {/* Conta */}
-      <View style={styles.contaBox}>
-        <View style={[styles.avatar, { backgroundColor: colors.neutro }]}>
-          <Ionicons name="person" size={28} color={colors.principal} />
-        </View>
-        <View style={{ flex: 1 }}>
-          <Text style={styles.contaNome} numberOfLines={1}>
-            {user?.displayName || 'Usuário'}
-          </Text>
-          <Text style={styles.contaEmail} numberOfLines={1}>
-            {user?.email || ''}
-          </Text>
-        </View>
-      </View>
-
       {ITENS.map((bloco) => (
-        <View key={bloco.secao}>
+        <View key={bloco.secao} style={styles.bloco}>
           <Text style={styles.tituloSecao}>{bloco.secao}</Text>
 
-          {bloco.lista.map((item, index) => (
-            <Pressable
-              key={item.rota}
-              onPress={() => irPara(item.rota)}
-              style={({ pressed }) => [
-                styles.item,
-                pressed && { backgroundColor: colors.neutro },
-                index < bloco.lista.length - 1 && styles.separador,
-              ]}
-            >
-              <View style={[styles.iconeBox, { backgroundColor: colors.neutro }]}>
-                <Ionicons name={item.icone} size={22} color={colors.principal} />
-              </View>
-              <View style={styles.textos}>
-                <Text style={styles.itemTitulo}>{item.titulo}</Text>
-                <Text style={styles.itemSub}>{item.subtitulo}</Text>
-              </View>
-              <Ionicons name="chevron-forward" size={18} color="#ccc" />
-            </Pressable>
-          ))}
+          <View style={styles.listaCard}>
+            {bloco.lista.map((item, index) => (
+              <Pressable
+                key={item.rota}
+                onPress={() => irPara(item.rota)}
+                style={({ pressed }) => [
+                  styles.item,
+                  pressed && { backgroundColor: '#f7f7f7' },
+                  index < bloco.lista.length - 1 && styles.separador,
+                ]}
+              >
+                <Ionicons
+                  name={item.icone}
+                  size={22}
+                  color="#444"
+                  style={styles.icone}
+                />
+                <View style={styles.textos}>
+                  <Text style={styles.itemTitulo}>{item.titulo}</Text>
+                  <Text style={styles.itemSub}>{item.subtitulo}</Text>
+                </View>
+                <Ionicons name="chevron-forward" size={18} color="#ccc" />
+              </Pressable>
+            ))}
+          </View>
         </View>
       ))}
-
-      {/* Sair */}
-      <Text style={[styles.tituloSecao, { marginTop: 28 }]}>Sessão</Text>
-      <Pressable
-        onPress={confirmarSair}
-        style={({ pressed }) => [
-          styles.item,
-          pressed && { backgroundColor: colors.neutro },
-        ]}
-      >
-        <View style={[styles.iconeBox, { backgroundColor: colors.neutro }]}>
-          <Ionicons name="log-out-outline" size={22} color="#c0392b" />
-        </View>
-        <View style={styles.textos}>
-          <Text style={[styles.itemTitulo, { color: '#c0392b' }]}>Sair da conta</Text>
-          <Text style={styles.itemSub}>Encerrar sessão neste aparelho</Text>
-        </View>
-      </Pressable>
     </ScrollView>
   );
 }
@@ -160,59 +115,40 @@ const styles = StyleSheet.create({
     flex: 1,
     backgroundColor: '#fff',
   },
-  contaBox: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    paddingHorizontal: 21,
-    paddingVertical: 16,
+  bloco: {
     marginBottom: 8,
-  },
-  avatar: {
-    width: 52,
-    height: 52,
-    borderRadius: 26,
-    alignItems: 'center',
-    justifyContent: 'center',
-    marginRight: 14,
-  },
-  contaNome: {
-    fontFamily: 'Roboto-Medium',
-    fontSize: 16,
-    color: '#000',
-  },
-  contaEmail: {
-    fontFamily: 'Roboto-Light',
-    fontSize: 13,
-    color: '#666',
-    marginTop: 2,
   },
   tituloSecao: {
     fontFamily: 'Roboto-Medium',
-    fontSize: 13,
-    color: '#888',
+    fontSize: 12,
+    color: '#999',
     textTransform: 'uppercase',
-    letterSpacing: 0.6,
-    paddingHorizontal: 21,
-    marginBottom: 8,
-    marginTop: 12,
+    letterSpacing: 0.5,
+    paddingHorizontal: 20,
+    marginBottom: 6,
+  },
+  listaCard: {
+    marginHorizontal: 16,
+    borderRadius: 16,
+    borderWidth: StyleSheet.hairlineWidth,
+    borderColor: '#eee',
+    overflow: 'hidden',
   },
   item: {
     flexDirection: 'row',
     alignItems: 'center',
-    paddingHorizontal: 21,
+    paddingHorizontal: 14,
     paddingVertical: 14,
+    backgroundColor: '#fff',
   },
   separador: {
     borderBottomWidth: StyleSheet.hairlineWidth,
-    borderBottomColor: '#22222218',
+    borderBottomColor: '#f0f0f0',
   },
-  iconeBox: {
-    width: 42,
-    height: 42,
-    borderRadius: 14,
-    alignItems: 'center',
-    justifyContent: 'center',
-    marginRight: 14,
+  icone: {
+    marginRight: 12,
+    width: 26,
+    textAlign: 'center',
   },
   textos: {
     flex: 1,
@@ -220,12 +156,12 @@ const styles = StyleSheet.create({
   itemTitulo: {
     fontFamily: 'Roboto-Medium',
     fontSize: 15,
-    color: '#000',
+    color: '#111',
   },
   itemSub: {
     fontFamily: 'Roboto-Light',
-    fontSize: 13,
-    color: '#666',
+    fontSize: 12,
+    color: '#888',
     marginTop: 2,
   },
 });

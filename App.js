@@ -1,5 +1,6 @@
 import { StatusBar, View, ActivityIndicator } from 'react-native';
 import { NavigationContainer, DefaultTheme } from '@react-navigation/native';
+import { SafeAreaProvider } from 'react-native-safe-area-context';
 import { useContext } from 'react';
 
 import AuthProvider, { AuthContext } from './src/contexts/AuthContext';
@@ -22,21 +23,25 @@ function AppNavigator() {
   const { user, authPronto } = useContext(AuthContext);
   const { appPronto } = useContext(GeralContext);
 
-  // 1) Ainda verificando sessão Google
   if (!authPronto) {
     return (
-      <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center', backgroundColor: '#fff' }}>
-        <ActivityIndicator size="large" color={Tema.colors.principal} />
+      <View
+        style={{
+          flex: 1,
+          justifyContent: 'center',
+          alignItems: 'center',
+          backgroundColor: '#fff',
+        }}
+      >
+        <ActivityIndicator size="large" color="#66796b" />
       </View>
     );
   }
 
-  // 2) Não logado → tela de login
   if (!user) {
     return <Login />;
   }
 
-  // 3) Logado → app (espera lotes se precisar)
   return (
     <NavigationContainer theme={Tema}>
       <StatusBar barStyle="dark-content" />
@@ -47,10 +52,12 @@ function AppNavigator() {
 
 export default function App() {
   return (
-    <AuthProvider>
-      <GeralProvider>
-        <AppNavigator />
-      </GeralProvider>
-    </AuthProvider>
+    <SafeAreaProvider>
+      <AuthProvider>
+        <GeralProvider>
+          <AppNavigator />
+        </GeralProvider>
+      </AuthProvider>
+    </SafeAreaProvider>
   );
 }

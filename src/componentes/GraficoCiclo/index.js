@@ -329,6 +329,7 @@ export default function RelogioProducao() {
               height: TAMANHO,
               borderRadius: TAMANHO / 2,
               backgroundColor: colors.principal,
+              gap: 14
             },
           ]}
         >
@@ -352,7 +353,6 @@ export default function RelogioProducao() {
             renderItem={({ item }) => (
               <View style={[styles.slide, { width: TAMANHO }]}>
                 <View style={styles.linhaSemana}>
-                  <View style={styles.bolinhaProximoMsg} />
                   <Text style={styles.mensagem}>Semana {item.semana}</Text>
                 </View>
                 <Text style={styles.mensagem} numberOfLines={3}>
