@@ -1,0 +1,47 @@
+{
+  "project_info": {
+    "project_number": "783209694901",
+    "project_id": "galinheiro-app-e1dfe",
+    "storage_bucket": "galinheiro-app-e1dfe.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:783209694901:android:7974da9dd7519b8152a0fc",
+        "android_client_info": {
+          "package_name": "com.galinheiro_app"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "783209694901-m436bourk1u2322l16ab4u43h0q4i6qb.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "com.galinheiro_app",
+            "certificate_hash": "5e8f16062ea3cd2c4a0d547876baa6f38cabf625"
+          }
+        },
+        {
+          "client_id": "783209694901-811cp5sblto7e9mvrl1snrig2142aus0.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyBECXFgEf832Xo5kWusulisxFkC3jKMStI"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "783209694901-811cp5sblto7e9mvrl1snrig2142aus0.apps.googleusercontent.com",
+              "client_type": 3
+            }
+          ]
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

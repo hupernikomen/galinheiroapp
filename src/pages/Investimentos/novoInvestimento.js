@@ -1,86 +1,118 @@
 import { useState } from 'react';
 import {
-  View, Text, TextInput, Pressable, StyleSheet, Alert
+  View,
+  Text,
+  TextInput,
+  Pressable,
+  StyleSheet,
+  Alert,
 } from 'react-native';
 import { db } from '../../services/firebaseConnection/firebase';
 import { collection, addDoc } from 'firebase/firestore';
 import { useNavigation, useTheme } from '@react-navigation/native';
-
-import InputApp from '../../componentes/InputApp';
-import BotaoPrincipal from '../../componentes/BotaoPrincipal';
+import { useAuth } from '../../contexts/AuthContext';
 
 export default function NovoInvestimento() {
-
+  const { colors } = useTheme();
   const navigation = useNavigation();
+  const { uid } = useAuth();
 
   const [descricao, setDescricao] = useState('');
   const [valorTotal, setValorTotal] = useState('');
   const [vidaUtilAnos, setVidaUtilAnos] = useState('10');
+  const [salvando, setSalvando] = useState(false);
 
   async function Cadastrar() {
+    if (!uid) {
+      Alert.alert('Erro', 'Usuário não logado');
+      return;
+    }
     if (!descricao.trim() || !valorTotal || !vidaUtilAnos) {
       Alert.alert('Atenção', 'Preencha todos os campos');
       return;
     }
 
-    Alert.alert(
-      '',
-      `Confirma o investimento "${descricao.trim()}" de R$ ${Number(valorTotal).toFixed(2)}?`,
-      [
-        { text: 'Não', style: 'cancel' },
-        {
-          text: 'Sim',
-          onPress: async () => {
-            try {
-              await addDoc(collection(db, 'investimentos'), {
-                descricao: descricao.trim(),
-                valorTotal: Number(valorTotal),
-                vidaUtilAnos: Number(vidaUtilAnos),
-                dataInicio: Date.now(),
-                ativo: true,
-              });
-              navigation.goBack();
-            } catch (e) {
-              console.log(e);
-              Alert.alert('Erro', 'Não foi possível salvar');
-            }
-          },
-        },
-      ]
-    );
+    try {
+      setSalvando(true);
+      await addDoc(collection(db, 'investimentos'), {
+        descricao: descricao.trim(),
+        valorTotal: Number(valorTotal),
+        vidaUtilAnos: Number(vidaUtilAnos),
+        dataInicio: Date.now(),
+        userId: uid,
+      });
+      setDescricao('');
+      setValorTotal('');
+      setVidaUtilAnos('10');
+      navigation.goBack();
+    } catch (e) {
+      console.log(e);
+      Alert.alert('Erro', e?.message || 'Não foi possível salvar');
+    } finally {
+      setSalvando(false);
+    }
   }
 
   return (
     <View style={styles.container}>
-      <InputApp
+      <TextInput
+        style={[styles.input, { backgroundColor: colors.neutro }]}
+        placeholder="Descrição (ex: Galpão)"
         value={descricao}
         onChangeText={setDescricao}
-        placeholder="Descrição (ex: Galpão)"
+        placeholderTextColor="#999"
+        underlineColorAndroid="transparent"
       />
-      <InputApp
+      <TextInput
+        style={[styles.input, { backgroundColor: colors.neutro }]}
+        placeholder="Valor total"
+        keyboardType="numeric"
         value={valorTotal}
         onChangeText={setValorTotal}
-        placeholder="Valor total"
+        placeholderTextColor="#999"
+        underlineColorAndroid="transparent"
       />
-      <InputApp
+      <TextInput
+        style={[styles.input, { backgroundColor: colors.neutro }]}
+        placeholder="Vida útil (anos)"
+        keyboardType="numeric"
         value={vidaUtilAnos}
         onChangeText={setVidaUtilAnos}
-        placeholder="Vida útil (anos)"
+        placeholderTextColor="#999"
+        underlineColorAndroid="transparent"
       />
 
-
-     <BotaoPrincipal titulo="Salvar" onPress={Cadastrar} />
-
-
+      <Pressable
+        onPress={Cadastrar}
+        disabled={salvando}
+        style={[styles.botao, { backgroundColor: colors.principal }]}
+      >
+        <Text style={styles.botaoTexto}>
+          {salvando ? 'Salvando...' : 'Guardar'}
+        </Text>
+      </Pressable>
     </View>
   );
 }
 
 const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    backgroundColor: '#fff',
-    padding: 16,
+  container: { flex: 1, backgroundColor: '#fff', padding: 16 },
+  input: {
+    height: 50,
+    borderRadius: 22,
+    paddingHorizontal: 16,
+    marginBottom: 12,
+    fontSize: 16,
   },
-
+  botao: {
+    height: 52,
+    borderRadius: 22,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  botaoTexto: {
+    color: '#fff',
+    fontFamily: 'Roboto-Medium',
+    fontSize: 16,
+  },
 });

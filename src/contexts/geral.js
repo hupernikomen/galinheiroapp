@@ -1,4 +1,4 @@
-import { useState, useEffect, createContext } from 'react';
+import { useState, useEffect, createContext, useContext } from 'react';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import {
   collection,
@@ -12,10 +12,13 @@ import {
   calcularSemanasLote as calcSemanas,
 } from '../services/calculosLote';
 import { formatarData } from '../utils/format';
+import { AuthContext } from './AuthContext';
 
 export const GeralContext = createContext({});
 
 function GeralProvider({ children }) {
+  const { uid } = useContext(AuthContext);
+
   const [load, setLoad] = useState(false);
   const [lote, setLote] = useState(null);
   const [listaLotes, setListaLotes] = useState([]);
@@ -25,80 +28,91 @@ function GeralProvider({ children }) {
     totalOvosProduzidos: 0,
     producaoTotalEstimada: 0,
   });
-
-
   const [appPronto, setAppPronto] = useState(false);
 
-
-  // no useEffect que carrega lotes + AsyncStorage:
   useEffect(() => {
-    let cancelado = false;
+    if (!uid) {
+      setListaLotes([]);
+      setLote(null);
+      setProducao(0);
+      setCustoOvo(null);
+      setDadosRelogio({ totalOvosProduzidos: 0, producaoTotalEstimada: 0 });
+      setAppPronto(true);
+      return;
+    }
 
-    const unsubLotes = onSnapshot(collection(db, 'lotes'), (snapshot) => {
-      const dados = snapshot.docs.map((d) => ({
-        id: d.id,
-        ...d.data(),
-      }));
-      setListaLotes(dados);
-    });
+    let cancelado = false;
+    setAppPronto(false);
+
+    const q = query(collection(db, 'lotes'), where('userId', '==', uid));
+
+    const unsubLotes = onSnapshot(
+      q,
+      (snapshot) => {
+        const dados = snapshot.docs.map((d) => ({
+          id: d.id,
+          ...d.data(),
+        }));
+        setListaLotes(dados);
+      },
+      (error) => console.log('Erro lotes:', error)
+    );
 
     AsyncStorage.getItem('@lote')
       .then((res) => {
-        if (cancelado) return;
-        if (res) {
-          try {
-            setLote(JSON.parse(res));
-          } catch (e) {
-            console.log(e);
+        if (cancelado || !res) return;
+        try {
+          const salvo = JSON.parse(res);
+          if (!salvo?.userId || salvo.userId === uid) {
+            setLote(salvo);
+          } else {
+            setLote(null);
+            AsyncStorage.removeItem('@lote');
           }
+        } catch (e) {
+          console.log(e);
         }
       })
       .finally(() => {
-        if (!cancelado) {
-          // pequeno delay opcional para o primeiro snapshot
-          setTimeout(() => setAppPronto(true), 300);
-        }
+        if (!cancelado) setTimeout(() => setAppPronto(true), 300);
       });
 
     return () => {
       cancelado = true;
       unsubLotes();
     };
-  }, []);
+  }, [uid]);
 
-  // Quando o lote muda: escuta ovos/custos e recalcula
   useEffect(() => {
-    if (!lote?.id) {
+    if (!lote?.id || !uid) {
       setProducao(0);
       setCustoOvo(null);
       setDadosRelogio({ totalOvosProduzidos: 0, producaoTotalEstimada: 0 });
       return;
     }
 
-    // Recalcula sempre que ovos ou custos do lote mudarem
     const qOvos = query(
       collection(db, 'coletaOvos'),
-      where('loteId', '==', lote.id)
+      where('loteId', '==', lote.id),
+      where('userId', '==', uid)
     );
     const qCustos = query(
       collection(db, 'custos'),
-      where('loteId', '==', lote.id)
+      where('loteId', '==', lote.id),
+      where('userId', '==', uid)
+    );
+    const qInv = query(
+      collection(db, 'investimentos'),
+      where('userId', '==', uid)
     );
 
-    const unsubOvos = onSnapshot(qOvos, () => {
-      calcularTudo();
+    const unsubOvos = onSnapshot(qOvos, () => calcularTudo());
+    const unsubCustos = onSnapshot(qCustos, () => calcularTudo());
+    const unsubInv = onSnapshot(qInv, () => calcularTudo(), (e) => {
+      // se ainda não há userId em investimentos, não quebra o app
+      console.log('Investimentos:', e?.message);
     });
 
-    const unsubCustos = onSnapshot(qCustos, () => {
-      calcularTudo();
-    });
-
-    // Também escuta investimentos (depreciação)
-    const unsubInv = onSnapshot(collection(db, 'investimentos'), () => {
-      calcularTudo();
-    });
-
-    // Primeira carga
     calcularTudo();
 
     return () => {
@@ -106,18 +120,15 @@ function GeralProvider({ children }) {
       unsubCustos();
       unsubInv();
     };
-  }, [lote?.id]);
+  }, [lote?.id, uid]);
 
   async function calcularTudo() {
     if (!lote?.id) return;
 
     setLoad(true);
     try {
-      // Usa o lote mais atual da lista (qtAtual, status, etc.)
-      const loteAtual =
-        listaLotes.find((l) => l.id === lote.id) || lote;
-
-      const resultado = await calcularTudoDoLote(loteAtual);
+      const loteAtual = listaLotes.find((l) => l.id === lote.id) || lote;
+      const resultado = await calcularTudoDoLote(loteAtual, uid);
 
       setProducao(resultado.producao);
       setDadosRelogio(resultado.dadosRelogio);
@@ -139,8 +150,7 @@ function GeralProvider({ children }) {
   }
 
   function calcularSemanasLote() {
-    const loteAtual =
-      listaLotes.find((l) => l.id === lote?.id) || lote;
+    const loteAtual = listaLotes.find((l) => l.id === lote?.id) || lote;
     return calcSemanas(loteAtual);
   }
 

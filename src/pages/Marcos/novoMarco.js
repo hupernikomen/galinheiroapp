@@ -1,85 +1,106 @@
 import { useState } from 'react';
 import {
-  View, Text, TextInput, Pressable, StyleSheet, Alert
+  View,
+  Text,
+  TextInput,
+  Pressable,
+  StyleSheet,
+  Alert,
 } from 'react-native';
 import { db } from '../../services/firebaseConnection/firebase';
 import { collection, addDoc } from 'firebase/firestore';
 import { useNavigation, useTheme } from '@react-navigation/native';
-
-import InputApp from '../../componentes/InputApp';
-import BotaoPrincipal from '../../componentes/BotaoPrincipal';
-
+import { useAuth } from '../../contexts/AuthContext';
 
 export default function NovoMarco() {
   const { colors } = useTheme();
   const navigation = useNavigation();
+  const { uid } = useAuth();
 
   const [semana, setSemana] = useState('');
   const [mensagem, setMensagem] = useState('');
+  const [salvando, setSalvando] = useState(false);
 
-  async function Salvar() {
+  async function Cadastrar() {
+    if (!uid) {
+      Alert.alert('Erro', 'Usuário não logado');
+      return;
+    }
     if (!semana || !mensagem.trim()) {
       Alert.alert('Atenção', 'Preencha semana e mensagem');
       return;
     }
 
-    const num = Number(semana);
-    if (Number.isNaN(num) || num < 0) {
-      Alert.alert('Atenção', 'Semana inválida');
-      return;
+    try {
+      setSalvando(true);
+      await addDoc(collection(db, 'marcos'), {
+        semana: Number(semana),
+        mensagem: mensagem.trim(),
+        userId: uid,
+        criadoEm: Date.now(),
+      });
+      setSemana('');
+      setMensagem('');
+      navigation.goBack();
+    } catch (e) {
+      console.log(e);
+      Alert.alert('Erro', e?.message || 'Não foi possível salvar');
+    } finally {
+      setSalvando(false);
     }
-
-    Alert.alert(
-      '',
-      `Confirma o marco da semana ${num}: "${mensagem.trim()}"?`,
-      [
-        { text: 'Não', style: 'cancel' },
-        {
-          text: 'Sim',
-          onPress: async () => {
-            try {
-              await addDoc(collection(db, 'marcos'), {
-                semana: num,
-                mensagem: mensagem.trim(),
-              });
-              navigation.goBack();
-            } catch (e) {
-              console.log(e);
-              Alert.alert('Erro', 'Não foi possível salvar');
-            }
-          },
-        },
-      ]
-    );
   }
 
   return (
     <View style={styles.container}>
-
-      <InputApp
+      <TextInput
+        style={[styles.input, { backgroundColor: colors.neutro }]}
+        placeholder="Semana (número)"
+        keyboardType="numeric"
         value={semana}
         onChangeText={setSemana}
-        placeholder="Semana (ex: 18)"
+        placeholderTextColor="#999"
+        underlineColorAndroid="transparent"
       />
-      <InputApp
+      <TextInput
+        style={[styles.input, { backgroundColor: colors.neutro }]}
+        placeholder="Mensagem"
         value={mensagem}
         onChangeText={setMensagem}
-        placeholder="Mensagem (ex: Início da postura)"
+        placeholderTextColor="#999"
+        underlineColorAndroid="transparent"
       />
 
-
-
-      <BotaoPrincipal titulo="Salvar" onPress={Salvar} />
-
+      <Pressable
+        onPress={Cadastrar}
+        disabled={salvando}
+        style={[styles.botao, { backgroundColor: colors.principal }]}
+      >
+        <Text style={styles.botaoTexto}>
+          {salvando ? 'Salvando...' : 'Guardar'}
+        </Text>
+      </Pressable>
     </View>
   );
 }
 
 const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    backgroundColor: '#fff',
-    padding: 16,
+  container: { flex: 1, backgroundColor: '#fff', padding: 16 },
+  input: {
+    height: 50,
+    borderRadius: 22,
+    paddingHorizontal: 16,
+    marginBottom: 12,
+    fontSize: 16,
   },
-
+  botao: {
+    height: 52,
+    borderRadius: 22,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  botaoTexto: {
+    color: '#fff',
+    fontFamily: 'Roboto-Medium',
+    fontSize: 16,
+  },
 });

@@ -1,146 +1,102 @@
 import { useState, useContext } from 'react';
 import {
-  View, StyleSheet,
-  Alert, Platform
+  View,
+  Text,
+  TextInput,
+  Pressable,
+  StyleSheet,
+  Alert,
 } from 'react-native';
-import DateTimePicker from '@react-native-community/datetimepicker';
 import { Picker } from '@react-native-picker/picker';
 import { GeralContext } from '../../contexts/geral';
+import { useAuth } from '../../contexts/AuthContext';
 import { db } from '../../services/firebaseConnection/firebase';
 import { collection, addDoc } from 'firebase/firestore';
-import { useNavigation } from '@react-navigation/native';
-
-import InputApp from '../../componentes/InputApp';
-import BotaoPrincipal from '../../componentes/BotaoPrincipal';
-import SeletorData from '../../componentes/SeletorData';
-
-const CATEGORIAS = [
-  { label: 'Variável (dia a dia)', value: 'Variavel' },
-  { label: 'Fixo (mensal)', value: 'Fixo' },
-  { label: 'Capital (depreciação)', value: 'Capital' },
-];
-
-
+import { useTheme, useNavigation } from '@react-navigation/native';
 
 export default function NovoCusto() {
   const { lote } = useContext(GeralContext);
+  const { uid } = useAuth();
+  const { colors } = useTheme();
   const navigation = useNavigation();
 
   const [descricao, setDescricao] = useState('');
   const [valor, setValor] = useState('');
   const [idade, setIdade] = useState('Criacao');
-  const [categoria, setCategoria] = useState('Variavel');
-  const [data, setData] = useState(new Date());
-  const [mostrarData, setMostrarData] = useState(false);
-
-  function onValueChange(event, selectedDate) {
-    if (Platform.OS === 'android') {
-      setMostrarData(false);
-    }
-    if (event?.type === 'dismissed') {
-      setMostrarData(false);
-      return;
-    }
-    if (selectedDate) {
-      setData(selectedDate);
-    }
-  }
-
+  const [salvando, setSalvando] = useState(false);
 
   async function CadastrarCusto() {
+    if (!lote?.id) {
+      Alert.alert('Selecione um lote primeiro');
+      return;
+    }
+    if (!uid) {
+      Alert.alert('Erro', 'Usuário não logado');
+      return;
+    }
     if (!descricao.trim() || !valor) {
       Alert.alert('Atenção', 'Preencha descrição e valor');
       return;
     }
-    if (!lote?.id) {
-      Alert.alert('Atenção', 'Selecione um lote primeiro');
-      return;
+
+    try {
+      setSalvando(true);
+      await addDoc(collection(db, 'custos'), {
+        data: Date.now(),
+        loteId: lote.id,
+        descricao: descricao.trim(),
+        valor: Number(valor),
+        idade: idade,
+        userId: uid,
+      });
+      setDescricao('');
+      setValor('');
+      setIdade('Criacao');
+      navigation.goBack();
+    } catch (error) {
+      console.log('Erro custo:', error);
+      Alert.alert('Erro', error?.message || 'Falha ao salvar');
+    } finally {
+      setSalvando(false);
     }
-
-    Alert.alert(
-      '',
-      `Confirma o custo "${descricao.trim()}" de R$ ${Number(valor).toFixed(2)}?`,
-      [
-        { text: 'Não', style: 'cancel' },
-        {
-          text: 'Sim',
-          onPress: async () => {
-            try {
-              await addDoc(collection(db, 'custos'), {
-                data: data.getTime(),
-                loteId: lote.id,
-                descricao: descricao.trim(),
-                valor: Number(valor),
-                idade,
-                categoria,
-              });
-
-              setDescricao('');
-              setValor('');
-              setIdade('Criacao');
-              setCategoria('Variavel');
-              setData(new Date());
-
-              navigation.goBack();
-            } catch (error) {
-              console.log('Erro:', error);
-              Alert.alert('Erro', 'Não foi possível salvar o custo');
-            }
-          },
-        },
-      ]
-    );
   }
 
   return (
     <View style={styles.container}>
-      <InputApp
+      <TextInput
+        style={[styles.input, { backgroundColor: colors.neutro }]}
+        placeholder="Descrição"
         value={descricao}
         onChangeText={setDescricao}
-        placeholder="Descrição"
+        placeholderTextColor="#999"
+        underlineColorAndroid="transparent"
       />
-      <InputApp
+      <TextInput
+        style={[styles.input, { backgroundColor: colors.neutro }]}
+        placeholder="Valor"
+        keyboardType="numeric"
         value={valor}
         onChangeText={setValor}
-        placeholder="Valor (R$)"
-        keyboardType="numeric"
+        placeholderTextColor="#999"
+        underlineColorAndroid="transparent"
       />
-      <SeletorData data={data} setData={setData} />
 
-      <View style={styles.pickerBox}>
-        <Picker
-          selectedValue={idade}
-          onValueChange={setIdade}
-          style={styles.picker}
-        >
-          <Picker.Item label="Fase: Criação" value="Criacao" />
-          <Picker.Item label="Fase: Postura" value="Postura" />
+      <View style={[styles.pickerBox, { backgroundColor: colors.neutro }]}>
+        <Picker selectedValue={idade} onValueChange={setIdade} style={styles.picker}>
+          <Picker.Item label="Criação" value="Criacao" />
+          <Picker.Item label="Postura" value="Postura" />
         </Picker>
       </View>
 
-      <View style={styles.pickerBox}>
-        <Picker
-          selectedValue={categoria}
-          onValueChange={setCategoria}
-          style={styles.picker}
-        >
-          {CATEGORIAS.map((c) => (
-            <Picker.Item key={c.value} label={c.label} value={c.value} />
-          ))}
-        </Picker>
-      </View>
-
-      <BotaoPrincipal titulo="Salvar custo" onPress={CadastrarCusto} />
-
-      {mostrarData && (
-        <DateTimePicker
-          value={data}
-          mode="date"
-          display="default"
-          onValueChange={onValueChange}
-          onDismiss={() => setMostrarData(false)}
-        />
-      )}
+      <Pressable
+        onPress={CadastrarCusto}
+        disabled={salvando}
+        style={[styles.botao, { backgroundColor: colors.principal }]}
+      >
+        <Text style={styles.botaoTexto}>
+          {salvando ? 'Salvando...' : 'Guardar'}
+        </Text>
+      </Pressable>
     </View>
   );
 }
@@ -151,18 +107,31 @@ const styles = StyleSheet.create({
     backgroundColor: '#fff',
     padding: 16,
   },
-
-  pickerBox: {
+  input: {
     height: 50,
     borderRadius: 22,
-    backgroundColor: '#22222215',
+    paddingHorizontal: 16,
+    marginBottom: 12,
+    fontSize: 16,
+  },
+  pickerBox: {
+    borderRadius: 22,
     marginBottom: 12,
     overflow: 'hidden',
-    justifyContent: 'center',
-    paddingHorizontal: 8,
   },
   picker: {
+    height: 50,
     width: '100%',
   },
-
+  botao: {
+    height: 52,
+    borderRadius: 22,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  botaoTexto: {
+    color: '#fff',
+    fontFamily: 'Roboto-Medium',
+    fontSize: 16,
+  },
 });

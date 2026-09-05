@@ -1,25 +1,70 @@
-import { View, Text, StyleSheet } from 'react-native';
+import {
+  View,
+  Text,
+  StyleSheet,
+  FlatList,
+  ActivityIndicator,
+  Pressable,
+  Alert,
+} from 'react-native';
 import { useState, useEffect } from 'react';
 import { db } from '../../services/firebaseConnection/firebase';
-import { collection, onSnapshot } from 'firebase/firestore';
-
-import useHeaderAdd from '../../hooks/useHeaderAdd';
-import ListaSimples from '../../componentes/ListaSimples';
+import {
+  collection,
+  onSnapshot,
+  query,
+  where,
+  doc,
+  deleteDoc,
+} from 'firebase/firestore';
+import { useNavigation, useTheme } from '@react-navigation/native';
+import Ionicons from 'react-native-vector-icons/Ionicons';
+import { useAuth } from '../../contexts/AuthContext';
 import ItemLista from '../../componentes/ItemLista';
-import { formatarMoeda } from '../../utils/format';
-import { confirmDelete } from '../../utils/confirmDelete';
 
 export default function Investimentos() {
+  const { colors } = useTheme();
+  const navigation = useNavigation();
+  const { uid } = useAuth();
+
   const [lista, setLista] = useState([]);
   const [loading, setLoading] = useState(true);
 
-useHeaderAdd('NovoInvestimento', 'Estrutura');
+  useEffect(() => {
+    navigation.setOptions({
+      title: 'Investimentos',
+      headerRight: () => (
+        <Pressable
+          onPress={() => navigation.navigate('NovoInvestimento')}
+          style={{ marginRight: 16 }}
+        >
+          <Ionicons name="add" size={26} color="#000" />
+        </Pressable>
+      ),
+    });
+  }, [navigation]);
 
   useEffect(() => {
-    const unsub = onSnapshot(
+    if (!uid) {
+      setLista([]);
+      setLoading(false);
+      return;
+    }
+
+    setLoading(true);
+
+    const q = query(
       collection(db, 'investimentos'),
+      where('userId', '==', uid)
+    );
+
+    const unsub = onSnapshot(
+      q,
       (snapshot) => {
-        const dados = snapshot.docs.map((d) => ({ id: d.id, ...d.data() }));
+        const dados = snapshot.docs.map((d) => ({
+          id: d.id,
+          ...d.data(),
+        }));
         dados.sort((a, b) => (b.dataInicio || 0) - (a.dataInicio || 0));
         setLista(dados);
         setLoading(false);
@@ -29,8 +74,9 @@ useHeaderAdd('NovoInvestimento', 'Estrutura');
         setLoading(false);
       }
     );
+
     return () => unsub();
-  }, []);
+  }, [uid]);
 
   function parcelaMensal(item) {
     const valor = Number(item.valorTotal) || 0;
@@ -38,38 +84,71 @@ useHeaderAdd('NovoInvestimento', 'Estrutura');
     return valor / anos / 12;
   }
 
+  function excluirItem(item) {
+    Alert.alert('Excluir', `Remover "${item.descricao}"?`, [
+      { text: 'Cancelar', style: 'cancel' },
+      {
+        text: 'Excluir',
+        style: 'destructive',
+        onPress: async () => {
+          try {
+            await deleteDoc(doc(db, 'investimentos', item.id));
+          } catch (e) {
+            Alert.alert('Erro', e?.message || 'Falha ao excluir');
+          }
+        },
+      },
+    ]);
+  }
+
+  function renderItem({ item }) {
+    return (
+      <ItemLista
+        titulo={item.descricao || 'Investimento'}
+        subtitulo={`Vida útil: ${item.vidaUtilAnos || '-'} anos · R$ ${Number(
+          item.valorTotal || 0
+        ).toFixed(2)}`}
+        direita={`R$ ${parcelaMensal(item).toFixed(2)}/mês`}
+        onExcluir={() => excluirItem(item)}
+      />
+    );
+  }
+
   return (
     <View style={styles.container}>
-      <ListaSimples
-        data={lista}
-        loading={loading}
-        ListEmptyComponent={
-          <Text style={styles.vazio}>Nenhum investimento</Text>
-        }
-        renderItem={({ item }) => {
-          const parcela = parcelaMensal(item);
-          return (
-            <ItemLista
-              titulo={item.descricao}
-              subtitulo={`${formatarMoeda(item.valorTotal)} · ${item.vidaUtilAnos} anos\nParcela: ${formatarMoeda(parcela)}/mês`}
-              direita={item.ativo !== false ? 'Ativo' : 'Inativo'}
-              onExcluir={() =>
-                confirmDelete(
-                  'investimentos',
-                  item.id,
-                  'Excluir investimento',
-                  `Remover "${item.descricao}" (${formatarMoeda(item.valorTotal)})?`
-                )
-              }
+      {loading ? (
+        <View style={styles.loading}>
+          <ActivityIndicator color={colors.principal} />
+        </View>
+      ) : (
+        <FlatList
+          data={lista}
+          keyExtractor={(item) => item.id}
+          renderItem={renderItem}
+          showsVerticalScrollIndicator={false}
+          ItemSeparatorComponent={
+            <View
+              style={{
+                borderColor: colors.neutro,
+                borderBottomWidth: 0.3,
+                marginVertical: 14,
+              }}
             />
-          );
-        }}
-      />
+          }
+          contentContainerStyle={{ paddingBottom: 100, paddingTop: 21 }}
+          ListEmptyComponent={
+            <Text style={styles.vazio}>
+              {!uid ? 'Usuário não logado' : 'Nenhum investimento'}
+            </Text>
+          }
+        />
+      )}
     </View>
   );
 }
 
 const styles = StyleSheet.create({
   container: { flex: 1, backgroundColor: '#fff' },
+  loading: { flex: 1, justifyContent: 'center', alignItems: 'center' },
   vazio: { textAlign: 'center', marginTop: 30, color: '#999' },
 });
