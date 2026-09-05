@@ -22,7 +22,7 @@ export default function useHeaderAdd(nomeTela, title) {
 
             root.navigate(nomeTela);
           }}
-          style={{ marginRight: 16, backgroundColor: colors.neutro, padding:10 }}
+          style={{backgroundColor: colors.neutro, padding:10, borderRadius:6 }}
         >
           <Ionicons name="add" size={22} color="#000" />
         </Pressable>

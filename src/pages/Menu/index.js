@@ -22,12 +22,6 @@ const ITENS = [
         rota: 'Lote',
       },
       {
-        titulo: 'Coleta de ovos',
-        subtitulo: 'Registros de produção',
-        icone: 'egg-outline',
-        rota: 'Ovos',
-      },
-      {
         titulo: 'Custos',
         subtitulo: 'Gastos de criação e postura',
         icone: 'shapes-outline',

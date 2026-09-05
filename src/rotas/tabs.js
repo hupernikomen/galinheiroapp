@@ -30,6 +30,9 @@ export default function Tabs() {
           options={{
             headerShown: true,
             tabBarIcon: 'egg-outline',
+            headerRightContainerStyle: {
+              paddingRight:16
+            }
           }}
         />
         <Tab.Screen

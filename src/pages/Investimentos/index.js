@@ -18,7 +18,7 @@ import {
   deleteDoc,
 } from 'firebase/firestore';
 import { useNavigation, useTheme } from '@react-navigation/native';
-import Ionicons from 'react-native-vector-icons/Ionicons';
+import useHeaderAdd from '../../hooks/useHeaderAdd';
 import { useAuth } from '../../contexts/AuthContext';
 import ItemLista from '../../componentes/ItemLista';
 
@@ -30,19 +30,7 @@ export default function Investimentos() {
   const [lista, setLista] = useState([]);
   const [loading, setLoading] = useState(true);
 
-  useEffect(() => {
-    navigation.setOptions({
-      title: 'Investimentos',
-      headerRight: () => (
-        <Pressable
-          onPress={() => navigation.navigate('NovoInvestimento')}
-          style={{ marginRight: 16 }}
-        >
-          <Ionicons name="add" size={26} color="#000" />
-        </Pressable>
-      ),
-    });
-  }, [navigation]);
+  useHeaderAdd('NovoInvestimento', 'Investimentos');
 
   useEffect(() => {
     if (!uid) {

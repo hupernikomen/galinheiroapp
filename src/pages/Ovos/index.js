@@ -22,6 +22,7 @@ import { useAuth } from '../../contexts/AuthContext';
 import { useNavigation, useTheme } from '@react-navigation/native';
 import Ionicons from 'react-native-vector-icons/Ionicons';
 import ItemLista from '../../componentes/ItemLista';
+import useHeaderAdd from '../../hooks/useHeaderAdd'
 
 export default function Ovos() {
   const { lote } = useContext(GeralContext);
@@ -32,19 +33,8 @@ export default function Ovos() {
   const [lista, setLista] = useState([]);
   const [loading, setLoading] = useState(true);
 
-  useEffect(() => {
-    navigation.setOptions({
-      title: 'Coleta de ovos',
-      headerRight: () => (
-        <Pressable
-          onPress={() => navigation.navigate('Coleta')}
-          style={{ marginRight: 16 }}
-        >
-          <Ionicons name="add" size={26} color="#000" />
-        </Pressable>
-      ),
-    });
-  }, [navigation]);
+
+  useHeaderAdd('Coleta', 'Ovos');
 
   useEffect(() => {
     if (!lote?.id || !uid) {

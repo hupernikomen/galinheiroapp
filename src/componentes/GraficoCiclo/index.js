@@ -14,7 +14,7 @@ import { db } from '../../services/firebaseConnection/firebase';
 import { collection, onSnapshot, query, where } from 'firebase/firestore';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 
-const VIDA_TOTAL_SEMANAS = 91;
+const VIDA_TOTAL_SEMANAS = 90.1;
 const CHAVE_PADRAO = '@usarMarcosPadrao';
 const TAMANHO = 220;
 const INTERVALO_SLIDER_MS = 3000;
@@ -29,7 +29,7 @@ const MARCOS_PADRAO = [
 ];
 
 const FASES = [
-  { nome: 'Cria', inicio: 0, fim: 8 },
+  { nome: 'Cria', inicio: 1, fim: 8 },
   { nome: 'Recria', inicio: 9, fim: 17 },
   { nome: 'Pré-postura', inicio: 18, fim: 19 },
   { nome: 'Postura', inicio: 20, fim: 90 },
@@ -173,7 +173,7 @@ export default function RelogioProducao() {
     setTimeout(() => {
       try {
         listaRef.current?.scrollToIndex({ index: inicial, animated: false });
-      } catch (e) {}
+      } catch (e) { }
     }, 100);
   }, [marcos.length, lote?.id]);
 
@@ -187,7 +187,7 @@ export default function RelogioProducao() {
       setIndiceMarco(proximo);
       try {
         listaRef.current?.scrollToIndex({ index: proximo, animated: true });
-      } catch (e) {}
+      } catch (e) { }
     }, INTERVALO_SLIDER_MS);
 
     return () => clearInterval(id);
@@ -265,12 +265,9 @@ export default function RelogioProducao() {
                     styles.traco,
                     styles.tracoPassado,
                     {
-                      backgroundColor: isTransicao
-                        ? '#f5dd08'
-                        : colors.principal,
+                      backgroundColor: colors.principal,
                       opacity: opacityDoTraco(semana),
                     },
-                    isTransicao && styles.tracoFasePassado,
                   ]}
                 />
               )}
@@ -345,7 +342,7 @@ export default function RelogioProducao() {
             pagingEnabled
             showsHorizontalScrollIndicator={false}
             onMomentumScrollEnd={onScrollMarcos}
-            onScrollToIndexFailed={() => {}}
+            onScrollToIndexFailed={() => { }}
             style={[styles.listaMarcos, { width: TAMANHO }]}
             getItemLayout={(_, index) => ({
               length: TAMANHO,
@@ -381,7 +378,7 @@ export default function RelogioProducao() {
 
 const styles = StyleSheet.create({
   container: {
-    marginTop: 32,
+    marginTop: 60,
     alignItems: 'center',
   },
   relogio: {
@@ -405,16 +402,7 @@ const styles = StyleSheet.create({
   tracoPassado: {
     width: 2,
   },
-  tracoFaseBase: {
-    width: 2,
-    height: 14,
-    top: -8,
-  },
-  tracoFasePassado: {
-    width: 3,
-    height: 16,
-    top: -10,
-  },
+
   marcoContainer: {
     position: 'absolute',
     justifyContent: 'flex-start',
@@ -422,14 +410,17 @@ const styles = StyleSheet.create({
     zIndex: 3,
   },
   marco: {
-    width: 6,
-    height: 10,
+    width: 3,
+    height: 5,
     borderRadius: 6,
     backgroundColor: '#22222235',
-    marginTop: -15,
+    marginTop: -12,
   },
   marcoFocado: {
     backgroundColor: '#f39c12',
+    width: 3,
+    height: 10,
+    marginTop: -15,
   },
   bolinhaContainer: {
     position: 'absolute',
@@ -441,7 +432,7 @@ const styles = StyleSheet.create({
     width: 30,
     aspectRatio: 1,
     borderRadius: 20,
-    marginTop: -45,
+    marginTop: -50,
     alignItems: 'center',
     justifyContent: 'center',
   },
