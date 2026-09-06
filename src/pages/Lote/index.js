@@ -19,7 +19,7 @@ import {
   getDocs,
   writeBatch,
 } from 'firebase/firestore';
-import { useNavigation, useTheme } from '@react-navigation/native';
+import { useTheme } from '@react-navigation/native';
 import useHeaderAdd from '../../hooks/useHeaderAdd';
 import { useAuth } from '../../contexts/AuthContext';
 import { GeralContext } from '../../contexts/geral';
@@ -27,14 +27,13 @@ import ItemLista from '../../componentes/ItemLista';
 
 export default function Lote() {
   const { colors } = useTheme();
-  const navigation = useNavigation();
   const { uid } = useAuth();
   const { lote, setLote } = useContext(GeralContext);
 
   const [lista, setLista] = useState([]);
   const [loading, setLoading] = useState(true);
 
- useHeaderAdd('NovoCusto', 'Custos Diários');
+  useHeaderAdd('NovoLote', 'Meus Lotes');
 
   useEffect(() => {
     if (!uid) {
@@ -191,7 +190,7 @@ export default function Lote() {
               }}
             />
           }
-          contentContainerStyle={{ paddingBottom: 100, paddingTop: 21 }}
+          contentContainerStyle={{ paddingBottom: 100, paddingTop: 7 }}
           ListEmptyComponent={
             <Text style={styles.vazio}>
               {!uid ? 'Usuário não logado' : 'Nenhum lote cadastrado'}

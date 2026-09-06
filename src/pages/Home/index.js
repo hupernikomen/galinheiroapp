@@ -2,17 +2,19 @@ import { StyleSheet, View, Pressable, Image, Text, Modal, Alert } from 'react-na
 import { Picker } from '@react-native-picker/picker';
 import { GeralContext } from '../../contexts/geral';
 import { useContext, useEffect, useState } from 'react';
-import GraficoCiclo from '../../componentes/GraficoCiclo';
+import Ciclo from '../../componentes/Ciclo'
 import InfoHome from '../../componentes/InfoHome';
 import { useNavigation, useTheme } from '@react-navigation/native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import Ionicons from 'react-native-vector-icons/Ionicons';
 import { useAuth } from '../../contexts/AuthContext';
 
+
+
 const ALTURA_TABBAR = 78;
 
 export default function Home() {
-  const { lote, setLote, custoOvo, dadosRelogio, listaLotes } =
+  const { lote, setLote, custoOvo, listaLotes } =
     useContext(GeralContext);
   const { user, logout } = useAuth();
   const navigation = useNavigation();
@@ -65,6 +67,10 @@ export default function Home() {
                 key={item.id}
                 label={item?.nome || 'Sem nome'}
                 value={item.id}
+                style={{
+                  fontFamily:'Roboto-Medium',
+                  fontSize:16,
+                }}
               />
             ))}
           </Picker>
@@ -91,8 +97,9 @@ export default function Home() {
   return (
     <View style={styles.container}>
       <View style={[styles.main, { paddingBottom: paddingBottomMain }]}>
+       
         <View style={styles.blocoGrafico}>
-          <GraficoCiclo />
+          <Ciclo />
         </View>
 
         <View style={styles.blocoInfo}>
@@ -103,6 +110,7 @@ export default function Home() {
             precoSugerido={custoOvo?.precoSugerido || 0}
             desempenho={custoOvo?.desempenho}
             totalDepreciacao={custoOvo?.totalDepreciacao || 0}
+            margem={custoOvo?.margem ?? 0.6}
           />
         </View>
       </View>
@@ -144,7 +152,7 @@ export default function Home() {
 
             <View style={styles.menuDivider} />
 
-           
+
 
             <Pressable
               onPress={handleSair}
@@ -169,6 +177,7 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
     backgroundColor: '#fff',
+    
   },
   headerLeft: {
     marginLeft: 8,
@@ -176,11 +185,12 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
   },
   picker: {
-    width: 200,
-    height: 50,
+    width: 280,
+    height: 60,
+    marginLeft:14
   },
   headerRightBtn: {
-    marginRight: 12,
+    marginRight: 16,
   },
   avatar: {
     width: 36,

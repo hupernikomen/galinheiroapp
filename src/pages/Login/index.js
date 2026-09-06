@@ -49,8 +49,7 @@ export default function Login() {
       <View style={styles.card}>
         <Text style={styles.cardTitulo}>Entrar na sua conta</Text>
         <Text style={styles.cardSub}>
-          Use o Google para salvar seus dados com segurança e acessar de qualquer
-          aparelho.
+          Use o Google para acessar o app e manter seus dados com segurança.
         </Text>
 
         <Pressable
@@ -65,15 +64,14 @@ export default function Login() {
               <View style={styles.googleIconWrap}>
                 <Text style={styles.googleG}>G</Text>
               </View>
-              <Text style={styles.botaoGoogleTexto}>Continuar com Google</Text>
+              <Text style={styles.botaoGoogleTexto}>Entrar com Google</Text>
             </>
           )}
         </Pressable>
       </View>
 
       <Text style={styles.rodape}>
-        Ao entrar, você concorda em usar o app apenas para gestão do seu
-        galinheiro. Seus dados ficam ligados à sua conta Google.
+        Ao entrar, você concorda em usar seus dados para cadastro e manutenção da sua conta no app.
       </Text>
     </View>
   );
@@ -82,7 +80,7 @@ export default function Login() {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#f6f4f0',
+    backgroundColor: '#fff',
     paddingHorizontal: 24,
     justifyContent: 'space-between',
   },
@@ -115,6 +113,8 @@ const styles = StyleSheet.create({
     maxWidth: 320,
   },
   card: {
+    alignItems:"center",
+    justifyContent:'center',
     backgroundColor: '#fff',
     borderRadius: 20,
     padding: 22,
@@ -133,9 +133,11 @@ const styles = StyleSheet.create({
     color: '#777',
     lineHeight: 20,
     marginBottom: 22,
+    textAlign:"center"
   },
   botaoGoogle: {
     height: 52,
+    paddingHorizontal:14,
     borderRadius: 26,
     backgroundColor: '#fff',
     borderWidth: 1,

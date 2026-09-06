@@ -4,7 +4,6 @@ import {
   StyleSheet,
   FlatList,
   ActivityIndicator,
-  Pressable,
   Alert,
   Switch,
 } from 'react-native';
@@ -19,15 +18,16 @@ import {
   deleteDoc,
 } from 'firebase/firestore';
 import { useNavigation, useTheme } from '@react-navigation/native';
-import Ionicons from 'react-native-vector-icons/Ionicons';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { useAuth } from '../../contexts/AuthContext';
 import ItemLista from '../../componentes/ItemLista';
 
+import useHeaderAdd from '../../hooks/useHeaderAdd';
+
 const CHAVE_PADRAO = '@usarMarcosPadrao';
 
 const MARCOS_PADRAO = [
-  { semana: 0, mensagem: 'Início do lote' },
+  { semana: 1, mensagem: 'Início do lote' },
   { semana: 18, mensagem: 'Início da postura' },
   { semana: 70, mensagem: 'Comprar novo Lote' },
   { semana: 90, mensagem: 'Fim do ciclo' },
@@ -42,19 +42,7 @@ export default function Marcos() {
   const [loading, setLoading] = useState(true);
   const [usarPadrao, setUsarPadrao] = useState(true);
 
-  useEffect(() => {
-    navigation.setOptions({
-      title: 'Marcos',
-      headerRight: () => (
-        <Pressable
-          onPress={() => navigation.navigate('NovoMarco')}
-          style={{ marginRight: 16 }}
-        >
-          <Ionicons name="add" size={26} color="#000" />
-        </Pressable>
-      ),
-    });
-  }, [navigation]);
+  useHeaderAdd('NovoMarco', 'Marcos');
 
   useEffect(() => {
     AsyncStorage.getItem(CHAVE_PADRAO).then((res) => {
@@ -118,14 +106,15 @@ export default function Marcos() {
   return (
     <View style={styles.container}>
       <View style={styles.switchLinha}>
-        <View style={{ flex: 1 }}>
-          <Text style={styles.switchTitulo}>Marcos padrão no relógio</Text>
-          <Text style={styles.switchSub}>Início, postura, 70 semanas, fim</Text>
+        <View style={{ flex: 1, paddingVertical:14 }}>
+          <Text style={styles.switchTitulo}>Exibir marcos padrões no ciclo</Text>
         </View>
         <Switch
           value={usarPadrao}
           onValueChange={alternarPadrao}
-          trackColor={{ true: colors.principal }}
+  trackColor={{false: '#ddd', true: '#ddd'}}
+          thumbColor={usarPadrao ? colors.principal : '#fafafa'}
+
         />
       </View>
 
@@ -165,7 +154,7 @@ export default function Marcos() {
               }}
             />
           }
-          contentContainerStyle={{ paddingBottom: 100, paddingTop: 8 }}
+          contentContainerStyle={{ paddingBottom: 100, paddingTop: 8, }}
           ListEmptyComponent={
             <Text style={styles.vazio}>Nenhum marco personalizado</Text>
           }
@@ -180,28 +169,29 @@ const styles = StyleSheet.create({
   switchLinha: {
     flexDirection: 'row',
     alignItems: 'center',
-    paddingHorizontal: 21,
+    paddingHorizontal: 28,
     paddingVertical: 14,
     borderBottomWidth: StyleSheet.hairlineWidth,
     borderBottomColor: '#eee',
   },
   switchTitulo: { fontFamily: 'Roboto-Medium', fontSize: 15 },
-  switchSub: { fontFamily: 'Roboto-Light', fontSize: 12, color: '#666', marginTop: 2 },
-  padraoBox: { paddingHorizontal: 21, paddingTop: 12, paddingBottom: 8 },
+  switchSub: { fontFamily: 'Roboto-Light', fontSize: 12, color: '#777', marginTop: 2 },
+  padraoBox: { paddingTop: 12, paddingBottom: 8 },
   secao: {
     fontFamily: 'Roboto-Medium',
     fontSize: 13,
     color: '#888',
     textTransform: 'uppercase',
-    paddingHorizontal: 21,
     marginTop: 12,
     marginBottom: 8,
+    marginLeft:28
   },
   padraoItem: {
     fontFamily: 'Roboto-Light',
     fontSize: 14,
     color: '#333',
     marginBottom: 4,
+    marginLeft:28
   },
   vazio: { textAlign: 'center', marginTop: 20, color: '#999' },
 });

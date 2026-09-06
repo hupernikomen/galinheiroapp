@@ -12,17 +12,22 @@ export default function Tabs() {
   return (
     <SafeAreaView style={{ flex: 1 }} edges={['bottom', 'left', 'right']}>
       <Tab.Navigator
-      initialRouteName='Home'
+        initialRouteName='Home'
         tabBar={(props) => <TabbarPersonalizada {...props} />}
         screenOptions={{
           tabBarShowLabel: false,
           headerShown: false,
+          headerTitleStyle:{
+            fontSize:18,
+            fontFamily:'Roboto-Bold',
+            marginLeft:14
+          }
         }}
       >
         <Tab.Screen
           name="Home"
           component={Home}
-          options={{ tabBarIcon: 'home-outline', headerShown: true, title:'' }}
+          options={{ tabBarIcon: 'home-outline', headerShown: true, title: '' }}
         />
         <Tab.Screen
           name="Ovos"
@@ -31,7 +36,7 @@ export default function Tabs() {
             headerShown: true,
             tabBarIcon: 'egg-outline',
             headerRightContainerStyle: {
-              paddingRight:16
+              paddingRight: 16
             }
           }}
         />

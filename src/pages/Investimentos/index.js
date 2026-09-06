@@ -123,7 +123,7 @@ export default function Investimentos() {
               }}
             />
           }
-          contentContainerStyle={{ paddingBottom: 100, paddingTop: 21 }}
+          contentContainerStyle={{ paddingBottom: 100, paddingTop: 7 }}
           ListEmptyComponent={
             <Text style={styles.vazio}>
               {!uid ? 'Usuário não logado' : 'Nenhum investimento'}

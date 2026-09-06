@@ -6,6 +6,7 @@ import {
   Pressable,
   StyleSheet,
   Alert,
+  Platform,
 } from 'react-native';
 import { Picker } from '@react-native-picker/picker';
 import { GeralContext } from '../../contexts/geral';
@@ -13,6 +14,8 @@ import { useAuth } from '../../contexts/AuthContext';
 import { db } from '../../services/firebaseConnection/firebase';
 import { collection, addDoc } from 'firebase/firestore';
 import { useTheme, useNavigation } from '@react-navigation/native';
+import DateTimePicker from '@react-native-community/datetimepicker';
+import Ionicons from 'react-native-vector-icons/Ionicons';
 
 export default function NovoCusto() {
   const { lote } = useContext(GeralContext);
@@ -23,7 +26,27 @@ export default function NovoCusto() {
   const [descricao, setDescricao] = useState('');
   const [valor, setValor] = useState('');
   const [idade, setIdade] = useState('Criacao');
+  const [data, setData] = useState(new Date());
+  const [mostrarData, setMostrarData] = useState(false);
   const [salvando, setSalvando] = useState(false);
+
+  function onChangeData(event, selectedDate) {
+    if (Platform.OS === 'android') {
+      setMostrarData(false);
+    }
+    if (event?.type === 'dismissed') {
+      setMostrarData(false);
+      return;
+    }
+    if (selectedDate) {
+      setData(selectedDate);
+    }
+  }
+
+  function abrirCalendario() {
+    setMostrarData(false);
+    setTimeout(() => setMostrarData(true), 50);
+  }
 
   async function CadastrarCusto() {
     if (!lote?.id) {
@@ -42,7 +65,7 @@ export default function NovoCusto() {
     try {
       setSalvando(true);
       await addDoc(collection(db, 'custos'), {
-        data: Date.now(),
+        data: data.getTime(),
         loteId: lote.id,
         descricao: descricao.trim(),
         valor: Number(valor),
@@ -52,6 +75,7 @@ export default function NovoCusto() {
       setDescricao('');
       setValor('');
       setIdade('Criacao');
+      setData(new Date());
       navigation.goBack();
     } catch (error) {
       console.log('Erro custo:', error);
@@ -63,6 +87,19 @@ export default function NovoCusto() {
 
   return (
     <View style={styles.container}>
+
+
+      <Pressable
+        onPress={abrirCalendario}
+        style={[styles.botaoData, { backgroundColor: colors.neutro }]}
+      >
+        <Text style={styles.dataTexto}>
+          Data: {data.toLocaleDateString('pt-BR')}
+        </Text>
+        <Ionicons name="calendar-outline" size={22} color={colors.principal} />
+      </Pressable>
+
+
       <TextInput
         style={[styles.input, { backgroundColor: colors.neutro }]}
         placeholder="Descrição"
@@ -82,11 +119,16 @@ export default function NovoCusto() {
       />
 
       <View style={[styles.pickerBox, { backgroundColor: colors.neutro }]}>
-        <Picker selectedValue={idade} onValueChange={setIdade} style={styles.picker}>
+        <Picker
+          selectedValue={idade}
+          onValueChange={setIdade}
+          style={styles.picker}
+        >
           <Picker.Item label="Criação" value="Criacao" />
           <Picker.Item label="Postura" value="Postura" />
         </Picker>
       </View>
+
 
       <Pressable
         onPress={CadastrarCusto}
@@ -97,6 +139,17 @@ export default function NovoCusto() {
           {salvando ? 'Salvando...' : 'Guardar'}
         </Text>
       </Pressable>
+
+      {mostrarData && (
+        <DateTimePicker
+          value={data}
+          mode="date"
+          display="default"
+          onChange={onChangeData}
+          onDismiss={() => setMostrarData(false)}
+          maximumDate={new Date()}
+        />
+      )}
     </View>
   );
 }
@@ -122,6 +175,19 @@ const styles = StyleSheet.create({
   picker: {
     height: 50,
     width: '100%',
+  },
+  botaoData: {
+    height: 50,
+    borderRadius: 22,
+    paddingHorizontal: 16,
+    marginBottom: 12,
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+  },
+  dataTexto: {
+    fontSize: 16,
+    color: '#333',
   },
   botao: {
     height: 52,

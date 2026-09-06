@@ -1,8 +1,6 @@
 import { useTheme } from '@react-navigation/native';
 import { View, Text, StyleSheet } from 'react-native';
 
-const MARGEM = 0.60;
-
 export default function InfoHome({
   totalCriacao = 0,
   totalPostura = 0,
@@ -10,64 +8,86 @@ export default function InfoHome({
   precoSugerido = 0,
   desempenho = null,
   totalDepreciacao = 0,
-
+  margem = 0.6,
 }) {
-  const total = totalCriacao + totalPostura;
-  const percCriacao = total > 0 ? (totalCriacao / total) * 100 : 0;
-  const percPostura = total > 0 ? (totalPostura / total) * 100 : 0;
+  const { colors } = useTheme();
 
-  const { colors } = useTheme()
+  const totalGastos = Number(totalCriacao) + Number(totalPostura);
+  const percCriacao =
+    totalGastos > 0 ? (Number(totalCriacao) / totalGastos) * 100 : 0;
+  const percPostura =
+    totalGastos > 0 ? (Number(totalPostura) / totalGastos) * 100 : 0;
+
+  const margemPct = Number(margem) * 100;
+
+  let textoProducao = 'Ainda sem meta de produção para comparar';
+  if (desempenho != null && !Number.isNaN(Number(desempenho))) {
+    const pct = Number(desempenho) * 100;
+    let extra = '';
+    if (pct < 80) extra = ' — abaixo da meta';
+    else if (pct > 110) extra = ' — acima da meta';
+    textoProducao = `Progresso da meta de ovos: ${pct.toFixed(0)}%${extra}`;
+  }
 
   return (
     <View style={styles.container}>
-
-      {/* Barra de proporção */}
       <View style={styles.barra}>
-        <View style={[styles.fatia, { flex: percCriacao || 0.01, backgroundColor: colors.principal }]} />
-        <View style={[styles.fatia, { flex: percPostura || 0.01, backgroundColor: '#f39c12' }]} />
+        <View
+          style={[
+            styles.fatia,
+            {
+              flex: percCriacao > 0 ? percCriacao : totalGastos === 0 ? 1 : 0.001,
+              backgroundColor: colors.principal,
+            },
+          ]}
+        />
+        <View
+          style={[
+            styles.fatia,
+            {
+              flex: percPostura > 0 ? percPostura : totalGastos === 0 ? 1 : 0.001,
+              backgroundColor: '#f39c12',
+            },
+          ]}
+        />
       </View>
 
-      {/* Legenda */}
       <View style={styles.legenda}>
         <View style={styles.legendaItem}>
           <View style={[styles.bolinha, { backgroundColor: colors.principal }]} />
           <Text style={styles.legendaTexto}>
-            Criação  R$ {Number(totalCriacao).toFixed(2)}  ({percCriacao.toFixed(0)}%)
+            Criação  R$ {Number(totalCriacao).toFixed(2)}
+            {totalGastos > 0 ? `  (${percCriacao.toFixed(0)}%)` : ''}
           </Text>
         </View>
 
         <View style={styles.legendaItem}>
           <View style={[styles.bolinha, { backgroundColor: '#f39c12' }]} />
           <Text style={styles.legendaTexto}>
-            Postura  R$ {Number(totalPostura).toFixed(2)}  ({percPostura.toFixed(0)}%)
+            Postura  R$ {Number(totalPostura).toFixed(2)}
+            {totalGastos > 0 ? `  (${percPostura.toFixed(0)}%)` : ''}
+          </Text>
+        </View>
+
+        <View style={styles.legendaItem}>
+          <View style={[styles.bolinha, { backgroundColor: '#888' }]} />
+          <Text style={styles.legendaTexto}>
+            Depreciação  R$ {Number(totalDepreciacao).toFixed(2)}/mês
           </Text>
         </View>
       </View>
 
-      {/* Preço sugerido */}
       <View style={styles.caixaPreco}>
         <Text style={styles.precoLabel}>Preço sugerido / ovo</Text>
-        <Text style={styles.precoValor}>
-          R$ {Number(precoSugerido).toFixed(2)}
+        <Text style={[styles.precoValor, { color: colors.principal }]}>
+          R$ {Number(precoSugerido || 0).toFixed(2)}
         </Text>
         <Text style={styles.precoSub}>
-          Custo projetado R$ {Number(custoProjetado).toFixed(2)}
+          Custo projetado R$ {Number(custoProjetado || 0).toFixed(2)}
           {' + '}
-          {(MARGEM * 100).toFixed(0)}% margem
+          {margemPct.toFixed(0)}% margem
         </Text>
-
-        {desempenho == null ? (
-          <Text style={styles.precoSub}>Ainda em criação — sem meta de ovos</Text>
-        ) : (
-          <Text style={styles.precoSub}>
-            Produção: {(desempenho * 100).toFixed(0)}% do esperado
-            {desempenho < 0.8
-              ? ' — abaixo da meta'
-              : desempenho > 1.1
-                ? ' — acima da meta'
-                : ''}
-          </Text>
-        )}
+        <Text style={styles.precoSub}>{textoProducao}</Text>
       </View>
     </View>
   );
@@ -75,20 +95,20 @@ export default function InfoHome({
 
 const styles = StyleSheet.create({
   container: {
-    marginVertical: 16,
+    width: '80%',
   },
   barra: {
     height: 4,
     borderRadius: 8,
     flexDirection: 'row',
     overflow: 'hidden',
+    backgroundColor: '#eee',
   },
   fatia: {
     height: '100%',
   },
   legenda: {
     marginTop: 14,
-    gap: 4,
   },
   legendaItem: {
     flexDirection: 'row',
@@ -103,22 +123,21 @@ const styles = StyleSheet.create({
   legendaTexto: {
     fontFamily: 'Roboto-Regular',
     fontSize: 14,
-    color: '#333',
   },
   caixaPreco: {
     marginTop: 18,
     paddingVertical: 16,
-    paddingHorizontal: 20,
+    paddingHorizontal: 12,
     borderRadius: 14,
     alignItems: 'center',
   },
   precoLabel: {
     fontFamily: 'Roboto-Regular',
     fontSize: 13,
-    color: '#666',
+    color: '#777',
   },
   precoValor: {
-    letterSpacing: -.5,
+    letterSpacing: -0.5,
     fontFamily: 'Roboto-Black',
     fontSize: 22,
     marginTop: 4,
@@ -128,5 +147,6 @@ const styles = StyleSheet.create({
     fontSize: 12,
     color: '#888',
     marginTop: 4,
+    textAlign: 'center',
   },
 });

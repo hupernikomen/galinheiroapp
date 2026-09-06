@@ -133,7 +133,7 @@ export default function Ovos() {
               }}
             />
           }
-          contentContainerStyle={{ paddingBottom: 100, paddingTop: 21 }}
+          contentContainerStyle={{ paddingBottom: 100, paddingTop: 7 }}
           ListEmptyComponent={
             <Text style={styles.vazio}>
               {!lote

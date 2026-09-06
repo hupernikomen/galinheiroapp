@@ -20,12 +20,6 @@ const ITENS = [
         rota: 'Lote',
       },
       {
-        titulo: 'Coleta de ovos',
-        subtitulo: 'Registros de produção',
-        icone: 'egg-outline',
-        rota: 'Ovos',
-      },
-      {
         titulo: 'Custos',
         subtitulo: 'Gastos de criação e postura',
         icone: 'shapes-outline',
@@ -49,7 +43,7 @@ const ITENS = [
         rota: 'Marcos',
       },
       {
-        titulo: 'Como funcionam os cálculos',
+        titulo: 'Como funciona',
         subtitulo: 'Custo do ovo e preço sugerido',
         icone: 'information-circle-outline',
         rota: 'Info',
@@ -90,12 +84,6 @@ export default function Menu() {
                   index < bloco.lista.length - 1 && styles.separador,
                 ]}
               >
-                <Ionicons
-                  name={item.icone}
-                  size={22}
-                  color="#444"
-                  style={styles.icone}
-                />
                 <View style={styles.textos}>
                   <Text style={styles.itemTitulo}>{item.titulo}</Text>
                   <Text style={styles.itemSub}>{item.subtitulo}</Text>
@@ -124,31 +112,22 @@ const styles = StyleSheet.create({
     color: '#999',
     textTransform: 'uppercase',
     letterSpacing: 0.5,
-    paddingHorizontal: 20,
-    marginBottom: 6,
+    marginVertical: 16,
+    marginLeft: 28
   },
   listaCard: {
     marginHorizontal: 16,
-    borderRadius: 16,
-    borderWidth: StyleSheet.hairlineWidth,
-    borderColor: '#eee',
     overflow: 'hidden',
   },
   item: {
     flexDirection: 'row',
     alignItems: 'center',
     paddingHorizontal: 14,
-    paddingVertical: 14,
-    backgroundColor: '#fff',
+    paddingVertical: 7,
   },
   separador: {
     borderBottomWidth: StyleSheet.hairlineWidth,
     borderBottomColor: '#f0f0f0',
-  },
-  icone: {
-    marginRight: 12,
-    width: 26,
-    textAlign: 'center',
   },
   textos: {
     flex: 1,

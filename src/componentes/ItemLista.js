@@ -10,7 +10,7 @@ import {
 } from 'react-native';
 import Ionicons from 'react-native-vector-icons/Ionicons';
 
-const LARGURA_ACAO = 72;
+const LARGURA_ACAO = 76;
 const LIMITE = 50;
 
 export default function ItemLista({
@@ -24,7 +24,6 @@ export default function ItemLista({
   const translateX = useRef(new Animated.Value(0)).current;
   const aberto = useRef(false);
 
-  // Fecha ao sair da tela
   useFocusEffect(
     useCallback(() => {
       return () => {
@@ -50,6 +49,7 @@ export default function ItemLista({
           toValue: deveAbrir ? -LARGURA_ACAO : 0,
           useNativeDriver: true,
           bounciness: 0,
+          speed: 20,
         }).start();
         aberto.current = deveAbrir;
       },
@@ -58,9 +58,15 @@ export default function ItemLista({
 
   const conteudo = (
     <View style={styles.item}>
-      <View style={{ flex: 1 }}>
-        <Text style={styles.titulo}>{titulo}</Text>
-        {!!subtitulo && <Text style={styles.sub}>{subtitulo}</Text>}
+      <View style={styles.esquerda}>
+        <Text style={styles.titulo} numberOfLines={2}>
+          {titulo}
+        </Text>
+        {!!subtitulo && (
+          <Text style={styles.sub} numberOfLines={2}>
+            {subtitulo}
+          </Text>
+        )}
         {children}
       </View>
       <View style={styles.direita}>
@@ -76,32 +82,46 @@ export default function ItemLista({
   );
 
   if (!onExcluir) {
-    return conteudo;
+    return <View style={styles.wrapper}>{conteudo}</View>;
   }
 
   return (
-    <View style={styles.container}>
-      <View style={styles.acoes}>
-        <Pressable onPress={onExcluir} style={styles.botaoExcluir}>
-          <Ionicons name="trash-outline" size={22} color="#fff" />
-        </Pressable>
-      </View>
+    <View style={styles.wrapper}>
+      <View style={styles.container}>
+        <View style={styles.acoes}>
+          <Pressable
+            onPress={onExcluir}
+            style={({ pressed }) => [
+              styles.botaoExcluir,
+              pressed && { opacity: 0.85 },
+            ]}
+          >
+            <View style={styles.lixeiraCirculo}>
+              <Ionicons name="trash-outline" size={18} color="#fff" />
+            </View>
+          </Pressable>
+        </View>
 
-      <Animated.View
-        collapsable={false}
-        style={[styles.frente, { transform: [{ translateX }] }]}
-        {...panResponder.panHandlers}
-      >
-        {conteudo}
-      </Animated.View>
+        <Animated.View
+          collapsable={false}
+          style={[styles.frente, { transform: [{ translateX }] }]}
+          {...panResponder.panHandlers}
+        >
+          {conteudo}
+        </Animated.View>
+      </View>
     </View>
   );
 }
 
 const styles = StyleSheet.create({
+  wrapper: {
+    paddingHorizontal: 4,
+  },
   container: {
-    backgroundColor: '#fff',
+    borderRadius: 18,
     overflow: 'hidden',
+    backgroundColor: '#fafafa',
   },
   acoes: {
     position: 'absolute',
@@ -109,44 +129,59 @@ const styles = StyleSheet.create({
     top: 0,
     bottom: 0,
     width: LARGURA_ACAO,
-    backgroundColor: '#c0392b',
     justifyContent: 'center',
     alignItems: 'center',
   },
   botaoExcluir: {
-    width: LARGURA_ACAO,
-    height: '100%',
-    minHeight: 52,
+    flex: 1,
+    width: '100%',
     justifyContent: 'center',
     alignItems: 'center',
   },
+  lixeiraCirculo: {
+    width: 40,
+    height: 40,
+    borderRadius: 20,
+    backgroundColor: '#c0392b',
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
   frente: {
+    elevation:5,
     backgroundColor: '#fff',
+    borderRadius: 18,
   },
   item: {
-    paddingHorizontal: 21,
-    paddingVertical: 10,
+    paddingHorizontal: 28,
+    paddingVertical: 16,
     flexDirection: 'row',
     justifyContent: 'space-between',
-    alignItems: 'flex-start',
-    backgroundColor: '#fff',
+    alignItems: 'center',
+  },
+  esquerda: {
+    flex: 1,
+    paddingRight: 12,
   },
   titulo: {
     fontSize: 15,
     fontFamily: 'Roboto-Medium',
-    color: '#000',
+    color: '#1a1a1a',
+    letterSpacing: 0.1,
   },
   sub: {
     fontFamily: 'Roboto-Light',
     fontSize: 13,
-    color: '#222',
-    marginTop: 2,
+    color: '#6b6b6b',
+    marginTop: 4,
+    lineHeight: 18,
   },
   direita: {
     alignItems: 'flex-end',
-    gap: 8,
+    justifyContent: 'center',
+    maxWidth: '40%',
   },
   direitaTexto: {
     fontSize: 15,
+    fontFamily: 'Roboto-Medium',
   },
 });

@@ -91,6 +91,11 @@ export default function Coleta() {
 
   return (
     <View style={styles.container}>
+      <Pressable onPress={abrirCalendario} style={[styles.botaoInput, { backgroundColor: colors.neutro }]}>
+        <Text style={styles.dataTexto}>{data.toLocaleDateString('pt-BR')}</Text>
+        <Ionicons name="calendar-outline" size={24} color={colors.principal} />
+      </Pressable>
+
       <TextInput
         style={[styles.input, { backgroundColor: colors.neutro }]}
         placeholder="Quantidade coletada"
@@ -101,10 +106,7 @@ export default function Coleta() {
         underlineColorAndroid="transparent"
       />
 
-      <Pressable onPress={abrirCalendario} style={[styles.botaoInput, { backgroundColor: colors.neutro }]}>
-        <Text style={styles.dataTexto}>{data.toLocaleDateString('pt-BR')}</Text>
-        <Ionicons name="calendar-outline" size={24} color={colors.principal} />
-      </Pressable>
+
 
       <Pressable
         onPress={CadastrarColeta}
@@ -123,6 +125,7 @@ export default function Coleta() {
           display="default"
           onChange={onValueChange}
           onDismiss={() => setMostrarData(false)}
+           maximumDate={new Date()}
         />
       )}
     </View>

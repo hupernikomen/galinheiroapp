@@ -6,11 +6,14 @@ import {
   StyleSheet,
   Alert,
   Text,
+  Platform,
 } from 'react-native';
 import { db } from '../../services/firebaseConnection/firebase';
 import { collection, addDoc, query, where, getDocs } from 'firebase/firestore';
 import { useNavigation, useTheme } from '@react-navigation/native';
 import { useAuth } from '../../contexts/AuthContext';
+import DateTimePicker from '@react-native-community/datetimepicker';
+import Ionicons from 'react-native-vector-icons/Ionicons';
 
 export default function NovoLote() {
   const { colors } = useTheme();
@@ -21,7 +24,27 @@ export default function NovoLote() {
   const [raca, setRaca] = useState('');
   const [qt, setQt] = useState('');
   const [prodEstimada, setProdEstimada] = useState('');
+  const [chegada, setChegada] = useState(new Date());
+  const [mostrarData, setMostrarData] = useState(false);
   const [salvando, setSalvando] = useState(false);
+
+  function onChangeData(event, selectedDate) {
+    if (Platform.OS === 'android') {
+      setMostrarData(false);
+    }
+    if (event?.type === 'dismissed') {
+      setMostrarData(false);
+      return;
+    }
+    if (selectedDate) {
+      setChegada(selectedDate);
+    }
+  }
+
+  function abrirCalendario() {
+    setMostrarData(false);
+    setTimeout(() => setMostrarData(true), 50);
+  }
 
   async function CadastrarLote() {
     if (!uid) {
@@ -50,10 +73,8 @@ export default function NovoLote() {
 
       const quantidade = Number(qt);
 
-      console.log('Salvando lote com userId:', uid);
-
       await addDoc(collection(db, 'lotes'), {
-        chegada: Date.now(),
+        chegada: chegada.getTime(),
         nome: nome.trim(),
         raca: (raca || '').trim(),
         qt: quantidade,
@@ -67,6 +88,7 @@ export default function NovoLote() {
       setRaca('');
       setQt('');
       setProdEstimada('');
+      setChegada(new Date());
       navigation.goBack();
     } catch (err) {
       console.log('Erro ao cadastrar lote:', err);
@@ -78,20 +100,37 @@ export default function NovoLote() {
 
   return (
     <View style={styles.container}>
+
+
+      <Pressable
+        onPress={abrirCalendario}
+        style={[styles.botaoData, { backgroundColor: colors.neutro }]}
+      >
+        <Text style={styles.dataTexto}>
+          Chegada: {chegada.toLocaleDateString('pt-BR')}
+        </Text>
+        <Ionicons name="calendar-outline" size={22} color={colors.principal} />
+      </Pressable>
+
+
       <TextInput
         style={[styles.input, { backgroundColor: colors.neutro }]}
         placeholder="Nome do lote"
         value={nome}
         onChangeText={setNome}
         placeholderTextColor="#999"
+        underlineColorAndroid="transparent"
       />
+
       <TextInput
         style={[styles.input, { backgroundColor: colors.neutro }]}
         placeholder="Raça"
         value={raca}
         onChangeText={setRaca}
         placeholderTextColor="#999"
+        underlineColorAndroid="transparent"
       />
+
       <TextInput
         style={[styles.input, { backgroundColor: colors.neutro }]}
         placeholder="Quantidade de galinhas"
@@ -99,7 +138,9 @@ export default function NovoLote() {
         value={qt}
         onChangeText={setQt}
         placeholderTextColor="#999"
+        underlineColorAndroid="transparent"
       />
+
       <TextInput
         style={[styles.input, { backgroundColor: colors.neutro }]}
         placeholder="Produção estimada por galinha (ovos)"
@@ -107,7 +148,9 @@ export default function NovoLote() {
         value={prodEstimada}
         onChangeText={setProdEstimada}
         placeholderTextColor="#999"
+        underlineColorAndroid="transparent"
       />
+
 
       <Pressable
         onPress={CadastrarLote}
@@ -118,6 +161,17 @@ export default function NovoLote() {
           {salvando ? 'Salvando...' : 'Guardar'}
         </Text>
       </Pressable>
+
+      {mostrarData && (
+        <DateTimePicker
+          value={chegada}
+          mode="date"
+          display="default"
+          onChange={onChangeData}
+          onDismiss={() => setMostrarData(false)}
+          maximumDate={new Date()}
+        />
+      )}
     </View>
   );
 }
@@ -134,6 +188,19 @@ const styles = StyleSheet.create({
     paddingHorizontal: 16,
     marginBottom: 12,
     fontSize: 16,
+  },
+  botaoData: {
+    height: 50,
+    borderRadius: 22,
+    paddingHorizontal: 16,
+    marginBottom: 12,
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+  },
+  dataTexto: {
+    fontSize: 16,
+    color: '#333',
   },
   botao: {
     height: 52,

@@ -7,19 +7,20 @@ import {
   Animated,
   Easing,
 } from 'react-native';
-import { GeralContext } from '../../contexts/geral';
-import { useAuth } from '../../contexts/AuthContext';
+import { GeralContext } from '../contexts/geral';
+import { useAuth } from '../contexts/AuthContext';
 import { useTheme, useFocusEffect } from '@react-navigation/native';
-import { db } from '../../services/firebaseConnection/firebase';
+import { db } from '../services/firebaseConnection/firebase';
 import { collection, onSnapshot, query, where } from 'firebase/firestore';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 
-const VIDA_TOTAL_SEMANAS = 90.1;
+const VIDA_TOTAL_SEMANAS = 90;
 const CHAVE_PADRAO = '@usarMarcosPadrao';
 const TAMANHO = 230;
 const INTERVALO_SLIDER_MS = 5000;
 const DURACAO_RELOGIO_MS = 500;
-const DELAY_INICIO_MS = 2000;
+const DURACAO_MARCO_MS = 1500;
+const DELAY_INICIO_MS = 1500;
 
 const MARCOS_PADRAO = [
   { semana: 1, mensagem: 'Início do lote' },
@@ -35,7 +36,7 @@ const FASES = [
   { nome: 'Postura', inicio: 20, fim: 90 },
 ];
 
-export default function RelogioProducao() {
+export default function Ciclo() {
   const { lote } = useContext(GeralContext);
   const { uid } = useAuth();
   const { colors } = useTheme();
@@ -47,7 +48,9 @@ export default function RelogioProducao() {
 
   const listaRef = useRef(null);
   const indiceMarcoRef = useRef(0);
-  const progressNative = useRef(new Animated.Value(0)).current;
+  const progressPonteiro = useRef(new Animated.Value(0)).current;
+  // ângulo do marco focado (0 → 360)
+  const anguloMarcoAnim = useRef(new Animated.Value(0)).current;
 
   useFocusEffect(
     useCallback(() => {
@@ -57,7 +60,6 @@ export default function RelogioProducao() {
     }, [])
   );
 
-  // Marcos só do usuário logado
   useEffect(() => {
     if (!uid) {
       setMarcosBanco([]);
@@ -116,18 +118,21 @@ export default function RelogioProducao() {
     return fase ? fase.nome : '';
   }
 
-  const semanasTransicao = FASES.map((f) => f.inicio).filter((s) => s > 0);
+  function semanaParaAngulo(semana) {
+    const s = Math.min(Math.max(Number(semana) || 0, 0), VIDA_TOTAL_SEMANAS);
+    return (s / VIDA_TOTAL_SEMANAS) * 360;
+  }
+
   const semanas = calcularSemanas();
   const faseAtual = obterFaseAtual(semanas);
   const marcoFocado = marcos[indiceMarco] || null;
-  const semanaFoco = marcoFocado?.semana;
-  const anguloFinal =
+  const anguloFinalPonteiro =
     (Math.min(Math.max(semanas, 0), VIDA_TOTAL_SEMANAS) / VIDA_TOTAL_SEMANAS) *
     360;
 
-  // Animação bolinha + traços + contador
+  // Ponteiro: só a idade real do lote (fica parado depois da animação inicial)
   useEffect(() => {
-    progressNative.setValue(0);
+    progressPonteiro.setValue(0);
     setSemanaTexto(0);
 
     if (semanas <= 0) return;
@@ -135,7 +140,7 @@ export default function RelogioProducao() {
     let contadorId = null;
 
     const timeout = setTimeout(() => {
-      Animated.timing(progressNative, {
+      Animated.timing(progressPonteiro, {
         toValue: 1,
         duration: DURACAO_RELOGIO_MS,
         easing: Easing.linear,
@@ -159,9 +164,23 @@ export default function RelogioProducao() {
     return () => {
       clearTimeout(timeout);
       if (contadorId) clearInterval(contadorId);
-      progressNative.stopAnimation();
+      progressPonteiro.stopAnimation();
     };
   }, [semanas, lote?.id]);
+
+  // Marco focado: desliza no círculo quando o carrossel muda
+  useEffect(() => {
+    if (!marcoFocado) return;
+
+    const anguloAlvo = semanaParaAngulo(marcoFocado.semana);
+
+    Animated.timing(anguloMarcoAnim, {
+      toValue: anguloAlvo,
+      duration: DURACAO_MARCO_MS,
+      easing: Easing.out(Easing.cubic),
+      useNativeDriver: true,
+    }).start();
+  }, [indiceMarco, marcoFocado?.semana, lote?.id]);
 
   // Índice inicial do carrossel
   useEffect(() => {
@@ -170,12 +189,18 @@ export default function RelogioProducao() {
     const inicial = idx >= 0 ? idx : marcos.length - 1;
     setIndiceMarco(inicial);
     indiceMarcoRef.current = inicial;
+
+    // posiciona o marco animado sem “pulo” estranho na primeira vez
+    if (marcos[inicial]) {
+      anguloMarcoAnim.setValue(semanaParaAngulo(marcos[inicial].semana));
+    }
+
     setTimeout(() => {
       try {
         listaRef.current?.scrollToIndex({ index: inicial, animated: false });
-      } catch (e) { }
+      } catch (e) {}
     }, 100);
-  }, [marcos.length, lote?.id]);
+  }, [marcos.length, lote?.id, semanas]);
 
   // Autoplay carrossel
   useEffect(() => {
@@ -187,13 +212,13 @@ export default function RelogioProducao() {
       setIndiceMarco(proximo);
       try {
         listaRef.current?.scrollToIndex({ index: proximo, animated: true });
-      } catch (e) { }
+      } catch (e) {}
     }, INTERVALO_SLIDER_MS);
 
     return () => clearInterval(id);
   }, [marcos.length, lote?.id]);
 
-  const tracos = Array.from({ length: VIDA_TOTAL_SEMANAS }, (_, i) => i);
+  const tracos = Array.from({ length: VIDA_TOTAL_SEMANAS }, (_, i) => i + 1);
 
   function onScrollMarcos(e) {
     const x = e.nativeEvent.contentOffset.x;
@@ -204,30 +229,23 @@ export default function RelogioProducao() {
     }
   }
 
-  const spin = progressNative.interpolate({
+  const spinPonteiro = progressPonteiro.interpolate({
     inputRange: [0, 1],
-    outputRange: ['0deg', `${anguloFinal}deg`],
+    outputRange: ['0deg', `${anguloFinalPonteiro}deg`],
   });
 
-  const spinInverse = progressNative.interpolate({
+  const spinPonteiroInverso = progressPonteiro.interpolate({
     inputRange: [0, 1],
-    outputRange: ['0deg', `-${anguloFinal}deg`],
+    outputRange: ['0deg', `-${anguloFinalPonteiro}deg`],
+  });
+
+  const spinMarcoFocado = anguloMarcoAnim.interpolate({
+    inputRange: [0, 360],
+    outputRange: ['0deg', '360deg'],
   });
 
   function opacityDoTraco(semana) {
-    if (semanas <= 0) {
-      return progressNative.interpolate({
-        inputRange: [0, 1],
-        outputRange: [0, 0],
-      });
-    }
-    const t = semana / semanas;
-    const falha = 0.5 / semanas;
-    return progressNative.interpolate({
-      inputRange: [Math.max(0, t - falha), Math.min(1, t)],
-      outputRange: [0, 1],
-      extrapolate: 'clamp',
-    });
+    return semana > 0 && semana <= semanas ? 1 : 0;
   }
 
   return (
@@ -236,8 +254,8 @@ export default function RelogioProducao() {
         {/* Traços */}
         {tracos.map((semana) => {
           const anguloTraco = (semana / VIDA_TOTAL_SEMANAS) * 360;
-          const isTransicao = semanasTransicao.includes(semana);
-          const podeAnimar = semana > 0 && semana <= semanas;
+          const isTransicao = FASES.some((f) => f.inicio === semana);
+          const passado = opacityDoTraco(semana) === 1;
 
           return (
             <View
@@ -255,32 +273,21 @@ export default function RelogioProducao() {
               <View
                 style={[
                   styles.traco,
-                  { backgroundColor: colors.neutro },
-                  isTransicao && styles.tracoFaseBase,
+                  {
+                    backgroundColor: passado ? colors.principal : colors.neutro,
+                  },
+                  // isTransicao && styles.tracoFaseBase,
                 ]}
               />
-              {podeAnimar && (
-                <Animated.View
-                  style={[
-                    styles.traco,
-                    styles.tracoPassado,
-                    {
-                      backgroundColor: colors.principal,
-                      opacity: opacityDoTraco(semana),
-                    },
-                  ]}
-                />
-              )}
             </View>
           );
         })}
 
-        {/* Pontos dos marcos */}
+        {/* Marcos fixos (todos, discretos) */}
         {marcos
-          .filter((m) => m.semana > 0 && m.semana < VIDA_TOTAL_SEMANAS)
+          .filter((m) => m.semana > 0 && m.semana <= VIDA_TOTAL_SEMANAS)
           .map((marco) => {
             const anguloMarco = (marco.semana / VIDA_TOTAL_SEMANAS) * 360;
-            const isFoco = marco.semana === semanaFoco;
             return (
               <View
                 key={`marco-${marco.semana}-${marco.mensagem}`}
@@ -294,17 +301,37 @@ export default function RelogioProducao() {
                   },
                 ]}
               >
-                <View style={[styles.marco, isFoco && styles.marcoFocado]} />
+                <View style={styles.marco} />
               </View>
             );
           })}
 
-        {/* Ponteiro */}
+        {/* Marco focado — único que desliza */}
+        <Animated.View
+          pointerEvents="none"
+          style={[
+            styles.marcoContainer,
+            {
+              width: TAMANHO,
+              height: TAMANHO,
+              zIndex: 6,
+              transform: [{ rotate: spinMarcoFocado }],
+            },
+          ]}
+        >
+          <View style={[styles.marcoFocado, {backgroundColor:colors.destaque}]} />
+        </Animated.View>
+
+        {/* Ponteiro = idade do lote (parado na posição final) */}
         <Animated.View
           pointerEvents="box-none"
           style={[
             styles.bolinhaContainer,
-            { width: TAMANHO, height: TAMANHO, transform: [{ rotate: spin }] },
+            {
+              width: TAMANHO,
+              height: TAMANHO,
+              transform: [{ rotate: spinPonteiro }],
+            },
           ]}
         >
           <Animated.View
@@ -312,7 +339,7 @@ export default function RelogioProducao() {
               styles.bolinha,
               {
                 backgroundColor: colors.neutro,
-                transform: [{ rotate: spinInverse }],
+                transform: [{ rotate: spinPonteiroInverso }],
               },
             ]}
           >
@@ -329,7 +356,7 @@ export default function RelogioProducao() {
               height: TAMANHO,
               borderRadius: TAMANHO / 2,
               backgroundColor: colors.principal,
-              gap: 14
+              gap: 14,
             },
           ]}
         >
@@ -343,7 +370,7 @@ export default function RelogioProducao() {
             pagingEnabled
             showsHorizontalScrollIndicator={false}
             onMomentumScrollEnd={onScrollMarcos}
-            onScrollToIndexFailed={() => { }}
+            onScrollToIndexFailed={() => {}}
             style={[styles.listaMarcos, { width: TAMANHO }]}
             getItemLayout={(_, index) => ({
               length: TAMANHO,
@@ -394,13 +421,10 @@ const styles = StyleSheet.create({
   },
   traco: {
     position: 'absolute',
-    top: -5,
+    top: -1,
     width: 1.5,
-    height: 8,
+    height: 4,
     borderRadius: 1,
-  },
-  tracoPassado: {
-    width: 2,
   },
 
   marcoContainer: {
@@ -417,10 +441,10 @@ const styles = StyleSheet.create({
     marginTop: -12,
   },
   marcoFocado: {
-    backgroundColor: '#f39c12',
     width: 3,
-    height: 10,
-    marginTop: -15,
+    height: 14,
+    borderRadius: 4,
+    marginTop: -12,
   },
   bolinhaContainer: {
     position: 'absolute',
@@ -432,14 +456,14 @@ const styles = StyleSheet.create({
     width: 30,
     aspectRatio: 1,
     borderRadius: 20,
-    marginTop: -50,
+    marginTop: -48,
     alignItems: 'center',
     justifyContent: 'center',
   },
   textoSemanas: {
-    fontFamily: 'Roboto-Regular',
+    fontFamily: 'Roboto-Medium',
     color: '#000',
-    fontWeight: 'bold',
+    fontSize:13
   },
   ciclo: {
     position: 'absolute',
@@ -471,12 +495,6 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     gap: 6,
     marginBottom: 4,
-  },
-  bolinhaProximoMsg: {
-    width: 6,
-    height: 6,
-    borderRadius: 4,
-    backgroundColor: '#f39c12',
   },
   mensagem: {
     fontFamily: 'Roboto-Regular',

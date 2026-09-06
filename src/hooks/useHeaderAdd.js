@@ -14,7 +14,6 @@ export default function useHeaderAdd(nomeTela, title) {
       headerRight: () => (
         <Pressable
           onPress={() => {
-            // Tab screen → Tab navigator → Stack raiz
             const root =
               navigation.getParent()?.getParent?.() ||
               navigation.getParent?.() ||
@@ -22,9 +21,9 @@ export default function useHeaderAdd(nomeTela, title) {
 
             root.navigate(nomeTela);
           }}
-          style={{backgroundColor: colors.neutro, padding:10, borderRadius:6 }}
+          style={{backgroundColor: colors.neutro, padding:12, borderRadius:6 }}
         >
-          <Ionicons name="add" size={22} color="#000" />
+          <Ionicons name="add" size={22} color="#000" disabled/>
         </Pressable>
       ),
     });

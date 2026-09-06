@@ -126,29 +126,19 @@ export async function calcularTudoDoLote(lote, uid) {
     console.log('Erro investimentos no cálculo:', e);
   }
 
-  // Custo projetado por ovo (criação diluída na meta + postura nos ovos já feitos)
-  const custoFixo =
-    producaoTotalEstimada > 0 ? totalCriacao / producaoTotalEstimada : 0;
-  const custoVariavel =
-    totalOvosProduzidos > 0 ? totalPostura / totalOvosProduzidos : 0;
+// Criação + postura diluídos na meta de ovos da vida
+const custoFixo = producaoTotalEstimada > 0 ? totalCriacao / producaoTotalEstimada : 0;
+const custoPostura = producaoTotalEstimada > 0 ? totalPostura / producaoTotalEstimada : 0;
+const custoDepreciacao = ovosMesEstimado > 0 ? totalDepreciacaoMes / ovosMesEstimado : 0;
 
-  // Depreciação no ovo: parcela mensal / ovos do mês estimado (simplificado)
-  // usa meta mensal aproximada se houver produção estimada
-  const ovosMesEstimado =
-    qtdGalinhas > 0 && producaoPorGalinha > 0
-      ? (qtdGalinhas * producaoPorGalinha) / 12
-      : 0;
-  const custoDepreciacao =
-    ovosMesEstimado > 0 ? totalDepreciacaoMes / ovosMesEstimado : 0;
+const custoProjetado = custoFixo + custoPostura + custoDepreciacao;
+const precoSugerido = custoProjetado * (1 + MARGEM_DE_LUCRO);
 
-  const custoProjetado = custoFixo + custoVariavel + custoDepreciacao;
-  const precoSugerido = custoProjetado * (1 + MARGEM_DE_LUCRO);
-
-  // Desempenho: ovos reais vs meta (0 se ainda sem meta)
-  const desempenho =
-    producaoTotalEstimada > 0
-      ? totalOvosProduzidos / producaoTotalEstimada
-      : null;
+// Progresso da meta de vida (não "esperado até hoje")
+const desempenho =
+  producaoTotalEstimada > 0
+    ? totalOvosProduzidos / producaoTotalEstimada
+    : null;
 
   return {
     producao,

@@ -1,51 +1,10 @@
 import { View, Text, StyleSheet, ScrollView } from 'react-native';
 import { useTheme } from '@react-navigation/native';
-
-const SECOES = [
-  {
-    titulo: '1. Custos de Criação',
-    texto:
-      'São os gastos antes das galinhas começarem a botar (ração inicial, pintainhas, vacinas, etc.).\n\nEsses valores não somem: são divididos por todos os ovos que o lote deve produzir na vida. Assim, o custo da criação entra no preço do ovo de forma diluída, e não pesa só nos primeiros ovos.',
-  },
-  {
-    titulo: '2. Custos de Postura',
-    texto:
-      'São os gastos depois que a produção de ovos começa (ração de postura, medicamentos, embalagens, etc.).\n\nTambém entram no custo de cada ovo, junto com a criação, usando a produção total estimada do lote.',
-  },
-  {
-    titulo: '3. Investimentos e depreciação',
-    texto:
-      'Itens caros e duráveis (galpão, equipamentos) não devem entrar de uma vez no preço do ovo.\n\nVocê informa o valor total e quantos anos deve durar. O app calcula uma parcela mensal e divide entre os lotes ativos.\n\nQuando um lote é finalizado, ele deixa de receber essa parcela; os demais passam a dividir o valor.',
-  },
-  {
-    titulo: '4. Produção total estimada',
-    texto:
-      'No cadastro do lote você informa quantas galinhas tem hoje e quantos ovos cada uma deve produzir na vida.\n\nProdução estimada = galinhas × ovos por galinha\n\nÉ essa quantidade que o app usa para diluir os custos e montar um preço estável.',
-  },
-  {
-    titulo: '5. Custo projetado do ovo',
-    texto:
-      'É o valor estimado para produzir 1 ovo, considerando a vida toda do lote:\n\nCusto do ovo = (Criação + Postura + depreciação) ÷ produção total estimada\n\nA ideia é o preço não oscilar demais a cada gasto na criação.',
-  },
-  {
-    titulo: '6. Preço sugerido',
-    texto:
-      'É o custo do ovo com a margem de lucro (ex.: 60%).\n\nPreço sugerido = Custo do ovo × 1,60\n\nServe como referência mínima de venda. Você pode cobrar mais; o app só mostra um piso para não vender abaixo do custo projetado.',
-  },
-  {
-    titulo: '7. Desempenho da produção',
-    texto:
-      'Na fase de postura, o app compara os ovos já coletados com os ovos esperados até hoje (com base na estimativa e na idade do lote).\n\n• Perto de 100% → produção dentro do planejado\n• Bem abaixo → pode faltar ovo no fim e o custo real sobe\n• Acima → lote produzindo melhor que o previsto\n\nNa criação ainda não há meta de ovos, então o desempenho não se aplica.',
-  },
-  {
-    titulo: '8. Barra Criação / Postura',
-    texto:
-      'A barra mostra só a proporção dos gastos já lançados: criação e postura.\n\nIsso não é o preço do ovo; é o quanto de dinheiro já foi gasto em cada fase.',
-  },
-];
+import Ionicons from 'react-native-vector-icons/Ionicons';
 
 export default function Info() {
   const { colors } = useTheme();
+  const principal = colors.principal || '#66796b';
 
   return (
     <ScrollView
@@ -53,43 +12,79 @@ export default function Info() {
       contentContainerStyle={styles.content}
       showsVerticalScrollIndicator={false}
     >
+     
 
-
-      {/* Seções */}
-      {SECOES.map((item, index) => (
-        <View
-          key={index}
-          style={[styles.card, { backgroundColor: colors.neutro }]}
-        >
-          <View style={styles.tituloRow}>
-            <View
-              style={[
-                styles.marcador,
-                { backgroundColor: colors.principal || '#B22222' },
-              ]}
-            />
-            <Text style={styles.titulo}>{item.titulo}</Text>
-          </View>
-          <Text style={styles.texto}>{item.texto}</Text>
+      <View style={styles.item}>
+        <Ionicons name="cube-outline" size={22} color={principal} />
+        <View style={styles.itemTexto}>
+          <Text style={styles.itemTitulo}>O lote</Text>
+          <Text style={styles.itemDesc}>
+            Quantas galinhas temos e quantos ovos cada uma deve botar na vida.
+            Isso monta a meta de produção do lote.
+          </Text>
         </View>
-      ))}
+      </View>
 
-      {/* Resumo final */}
-      <View
-        style={[
-          styles.resumo,
-          { borderColor: colors.principal || '#B22222' },
-        ]}
-      >
-        <Text style={styles.resumoTitulo}>Em uma frase</Text>
-        <Text style={styles.resumoTexto}>
-          Custos e investimentos são diluídos na produção estimada da vida da
-          galinha. O app mostra um custo por ovo e um preço sugerido estáveis, e
-          avisa se a coleta real está acompanhando o plano.
+      <View style={styles.item}>
+        <Ionicons name="wallet-outline" size={22} color={principal} />
+        <View style={styles.itemTexto}>
+          <Text style={styles.itemTitulo}>Os custos</Text>
+          <Text style={styles.itemDesc}>
+            Ração, remédios e outros gastos do dia a dia, na criação ou na
+            postura.
+          </Text>
+        </View>
+      </View>
+
+      <View style={styles.item}>
+        <Ionicons name="home-outline" size={22} color={principal} />
+        <View style={styles.itemTexto}>
+          <Text style={styles.itemTitulo}>Os investimentos</Text>
+          <Text style={styles.itemDesc}>
+            Galpão e equipamentos. Como duram vários anos, o valor é dividido no
+            tempo e não pesa tudo de uma vez no ovo.
+          </Text>
+        </View>
+      </View>
+
+      <View style={styles.item}>
+        <Ionicons name="egg-outline" size={22} color={principal} />
+        <View style={styles.itemTexto}>
+          <Text style={styles.itemTitulo}>A coleta de ovos</Text>
+          <Text style={styles.itemDesc}>
+            O que recolhemos cada dia. Serve para acompanhar se a produção está
+            dentro do planejado.
+          </Text>
+        </View>
+      </View>
+
+      <Text style={styles.titulo}>Como chega no preço do ovo</Text>
+      <Text style={styles.texto}>
+        O app soma o que gastamos com o lote e uma parte dos investimentos.
+        Depois divide pela quantidade de ovos que o lote deve produzir no total.
+      </Text>
+      <Text style={[styles.texto, { marginTop: 10 }]}>
+        Assim o gasto da criação não fica só nos primeiros ovos. Ele é rateado
+        por toda a vida produtiva das aves. Em cima desse custo, entra a margem
+        de lucro e aparece o preço sugerido de venda.
+      </Text>
+
+      <Text style={styles.titulo}>O que vemos na tela inicial</Text>
+      <Text style={styles.texto}>
+        Na Home acompanhamos o lote escolhido: o custo de um ovo, o preço
+        sugerido para vender e se a coleta está perto da meta. Quanto mais em
+        dia estiverem os lançamentos, mais esses números batem com a realidade
+        do nosso galinheiro.
+      </Text>
+
+      <View style={[styles.caixa, { backgroundColor: colors.neutro }]}>
+        <Text style={styles.caixaTexto}>
+          Não precisa entender de conta complicada. Basta cadastrar direito o
+          lote, os gastos e as coletas. O app faz as contas e mostra o resultado.
         </Text>
       </View>
 
-      <View style={{ height: 80 }} />
+      <View style={{ height: 100 }} />
     </ScrollView>
   );
 }
@@ -100,78 +95,70 @@ const styles = StyleSheet.create({
     backgroundColor: '#fff',
   },
   content: {
-    paddingHorizontal: 16,
-    paddingTop: 8,
-    paddingBottom: 24,
+    paddingHorizontal: 20,
+    paddingTop: 12,
   },
-  hero: {
-    borderRadius: 22,
-    padding: 22,
-    marginBottom: 14,
+  topo: {
+    borderRadius: 18,
+    padding: 20,
+    marginBottom: 24,
   },
-  heroTitulo: {
+  topoTitulo: {
     fontFamily: 'Roboto-Bold',
-    fontSize: 22,
+    fontSize: 20,
     color: '#fff',
     marginBottom: 8,
   },
-  heroSub: {
-    fontFamily: 'Roboto-Light',
-    fontSize: 14,
-    color: '#ffe5e5',
-    lineHeight: 20,
-  },
-  card: {
-    borderRadius: 18,
-    padding: 18,
-    marginBottom: 10,
-  },
-  intro: {
+  topoTexto: {
     fontFamily: 'Roboto-Regular',
     fontSize: 15,
-    color: '#333',
+    color: 'rgba(255,255,255,0.92)',
     lineHeight: 22,
-  },
-  tituloRow: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    marginBottom: 10,
-    gap: 10,
-  },
-  marcador: {
-    width: 4,
-    height: 18,
-    borderRadius: 2,
   },
   titulo: {
     fontFamily: 'Roboto-Medium',
-    fontSize: 16,
-    color: '#000',
-    flex: 1,
+    fontSize: 17,
+    color: '#111',
+    marginBottom: 10,
+    marginTop: 16,
   },
   texto: {
-    fontFamily: 'Roboto-Light',
-    fontSize: 14,
-    color: '#333',
-    lineHeight: 21,
-  },
-  resumo: {
-    marginTop: 8,
-    borderWidth: 1.5,
-    borderRadius: 18,
-    padding: 18,
-    backgroundColor: '#fff',
-  },
-  resumoTitulo: {
-    fontFamily: 'Roboto-Bold',
-    fontSize: 16,
-    color: '#000',
+    fontFamily: 'Roboto-Regular',
+    fontSize: 15,
+    color: '#444',
+    lineHeight: 24,
     marginBottom: 8,
   },
-  resumoTexto: {
+  item: {
+    flexDirection: 'row',
+    alignItems: 'flex-start',
+    marginVertical: 16,
+    gap: 12,
+  },
+  itemTexto: {
+    flex: 1,
+  },
+  itemTitulo: {
+    fontFamily: 'Roboto-Medium',
+    fontSize: 15,
+    color: '#111',
+    marginBottom: 4,
+  },
+  itemDesc: {
+    fontFamily: 'Roboto-Regular',
+    fontSize: 14,
+    color: '#555',
+    lineHeight: 21,
+  },
+  caixa: {
+    marginTop: 20,
+    borderRadius: 14,
+    padding: 16,
+  },
+  caixaTexto: {
     fontFamily: 'Roboto-Regular',
     fontSize: 14,
     color: '#333',
-    lineHeight: 21,
+    lineHeight: 22,
   },
 });
