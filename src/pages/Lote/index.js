@@ -20,15 +20,15 @@ import {
   writeBatch,
 } from 'firebase/firestore';
 import { useTheme } from '@react-navigation/native';
-import useHeaderAdd from '../../hooks/useHeaderAdd';
+import useHeaderAdd from '../../componentes/HeaderAdd';
 import { useAuth } from '../../contexts/AuthContext';
-import { GeralContext } from '../../contexts/geral';
+import { AppContext } from '../../contexts/AppContext';
 import ItemLista from '../../componentes/ItemLista';
 
 export default function Lote() {
   const { colors } = useTheme();
   const { uid } = useAuth();
-  const { lote, setLote } = useContext(GeralContext);
+  const { lote, setLote } = useContext(AppContext);
 
   const [lista, setLista] = useState([]);
   const [loading, setLoading] = useState(true);

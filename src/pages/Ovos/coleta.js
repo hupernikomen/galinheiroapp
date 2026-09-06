@@ -10,7 +10,7 @@ import {
 } from 'react-native';
 import Ionicons from 'react-native-vector-icons/Ionicons';
 import DateTimePicker from '@react-native-community/datetimepicker';
-import { GeralContext } from '../../contexts/geral';
+import { AppContext } from '../../contexts/AppContext';
 import { useAuth } from '../../contexts/AuthContext';
 import { db } from '../../services/firebaseConnection/firebase';
 import {
@@ -30,7 +30,7 @@ export default function Coleta() {
   const [mostrarData, setMostrarData] = useState(false);
   const [salvando, setSalvando] = useState(false);
 
-  const { lote, setLote } = useContext(GeralContext);
+  const { lote, setLote } = useContext(AppContext);
   const { uid } = useAuth();
   const { colors } = useTheme();
   const navigation = useNavigation();

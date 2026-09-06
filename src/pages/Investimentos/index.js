@@ -4,7 +4,6 @@ import {
   StyleSheet,
   FlatList,
   ActivityIndicator,
-  Pressable,
   Alert,
 } from 'react-native';
 import { useState, useEffect } from 'react';
@@ -18,7 +17,7 @@ import {
   deleteDoc,
 } from 'firebase/firestore';
 import { useNavigation, useTheme } from '@react-navigation/native';
-import useHeaderAdd from '../../hooks/useHeaderAdd';
+import useHeaderAdd from '../../componentes/HeaderAdd';
 import { useAuth } from '../../contexts/AuthContext';
 import ItemLista from '../../componentes/ItemLista';
 

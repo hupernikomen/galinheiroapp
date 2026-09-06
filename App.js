@@ -4,7 +4,7 @@ import { SafeAreaProvider } from 'react-native-safe-area-context';
 import { useContext } from 'react';
 
 import AuthProvider, { AuthContext } from './src/contexts/AuthContext';
-import GeralProvider, { GeralContext } from './src/contexts/geral';
+import AppProvider, { AppContext } from './src/contexts/AppContext';
 import Rotas from './src/rotas';
 import Login from './src/pages/Login';
 import TelaCarregamento from './src/componentes/TelaCarregamento';
@@ -22,7 +22,7 @@ const Tema = {
 
 function AppNavigator() {
   const { user, authPronto } = useContext(AuthContext);
-  const { appPronto } = useContext(GeralContext);
+  const { appPronto } = useContext(AppContext);
 
   if (!authPronto) {
     return (
@@ -55,9 +55,9 @@ export default function App() {
   return (
     <SafeAreaProvider>
       <AuthProvider>
-        <GeralProvider>
+        <AppProvider>
           <AppNavigator />
-        </GeralProvider>
+        </AppProvider>
       </AuthProvider>
     </SafeAreaProvider>
   );

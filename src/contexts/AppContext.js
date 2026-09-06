@@ -14,9 +14,9 @@ import {
 import { formatarData } from '../utils/format';
 import { AuthContext } from './AuthContext';
 
-export const GeralContext = createContext({});
+export const AppContext = createContext({});
 
-function GeralProvider({ children }) {
+function AppProvider({ children }) {
   const { uid } = useContext(AuthContext);
 
   const [load, setLoad] = useState(false);
@@ -155,7 +155,7 @@ function GeralProvider({ children }) {
   }
 
   return (
-    <GeralContext.Provider
+    <AppContext.Provider
       value={{
         appPronto,
         load,
@@ -171,8 +171,8 @@ function GeralProvider({ children }) {
       }}
     >
       {children}
-    </GeralContext.Provider>
+    </AppContext.Provider>
   );
 }
 
-export default GeralProvider;
+export default AppProvider;

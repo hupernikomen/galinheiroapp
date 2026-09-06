@@ -22,16 +22,11 @@ import AsyncStorage from '@react-native-async-storage/async-storage';
 import { useAuth } from '../../contexts/AuthContext';
 import ItemLista from '../../componentes/ItemLista';
 
-import useHeaderAdd from '../../hooks/useHeaderAdd';
+import useHeaderAdd from '../../componentes/HeaderAdd';
 
 const CHAVE_PADRAO = '@usarMarcosPadrao';
 
-const MARCOS_PADRAO = [
-  { semana: 1, mensagem: 'Início do lote' },
-  { semana: 18, mensagem: 'Início da postura' },
-  { semana: 70, mensagem: 'Comprar novo Lote' },
-  { semana: 90, mensagem: 'Fim do ciclo' },
-];
+
 
 export default function Marcos() {
   const { colors } = useTheme();
@@ -106,28 +101,19 @@ export default function Marcos() {
   return (
     <View style={styles.container}>
       <View style={styles.switchLinha}>
-        <View style={{ flex: 1, paddingVertical:14 }}>
+        <View style={{ flex: 1, paddingVertical: 14 }}>
           <Text style={styles.switchTitulo}>Exibir marcos padrões no ciclo</Text>
         </View>
         <Switch
           value={usarPadrao}
           onValueChange={alternarPadrao}
-  trackColor={{false: '#ddd', true: '#ddd'}}
+          trackColor={{ false: '#ddd', true: '#ddd' }}
           thumbColor={usarPadrao ? colors.principal : '#fafafa'}
 
         />
       </View>
 
-      {usarPadrao && (
-        <View style={styles.padraoBox}>
-          <Text style={styles.secao}>Padrão do sistema</Text>
-          {MARCOS_PADRAO.map((m) => (
-            <Text key={m.semana} style={styles.padraoItem}>
-              Semana {m.semana} — {m.mensagem}
-            </Text>
-          ))}
-        </View>
-      )}
+     
 
       <Text style={styles.secao}>Meus marcos</Text>
 
@@ -150,11 +136,9 @@ export default function Marcos() {
               style={{
                 borderColor: colors.neutro,
                 borderBottomWidth: 0.3,
-                marginVertical: 14,
               }}
             />
           }
-          contentContainerStyle={{ paddingBottom: 100, paddingTop: 8, }}
           ListEmptyComponent={
             <Text style={styles.vazio}>Nenhum marco personalizado</Text>
           }
@@ -182,16 +166,13 @@ const styles = StyleSheet.create({
     fontSize: 13,
     color: '#888',
     textTransform: 'uppercase',
-    marginTop: 12,
-    marginBottom: 8,
-    marginLeft:28
+    marginLeft: 28,
+    marginVertical:14
   },
   padraoItem: {
     fontFamily: 'Roboto-Light',
     fontSize: 14,
     color: '#333',
-    marginBottom: 4,
-    marginLeft:28
   },
   vazio: { textAlign: 'center', marginTop: 20, color: '#999' },
 });

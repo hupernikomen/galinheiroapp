@@ -9,7 +9,7 @@ import {
   Platform,
 } from 'react-native';
 import { Picker } from '@react-native-picker/picker';
-import { GeralContext } from '../../contexts/geral';
+import { AppContext } from '../../contexts/AppContext';
 import { useAuth } from '../../contexts/AuthContext';
 import { db } from '../../services/firebaseConnection/firebase';
 import { collection, addDoc } from 'firebase/firestore';
@@ -18,7 +18,7 @@ import DateTimePicker from '@react-native-community/datetimepicker';
 import Ionicons from 'react-native-vector-icons/Ionicons';
 
 export default function NovoCusto() {
-  const { lote } = useContext(GeralContext);
+  const { lote } = useContext(AppContext);
   const { uid } = useAuth();
   const { colors } = useTheme();
   const navigation = useNavigation();

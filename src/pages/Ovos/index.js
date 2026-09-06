@@ -4,7 +4,6 @@ import {
   StyleSheet,
   FlatList,
   ActivityIndicator,
-  Pressable,
   Alert,
 } from 'react-native';
 import { useState, useContext, useEffect } from 'react';
@@ -17,14 +16,14 @@ import {
   doc,
   deleteDoc,
 } from 'firebase/firestore';
-import { GeralContext } from '../../contexts/geral';
+import { AppContext } from '../../contexts/AppContext';
 import { useAuth } from '../../contexts/AuthContext';
-import { useNavigation, useTheme } from '@react-navigation/native';
+import { useTheme } from '@react-navigation/native';
 import ItemLista from '../../componentes/ItemLista';
-import useHeaderAdd from '../../hooks/useHeaderAdd'
+import useHeaderAdd from '../../componentes/HeaderAdd'
 
 export default function Ovos() {
-  const { lote } = useContext(GeralContext);
+  const { lote } = useContext(AppContext);
   const { uid } = useAuth();
   const { colors } = useTheme();
 

@@ -8,7 +8,7 @@ import {
   Alert,
 } from 'react-native';
 import { useContext, useState, useEffect } from 'react';
-import { GeralContext } from '../../contexts/geral';
+import { AppContext } from '../../contexts/AppContext';
 import { useAuth } from '../../contexts/AuthContext';
 import { db } from '../../services/firebaseConnection/firebase';
 import {
@@ -20,11 +20,11 @@ import {
   deleteDoc,
 } from 'firebase/firestore';
 import { useNavigation, useTheme } from '@react-navigation/native';
-import useHeaderAdd from '../../hooks/useHeaderAdd';
+import useHeaderAdd from '../../componentes/HeaderAdd';
 import ItemLista from '../../componentes/ItemLista';
 
 export default function Custos() {
-  const { lote } = useContext(GeralContext);
+  const { lote } = useContext(AppContext);
   const { uid } = useAuth();
   const { colors } = useTheme();
   const navigation = useNavigation();

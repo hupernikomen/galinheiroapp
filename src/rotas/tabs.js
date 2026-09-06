@@ -15,6 +15,7 @@ export default function Tabs() {
         initialRouteName='Home'
         tabBar={(props) => <TabbarPersonalizada {...props} />}
         screenOptions={{
+          
           tabBarShowLabel: false,
           headerShown: false,
           headerTitleStyle:{
@@ -27,7 +28,7 @@ export default function Tabs() {
         <Tab.Screen
           name="Home"
           component={Home}
-          options={{ tabBarIcon: 'home-outline', headerShown: true, title: '' }}
+          options={{ tabBarIcon: 'home-outline', headerShown: true, title: '', headerShadowVisible:false, }}
         />
         <Tab.Screen
           name="Ovos"

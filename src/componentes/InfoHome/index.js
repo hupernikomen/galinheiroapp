@@ -29,23 +29,23 @@ export default function InfoHome({
   if (desempenho != null && !Number.isNaN(Number(desempenho))) {
     const pct = Number(desempenho) * 100;
     let extra = '';
-    if (pct < 80) extra = ' — abaixo do esperado';
-    else if (pct > 110) extra = ' — acima do esperado';
+    // if (pct < 80) extra = ' — abaixo do esperado';
+    // else if (pct > 110) extra = ' — acima do esperado';
 
     textoProducao = `Produção: ${pct.toFixed(0)}% do esperado${extra}`;
     textoDetalhe =
       semanasPostura > 0
         ? `Semana ${semanasPostura} de postura · ${Number(
-            totalOvosProduzidos || 0
-          ).toLocaleString('pt-BR')} ovos de ${Number(
-            ovosEsperadosAteHoje || 0
-          ).toLocaleString('pt-BR')} esperados`
+          totalOvosProduzidos || 0
+        ).toLocaleString('pt-BR')} ovos de ${Number(
+          ovosEsperadosAteHoje || 0
+        ).toLocaleString('pt-BR')} esperados`
         : null;
   }
 
   return (
     <View style={styles.container}>
-      <View style={styles.barra}>
+      {/* <View style={styles.barra}>
         <View
           style={[
             styles.fatia,
@@ -64,11 +64,11 @@ export default function InfoHome({
             },
           ]}
         />
-      </View>
+      </View> */}
 
       <View style={styles.legenda}>
         <View style={styles.legendaItem}>
-          <View style={[styles.bolinha, { backgroundColor: colors.principal }]} />
+          {/* <View style={[styles.bolinha, { backgroundColor: colors.principal }]} /> */}
           <Text style={styles.legendaTexto}>
             Criação  R$ {Number(totalCriacao).toFixed(2)}
             {totalGastos > 0 ? `  (${percCriacao.toFixed(0)}%)` : ''}
@@ -76,7 +76,7 @@ export default function InfoHome({
         </View>
 
         <View style={styles.legendaItem}>
-          <View style={[styles.bolinha, { backgroundColor: '#f39c12' }]} />
+          {/* <View style={[styles.bolinha, { backgroundColor: '#f39c12' }]} /> */}
           <Text style={styles.legendaTexto}>
             Postura  R$ {Number(totalPostura).toFixed(2)}
             {totalGastos > 0 ? `  (${percPostura.toFixed(0)}%)` : ''}
@@ -84,7 +84,7 @@ export default function InfoHome({
         </View>
 
         <View style={styles.legendaItem}>
-          <View style={[styles.bolinha, { backgroundColor: '#ca0a0a' }]} />
+          {/* <View style={[styles.bolinha, { backgroundColor: '#ca0a0a' }]} /> */}
           <Text style={styles.legendaTexto}>
             Depreciação  R$ {Number(totalDepreciacao).toFixed(2)}/mês
           </Text>
@@ -101,7 +101,7 @@ export default function InfoHome({
           {' + '}
           {margemPct.toFixed(0)}% margem
         </Text>
-        <Text style={styles.precoSub}>{textoProducao}</Text>
+        <Text style={[styles.precoSub, { marginTop: 14 }]}>{textoProducao}</Text>
         {!!textoDetalhe && (
           <Text style={styles.precoSub}>{textoDetalhe}</Text>
         )}
@@ -114,33 +114,19 @@ const styles = StyleSheet.create({
   container: {
     width: '70%',
   },
-  barra: {
-    height: 4,
-    borderRadius: 8,
-    flexDirection: 'row',
-    overflow: 'hidden',
-    backgroundColor: '#eee',
-  },
-  fatia: {
-    height: '100%',
-  },
+
   legenda: {
-    marginTop: 14,
     paddingHorizontal: 7,
+    alignItems: "center"
   },
   legendaItem: {
     flexDirection: 'row',
     alignItems: 'center',
     gap: 8,
   },
-  bolinha: {
-    width: 6,
-    height: 6,
-    borderRadius: 6,
-  },
+
   legendaTexto: {
     fontFamily: 'Roboto-Regular',
-    fontSize: 14,
   },
   caixaPreco: {
     marginTop: 18,
@@ -151,14 +137,13 @@ const styles = StyleSheet.create({
   },
   precoLabel: {
     fontFamily: 'Roboto-Regular',
-    fontSize: 13,
   },
   precoValor: {
     letterSpacing: -0.5,
     fontFamily: 'Roboto-Black',
     fontSize: 22,
     marginTop: 4,
-    marginBottom:14
+    marginBottom: 14
   },
   precoSub: {
     fontFamily: 'Roboto-Light',

@@ -1,6 +1,6 @@
 import { StyleSheet, View, Pressable, Image, Text, Modal, Alert } from 'react-native';
 import { Picker } from '@react-native-picker/picker';
-import { GeralContext } from '../../contexts/geral';
+import { AppContext } from '../../contexts/AppContext';
 import { useContext, useEffect, useState, useRef } from 'react';
 import Ciclo from '../../componentes/Ciclo';
 import InfoHome from '../../componentes/InfoHome';
@@ -13,7 +13,7 @@ const ALTURA_TABBAR = 78;
 
 export default function Home() {
   const { lote, setLote, custoOvo, dadosRelogio, listaLotes } =
-    useContext(GeralContext);
+    useContext(AppContext);
   const { user, logout } = useAuth();
   const navigation = useNavigation();
   const insets = useSafeAreaInsets();
@@ -192,7 +192,7 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
   },
   picker: {
-    width: 230,
+    width: 220,
     height: 60,
     marginLeft: 14,
   },
