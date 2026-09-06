@@ -8,12 +8,14 @@ import {
   Text,
   Platform,
 } from 'react-native';
+import { Picker } from '@react-native-picker/picker';
 import { db } from '../../services/firebaseConnection/firebase';
 import { collection, addDoc, query, where, getDocs } from 'firebase/firestore';
 import { useNavigation, useTheme } from '@react-navigation/native';
 import { useAuth } from '../../contexts/AuthContext';
 import DateTimePicker from '@react-native-community/datetimepicker';
 import Ionicons from 'react-native-vector-icons/Ionicons';
+import { RACAS, buscarRacaPorId } from '../../constants/racas';
 
 export default function NovoLote() {
   const { colors } = useTheme();
@@ -21,12 +23,24 @@ export default function NovoLote() {
   const { uid } = useAuth();
 
   const [nome, setNome] = useState('');
-  const [raca, setRaca] = useState('');
+  const [racaId, setRacaId] = useState('');
   const [qt, setQt] = useState('');
   const [prodEstimada, setProdEstimada] = useState('');
   const [chegada, setChegada] = useState(new Date());
   const [mostrarData, setMostrarData] = useState(false);
   const [salvando, setSalvando] = useState(false);
+
+  const isOutra = racaId === 'outra';
+
+  function onChangeRaca(id) {
+    setRacaId(id);
+    const raca = buscarRacaPorId(id);
+    if (!raca || raca.id === 'outra') {
+      setProdEstimada('');
+      return;
+    }
+    setProdEstimada(String(raca.producaoEstimada));
+  }
 
   function onChangeData(event, selectedDate) {
     if (Platform.OS === 'android') {
@@ -57,6 +71,21 @@ export default function NovoLote() {
       return;
     }
 
+    if (!racaId) {
+      Alert.alert('Atenção', 'Selecione a raça');
+      return;
+    }
+
+    if (!prodEstimada || Number(prodEstimada) <= 0) {
+      Alert.alert(
+        'Atenção',
+        isOutra
+          ? 'Informe a produção estimada por galinha'
+          : 'Produção estimada inválida para a raça'
+      );
+      return;
+    }
+
     try {
       setSalvando(true);
 
@@ -72,20 +101,24 @@ export default function NovoLote() {
       }
 
       const quantidade = Number(qt);
+      const racaObj = buscarRacaPorId(racaId);
+      const nomeRaca = racaObj?.nome || '';
 
       await addDoc(collection(db, 'lotes'), {
         chegada: chegada.getTime(),
         nome: nome.trim(),
-        raca: (raca || '').trim(),
+        raca: nomeRaca,
+        racaId: racaId,
         qt: quantidade,
         qtAtual: quantidade,
-        prodEstimada: prodEstimada ? String(prodEstimada) : '',
+        prodEstimada: String(prodEstimada),
         status: 'Cria',
+        inicioPostura: null,
         userId: uid,
       });
 
       setNome('');
-      setRaca('');
+      setRacaId('');
       setQt('');
       setProdEstimada('');
       setChegada(new Date());
@@ -100,8 +133,6 @@ export default function NovoLote() {
 
   return (
     <View style={styles.container}>
-
-
       <Pressable
         onPress={abrirCalendario}
         style={[styles.botaoData, { backgroundColor: colors.neutro }]}
@@ -112,7 +143,6 @@ export default function NovoLote() {
         <Ionicons name="calendar-outline" size={22} color={colors.principal} />
       </Pressable>
 
-
       <TextInput
         style={[styles.input, { backgroundColor: colors.neutro }]}
         placeholder="Nome do lote"
@@ -122,14 +152,18 @@ export default function NovoLote() {
         underlineColorAndroid="transparent"
       />
 
-      <TextInput
-        style={[styles.input, { backgroundColor: colors.neutro }]}
-        placeholder="Raça"
-        value={raca}
-        onChangeText={setRaca}
-        placeholderTextColor="#999"
-        underlineColorAndroid="transparent"
-      />
+      <View style={[styles.pickerBox, { backgroundColor: colors.neutro }]}>
+        <Picker
+          selectedValue={racaId}
+          onValueChange={onChangeRaca}
+          style={styles.picker}
+        >
+          <Picker.Item label="Selecione a raça" value="" />
+          {RACAS.map((r) => (
+            <Picker.Item key={r.id} label={r.nome} value={r.id} />
+          ))}
+        </Picker>
+      </View>
 
       <TextInput
         style={[styles.input, { backgroundColor: colors.neutro }]}
@@ -142,15 +176,27 @@ export default function NovoLote() {
       />
 
       <TextInput
-        style={[styles.input, { backgroundColor: colors.neutro }]}
+        style={[
+          styles.input,
+          {
+            backgroundColor: colors.neutro,
+            opacity: isOutra || !racaId ? 1 : 0.85,
+          },
+        ]}
         placeholder="Produção estimada por galinha (ovos)"
         keyboardType="numeric"
         value={prodEstimada}
         onChangeText={setProdEstimada}
+        editable={isOutra || !racaId}
         placeholderTextColor="#999"
         underlineColorAndroid="transparent"
       />
 
+      {!!racaId && !isOutra && (
+        <Text style={styles.dica}>
+          Produção preenchida pela raça. Escolha "Outra" para informar manualmente.
+        </Text>
+      )}
 
       <Pressable
         onPress={CadastrarLote}
@@ -167,7 +213,7 @@ export default function NovoLote() {
           value={chegada}
           mode="date"
           display="default"
-          onChange={onChangeData}
+          onValueChange={onChangeData}
           onDismiss={() => setMostrarData(false)}
           maximumDate={new Date()}
         />
@@ -189,6 +235,15 @@ const styles = StyleSheet.create({
     marginBottom: 12,
     fontSize: 16,
   },
+  pickerBox: {
+    borderRadius: 22,
+    marginBottom: 12,
+    overflow: 'hidden',
+  },
+  picker: {
+    height: 50,
+    width: '100%',
+  },
   botaoData: {
     height: 50,
     borderRadius: 22,
@@ -201,6 +256,13 @@ const styles = StyleSheet.create({
   dataTexto: {
     fontSize: 16,
     color: '#333',
+  },
+  dica: {
+    fontSize: 12,
+    color: '#888',
+    marginBottom: 12,
+    marginTop: -4,
+    paddingHorizontal: 4,
   },
   botao: {
     height: 52,

@@ -145,7 +145,7 @@ export default function NovoCusto() {
           value={data}
           mode="date"
           display="default"
-          onChange={onChangeData}
+          onValueChange={onChangeData}
           onDismiss={() => setMostrarData(false)}
           maximumDate={new Date()}
         />

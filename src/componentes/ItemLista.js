@@ -150,10 +150,10 @@ const styles = StyleSheet.create({
     elevation:5,
     backgroundColor: '#fff',
     borderRadius: 18,
+    paddingVertical:14
   },
   item: {
     paddingHorizontal: 28,
-    paddingVertical: 16,
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'center',

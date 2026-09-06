@@ -16,14 +16,21 @@ import AsyncStorage from '@react-native-async-storage/async-storage';
 
 const VIDA_TOTAL_SEMANAS = 90;
 const CHAVE_PADRAO = '@usarMarcosPadrao';
-const TAMANHO = 230;
+const TAMANHO = 220;
 const INTERVALO_SLIDER_MS = 5000;
 const DURACAO_RELOGIO_MS = 500;
 const DURACAO_MARCO_MS = 1500;
 const DELAY_INICIO_MS = 1500;
 
 const MARCOS_PADRAO = [
-  { semana: 1, mensagem: 'Início do lote' },
+  { semana: 1, mensagem: 'Marek (HVT + Rispens)' },
+  { semana: 2, mensagem: 'Newcastle (B1 ou La Sota) e Bronquite Infecciosa (H120)' },
+  { semana: 3, mensagem: 'Gumboro (cepa intermediária)' },
+  { semana: 4, mensagem: 'Gumboro (reforço)' },
+  { semana: 5, mensagem: 'Newcastle (reforço La Sota) e Bronquite Infecciosa (reforço)' },
+  { semana: 8, mensagem: 'Newcastle (3º reforço)' },
+  { semana: 12, mensagem: 'Bronquite Infecciosa (3º reforço)' },
+  { semana: 14, mensagem: 'Newcastle + Bronquite (oleosa)' },
   { semana: 18, mensagem: 'Início da postura' },
   { semana: 70, mensagem: 'Comprar novo Lote' },
   { semana: 90, mensagem: 'Fim do ciclo' },
@@ -360,7 +367,7 @@ export default function Ciclo() {
             },
           ]}
         >
-          {!!faseAtual && <Text style={styles.fase}>{faseAtual}</Text>}
+          {/* {!!faseAtual && <Text style={styles.fase}>{faseAtual}</Text>} */}
 
           <FlatList
             ref={listaRef}
@@ -380,7 +387,7 @@ export default function Ciclo() {
             renderItem={({ item }) => (
               <View style={[styles.slide, { width: TAMANHO }]}>
                 <View style={styles.linhaSemana}>
-                  <Text style={styles.mensagem}>Semana {item.semana}</Text>
+                  <Text style={styles.mensagem}>Na semana {String(item.semana).split(".")[0]}</Text>
                 </View>
                 <Text style={styles.mensagem} numberOfLines={3}>
                   {item.mensagem}
@@ -485,7 +492,7 @@ const styles = StyleSheet.create({
     flexGrow: 0,
   },
   slide: {
-    paddingHorizontal: 22,
+    paddingHorizontal: 14,
     alignItems: 'center',
     justifyContent: 'center',
   },
@@ -499,9 +506,8 @@ const styles = StyleSheet.create({
   mensagem: {
     fontFamily: 'Roboto-Regular',
     textAlign: 'center',
-    fontSize: 14,
+    fontSize: 13,
     color: '#fff',
-    lineHeight: 20,
   },
   dots: {
     flexDirection: 'row',
@@ -511,9 +517,9 @@ const styles = StyleSheet.create({
     marginBottom: 4,
   },
   dot: {
-    width: 5,
-    height: 5,
-    borderRadius: 3,
+    width: 4,
+    height: 4,
+    borderRadius: 2,
     backgroundColor: 'rgba(255,255,255,0.35)',
   },
   dotAtivo: {

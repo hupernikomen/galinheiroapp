@@ -1,27 +1,25 @@
 import { StyleSheet, View, Pressable, Image, Text, Modal, Alert } from 'react-native';
 import { Picker } from '@react-native-picker/picker';
 import { GeralContext } from '../../contexts/geral';
-import { useContext, useEffect, useState } from 'react';
-import Ciclo from '../../componentes/Ciclo'
+import { useContext, useEffect, useState, useRef } from 'react';
+import Ciclo from '../../componentes/Ciclo';
 import InfoHome from '../../componentes/InfoHome';
-import { useNavigation, useTheme } from '@react-navigation/native';
+import { useNavigation } from '@react-navigation/native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import Ionicons from 'react-native-vector-icons/Ionicons';
 import { useAuth } from '../../contexts/AuthContext';
 
-
-
 const ALTURA_TABBAR = 78;
 
 export default function Home() {
-  const { lote, setLote, custoOvo, listaLotes } =
+  const { lote, setLote, custoOvo, dadosRelogio, listaLotes } =
     useContext(GeralContext);
   const { user, logout } = useAuth();
   const navigation = useNavigation();
   const insets = useSafeAreaInsets();
-  const { colors } = useTheme();
 
   const [menuAberto, setMenuAberto] = useState(false);
+  const avisouLoteRef = useRef(false);
 
   const paddingBottomMain = ALTURA_TABBAR + Math.max(insets.bottom, 8);
 
@@ -68,8 +66,8 @@ export default function Home() {
                 label={item?.nome || 'Sem nome'}
                 value={item.id}
                 style={{
-                  fontFamily:'Roboto-Medium',
-                  fontSize:16,
+                  fontFamily: 'Roboto-Medium',
+                  fontSize: 16,
                 }}
               />
             ))}
@@ -94,10 +92,20 @@ export default function Home() {
     });
   }, [navigation, listaLotes, lote, setLote, user]);
 
+  // Avisa uma vez se há lotes e nenhum está selecionado
+  useEffect(() => {
+    if (listaLotes.length > 0 && !lote && !avisouLoteRef.current) {
+      avisouLoteRef.current = true;
+      Alert.alert('Lote não selecionado', 'Selecione um dos lotes criados');
+    }
+    if (lote) {
+      avisouLoteRef.current = false;
+    }
+  }, [listaLotes, lote]);
+
   return (
     <View style={styles.container}>
       <View style={[styles.main, { paddingBottom: paddingBottomMain }]}>
-       
         <View style={styles.blocoGrafico}>
           <Ciclo />
         </View>
@@ -111,11 +119,13 @@ export default function Home() {
             desempenho={custoOvo?.desempenho}
             totalDepreciacao={custoOvo?.totalDepreciacao || 0}
             margem={custoOvo?.margem ?? 0.6}
+            ovosEsperadosAteHoje={custoOvo?.ovosEsperadosAteHoje || 0}
+            semanasPostura={custoOvo?.semanasPostura || 0}
+            totalOvosProduzidos={dadosRelogio?.totalOvosProduzidos || 0}
           />
         </View>
       </View>
 
-      {/* Menu flutuante */}
       <Modal
         visible={menuAberto}
         transparent
@@ -127,14 +137,14 @@ export default function Home() {
           onPress={() => setMenuAberto(false)}
         >
           <View
-            style={[
-              styles.menuBox,
-              { top: insets.top + 52, right: 12 },
-            ]}
+            style={[styles.menuBox, { top: insets.top + 52, right: 12 }]}
           >
             <View style={styles.menuUser}>
               {user?.photoURL ? (
-                <Image source={{ uri: user.photoURL }} style={styles.menuAvatar} />
+                <Image
+                  source={{ uri: user.photoURL }}
+                  style={styles.menuAvatar}
+                />
               ) : (
                 <View style={[styles.menuAvatar, styles.avatarFallback]}>
                   <Ionicons name="person" size={20} color="#666" />
@@ -151,8 +161,6 @@ export default function Home() {
             </View>
 
             <View style={styles.menuDivider} />
-
-
 
             <Pressable
               onPress={handleSair}
@@ -177,7 +185,6 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
     backgroundColor: '#fff',
-    
   },
   headerLeft: {
     marginLeft: 8,
@@ -185,9 +192,9 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
   },
   picker: {
-    width: 280,
+    width: 230,
     height: 60,
-    marginLeft:14
+    marginLeft: 14,
   },
   headerRightBtn: {
     marginRight: 16,
@@ -217,8 +224,6 @@ const styles = StyleSheet.create({
     width: '100%',
     alignItems: 'center',
   },
-
-  /* Modal menu */
   modalOverlay: {
     flex: 1,
     backgroundColor: 'rgba(0,0,0,0.2)',

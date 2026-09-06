@@ -135,7 +135,7 @@ export default function NovoInvestimento() {
           value={dataInicio}
           mode="date"
           display="default"
-          onChange={onChangeData}
+          onValueChange={onChangeData}
           onDismiss={() => setMostrarData(false)}
           maximumDate={new Date()}
         />

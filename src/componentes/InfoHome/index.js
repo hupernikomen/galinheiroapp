@@ -9,6 +9,9 @@ export default function InfoHome({
   desempenho = null,
   totalDepreciacao = 0,
   margem = 0.6,
+  ovosEsperadosAteHoje = 0,
+  semanasPostura = 0,
+  totalOvosProduzidos = 0,
 }) {
   const { colors } = useTheme();
 
@@ -20,13 +23,24 @@ export default function InfoHome({
 
   const margemPct = Number(margem) * 100;
 
-  let textoProducao = 'Ainda sem meta de produção para comparar';
+  let textoProducao = 'Ainda sem início de postura — salve a primeira coleta';
+  let textoDetalhe = null;
+
   if (desempenho != null && !Number.isNaN(Number(desempenho))) {
     const pct = Number(desempenho) * 100;
     let extra = '';
-    if (pct < 80) extra = ' — abaixo da meta';
-    else if (pct > 110) extra = ' — acima da meta';
-    textoProducao = `Progresso da meta de ovos: ${pct.toFixed(0)}%${extra}`;
+    if (pct < 80) extra = ' — abaixo do esperado';
+    else if (pct > 110) extra = ' — acima do esperado';
+
+    textoProducao = `Produção: ${pct.toFixed(0)}% do esperado${extra}`;
+    textoDetalhe =
+      semanasPostura > 0
+        ? `Semana ${semanasPostura} de postura · ${Number(
+            totalOvosProduzidos || 0
+          ).toLocaleString('pt-BR')} ovos de ${Number(
+            ovosEsperadosAteHoje || 0
+          ).toLocaleString('pt-BR')} esperados`
+        : null;
   }
 
   return (
@@ -70,7 +84,7 @@ export default function InfoHome({
         </View>
 
         <View style={styles.legendaItem}>
-          <View style={[styles.bolinha, { backgroundColor: '#888' }]} />
+          <View style={[styles.bolinha, { backgroundColor: '#ca0a0a' }]} />
           <Text style={styles.legendaTexto}>
             Depreciação  R$ {Number(totalDepreciacao).toFixed(2)}/mês
           </Text>
@@ -88,6 +102,9 @@ export default function InfoHome({
           {margemPct.toFixed(0)}% margem
         </Text>
         <Text style={styles.precoSub}>{textoProducao}</Text>
+        {!!textoDetalhe && (
+          <Text style={styles.precoSub}>{textoDetalhe}</Text>
+        )}
       </View>
     </View>
   );
@@ -95,7 +112,7 @@ export default function InfoHome({
 
 const styles = StyleSheet.create({
   container: {
-    width: '80%',
+    width: '70%',
   },
   barra: {
     height: 4,
@@ -109,6 +126,7 @@ const styles = StyleSheet.create({
   },
   legenda: {
     marginTop: 14,
+    paddingHorizontal: 7,
   },
   legendaItem: {
     flexDirection: 'row',
@@ -134,19 +152,18 @@ const styles = StyleSheet.create({
   precoLabel: {
     fontFamily: 'Roboto-Regular',
     fontSize: 13,
-    color: '#777',
   },
   precoValor: {
     letterSpacing: -0.5,
     fontFamily: 'Roboto-Black',
     fontSize: 22,
     marginTop: 4,
+    marginBottom:14
   },
   precoSub: {
     fontFamily: 'Roboto-Light',
     fontSize: 12,
-    color: '#888',
-    marginTop: 4,
+    color: '#222',
     textAlign: 'center',
   },
 });

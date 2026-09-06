@@ -20,7 +20,6 @@ import {
 import { GeralContext } from '../../contexts/geral';
 import { useAuth } from '../../contexts/AuthContext';
 import { useNavigation, useTheme } from '@react-navigation/native';
-import Ionicons from 'react-native-vector-icons/Ionicons';
 import ItemLista from '../../componentes/ItemLista';
 import useHeaderAdd from '../../hooks/useHeaderAdd'
 
@@ -28,7 +27,6 @@ export default function Ovos() {
   const { lote } = useContext(GeralContext);
   const { uid } = useAuth();
   const { colors } = useTheme();
-  const navigation = useNavigation();
 
   const [lista, setLista] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -129,11 +127,10 @@ export default function Ovos() {
               style={{
                 borderColor: colors.neutro,
                 borderBottomWidth: 0.3,
-                marginVertical: 14,
               }}
             />
           }
-          contentContainerStyle={{ paddingBottom: 100, paddingTop: 7 }}
+          contentContainerStyle={{ paddingVertical:7 }}
           ListEmptyComponent={
             <Text style={styles.vazio}>
               {!lote
