@@ -17,12 +17,14 @@ import { collection, onSnapshot, query, where } from 'firebase/firestore';
 import { db } from '../../services/firebaseConnection/firebase';
 import { useAuth } from '../../contexts/AuthContext';
 import { AppContext } from '../../contexts/AppContext';
+import PickerCampo from '../../componentes/PickerCampo';
+import InputCampo from '../../componentes/InputCampo';
+import DataCampo from '../../componentes/DataCampo';
 import {
   registrarRacao,
   registrarCartela,
   registrarCama,
 } from '../../services/registrarCustos';
-
 
 const TIPOS = [
   { value: 'racao', label: 'Consumo de ração' },
@@ -31,7 +33,6 @@ const TIPOS = [
 ];
 
 export default function NovoCusto() {
-
   const { colors } = useTheme();
   const navigation = useNavigation();
   const { uid } = useAuth();
@@ -42,10 +43,12 @@ export default function NovoCusto() {
   const [mostrarData, setMostrarData] = useState(false);
   const [salvando, setSalvando] = useState(false);
 
-  // Ração
-  const [listaEstoque, setListaEstoque] = useState([]);
-  const [estoqueId, setEstoqueId] = useState('');
+
+
+  // Ração (estoque unificado)
   const [kg, setKg] = useState('');
+  const [saldoEstoque, setSaldoEstoque] = useState(0);
+  const [precoMedioKg, setPrecoMedioKg] = useState(0);
 
   // Cartela
   const [descricaoCartela, setDescricaoCartela] = useState('');
@@ -57,19 +60,33 @@ export default function NovoCusto() {
   const [descricaoCama, setDescricaoCama] = useState('');
   const [valorCama, setValorCama] = useState('');
 
+  // Atualiza saldo e preço médio do estoque
   useEffect(() => {
     if (!uid) return;
+
     const q = query(
       collection(db, 'estoqueRacao'),
       where('userId', '==', uid)
     );
+
     const unsub = onSnapshot(q, (snap) => {
-      const dados = snap.docs.map((d) => ({ id: d.id, ...d.data() }));
-      setListaEstoque(dados);
-      if (!estoqueId && dados.length > 0) {
-        setEstoqueId(dados[0].id);
-      }
+      let kgTotal = 0;
+      let valorPond = 0;
+
+      snap.docs.forEach((d) => {
+        const dataDoc = d.data();
+        const rest = Number(dataDoc.kgRestante ?? dataDoc.kg) || 0;
+        const preco = Number(dataDoc.precoKg) || 0;
+        if (rest > 0) {
+          kgTotal += rest;
+          valorPond += rest * preco;
+        }
+      });
+
+      setSaldoEstoque(kgTotal);
+      setPrecoMedioKg(kgTotal > 0 ? valorPond / kgTotal : 0);
     });
+
     return () => unsub();
   }, [uid]);
 
@@ -93,7 +110,10 @@ export default function NovoCusto() {
       return;
     }
     if (!lote?.id) {
-      Alert.alert('Atenção', 'Selecione um lote na Home antes de lançar o custo');
+      Alert.alert(
+        'Atenção',
+        'Selecione um lote na Home antes de lançar o custo'
+      );
       return;
     }
 
@@ -105,7 +125,6 @@ export default function NovoCusto() {
         await registrarRacao({
           uid,
           loteId: lote.id,
-          estoqueId,
           kg,
           data: dataMs,
         });
@@ -137,143 +156,96 @@ export default function NovoCusto() {
     }
   }
 
-  const estoqueAtual = listaEstoque.find((e) => e.id === estoqueId);
-  const saldo =
-    Number(estoqueAtual?.kgRestante ?? estoqueAtual?.kg) || 0;
-
   return (
     <ScrollView
       style={styles.container}
       contentContainerStyle={{ paddingBottom: 40 }}
       keyboardShouldPersistTaps="handled"
     >
-      <Text style={styles.loteLabel}>
-        Lote: {lote?.nome || 'Nenhum selecionado'}
-      </Text>
+      <DataCampo
+        value={data}
+        onChange={setData}
+        maximumDate={new Date()}
+      />
 
-      <View style={[styles.pickerBox, { backgroundColor: colors.neutro }]}>
-        <Picker selectedValue={tipo} onValueChange={setTipo} style={styles.picker}>
-          {TIPOS.map((t) => (
-            <Picker.Item key={t.value} label={t.label} value={t.value} />
-          ))}
-        </Picker>
-      </View>
+      <PickerCampo
+        placeholder="Selecione um tipo de custo"
+        selectedValue={tipo}
+        onValueChange={setTipo}
+        items={TIPOS}
+      />
 
-      <Pressable
-        onPress={abrirCalendario}
-        style={[styles.botaoData, { backgroundColor: colors.neutro }]}
-      >
-        <Text style={styles.dataTexto}>
-          {data.toLocaleDateString('pt-BR')}
-        </Text>
-        <Ionicons name="calendar-outline" size={22} color={colors.principal} />
-      </Pressable>
+
 
       {tipo === 'racao' && (
         <>
-          <View style={[styles.pickerBox, { backgroundColor: colors.neutro }]}>
-            <Picker
-              selectedValue={estoqueId}
-              onValueChange={setEstoqueId}
-              style={styles.picker}
-            >
-              <Picker.Item label="Selecione o estoque" value="" />
-              {listaEstoque.map((item) => {
-                const rest = Number(item.kgRestante ?? item.kg) || 0;
-                return (
-                  <Picker.Item
-                    key={item.id}
-                    label={`${item.descricao || 'Ração'} (${rest.toLocaleString(
-                      'pt-BR',
-                      { maximumFractionDigits: 1 }
-                    )} kg)`}
-                    value={item.id}
-                  />
-                );
-              })}
-            </Picker>
-          </View>
-          {estoqueId ? (
-            <Text style={styles.dica}>
-              Saldo: {saldo.toLocaleString('pt-BR', { maximumFractionDigits: 1 })} kg
-              {estoqueAtual?.precoKg
-                ? ` · R$ ${Number(estoqueAtual.precoKg).toFixed(2)}/kg`
-                : ''}
-            </Text>
-          ) : null}
-          <TextInput
-            style={[styles.input, { backgroundColor: colors.neutro }]}
+          <InputCampo
             placeholder="Quantidade (kg)"
-            keyboardType="decimal-pad"
             value={kg}
             onChangeText={setKg}
-            placeholderTextColor="#999"
-            underlineColorAndroid="transparent"
+            keyboardType="decimal-pad"
           />
+          <Text style={styles.dica}>
+            Estoque:{' '}
+            {saldoEstoque.toLocaleString('pt-BR', {
+              maximumFractionDigits: 1,
+            })}{' '}
+            kg
+            {precoMedioKg > 0
+              ? `  ·  média R$ ${precoMedioKg.toFixed(2)}/kg`
+              : '  ·  cadastre uma compra de ração'}
+          </Text>
+
+
         </>
       )}
 
       {tipo === 'cartela' && (
         <>
-          <TextInput
-            style={[styles.input, { backgroundColor: colors.neutro }]}
+          <InputCampo
             placeholder="Descrição (opcional)"
             value={descricaoCartela}
             onChangeText={setDescricaoCartela}
-            placeholderTextColor="#999"
-            underlineColorAndroid="transparent"
           />
-          <TextInput
-            style={[styles.input, { backgroundColor: colors.neutro }]}
+          <InputCampo
             placeholder="Quantidade de cartelas"
-            keyboardType="number-pad"
             value={qtd}
             onChangeText={setQtd}
-            placeholderTextColor="#999"
-            underlineColorAndroid="transparent"
+            keyboardType='number-pad'
           />
-          <TextInput
-            style={[styles.input, { backgroundColor: colors.neutro }]}
+          <InputCampo
             placeholder="Ovos por cartela"
-            keyboardType="number-pad"
             value={capacidade}
             onChangeText={setCapacidade}
-            placeholderTextColor="#999"
-            underlineColorAndroid="transparent"
+            keyboardType='number-pad'
           />
-          <TextInput
-            style={[styles.input, { backgroundColor: colors.neutro }]}
+          <InputCampo
             placeholder="Valor total (R$)"
-            keyboardType="decimal-pad"
             value={valorCartela}
             onChangeText={setValorCartela}
-            placeholderTextColor="#999"
-            underlineColorAndroid="transparent"
+            keyboardType='decimal-pad'
           />
         </>
       )}
 
       {tipo === 'cama' && (
         <>
-          <TextInput
-            style={[styles.input, { backgroundColor: colors.neutro }]}
+          <InputCampo
             placeholder="Descrição (opcional)"
             value={descricaoCama}
             onChangeText={setDescricaoCama}
-            placeholderTextColor="#999"
-            underlineColorAndroid="transparent"
           />
-          <TextInput
-            style={[styles.input, { backgroundColor: colors.neutro }]}
+          <InputCampo
             placeholder="Valor total (R$)"
-            keyboardType="decimal-pad"
             value={valorCama}
             onChangeText={setValorCama}
-            placeholderTextColor="#999"
-            underlineColorAndroid="transparent"
+            keyboardType='decimal-pad'
           />
+
+
           <Text style={styles.dica}>
-            Esse valor é dividido pela produção estimada do lote no preço do ovo.
+            Esse valor é dividido pela produção estimada do lote no preço do
+            ovo.
           </Text>
         </>
       )}
@@ -288,16 +260,7 @@ export default function NovoCusto() {
         </Text>
       </Pressable>
 
-      {mostrarData && (
-        <DateTimePicker
-          value={data}
-          mode="date"
-          display="default"
-          onChange={onChangeData}
-          onDismiss={() => setMostrarData(false)}
-          maximumDate={new Date()}
-        />
-      )}
+
     </ScrollView>
   );
 }
@@ -314,45 +277,16 @@ const styles = StyleSheet.create({
     color: '#555',
     marginBottom: 12,
   },
-  pickerBox: {
-    borderRadius: 22,
-    marginBottom: 12,
-    overflow: 'hidden',
-  },
-  picker: {
-    height: 50,
-    width: '100%',
-  },
-  botaoData: {
-    height: 50,
-    borderRadius: 22,
-    paddingHorizontal: 16,
-    marginBottom: 12,
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'space-between',
-  },
-  dataTexto: {
-    fontSize: 16,
-    color: '#333',
-  },
-  input: {
-    height: 50,
-    borderRadius: 22,
-    paddingHorizontal: 16,
-    marginBottom: 12,
-    fontSize: 16,
-  },
+
   dica: {
     fontFamily: 'Roboto-Light',
-    fontSize: 12,
-    color: '#888',
+    fontSize: 13,
     marginBottom: 12,
-    marginTop: -4,
+    marginHorizontal: 14
   },
   botao: {
-    height: 52,
-    borderRadius: 22,
+    height: 55,
+    borderRadius: 30,
     alignItems: 'center',
     justifyContent: 'center',
     marginTop: 8,

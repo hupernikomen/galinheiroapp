@@ -46,7 +46,7 @@ export default function Tabs() {
           component={Custos}
           options={{
             headerShown: true,
-            tabBarIcon: 'beaker-outline',
+            tabBarIcon: 'wallet-outline',
             headerRightContainerStyle: {
               paddingRight: 16
             }

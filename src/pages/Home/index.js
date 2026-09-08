@@ -8,6 +8,7 @@ import InfoHome from '../../componentes/InfoHome';
 import { useNavigation, useTheme } from '@react-navigation/native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import Ionicons from 'react-native-vector-icons/Ionicons';
+import PickerCampo from '../../componentes/PickerCampo';
 
 const ALTURA_TABBAR = 78;
 
@@ -77,7 +78,9 @@ export default function Home() {
 
   return (
     <View style={styles.container}>
+
       <View style={{ paddingHorizontal: 22, backgroundColor: '#f9f9f9', alignItems:"center" }}>
+
 
         <Picker
           style={styles.picker}
@@ -203,9 +206,9 @@ const styles = StyleSheet.create({
     height: 50,
   },
   avatar: {
-    width: 34,
-    height: 34,
-    borderRadius: 17,
+    width: 40,
+    height: 40,
+    borderRadius: 20,
   },
   main: {
     flex: 1,

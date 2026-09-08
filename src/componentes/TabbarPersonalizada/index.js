@@ -17,7 +17,7 @@ if (
   UIManager.setLayoutAnimationEnabledExperimental(true);
 }
 
-const TAB_SIZE = 52; // área de cada aba
+const TAB_SIZE = 56; // área de cada aba
 const PILL_SIZE = 52; // bolinha da cor principal
 
 export default function TabbarPersonalizada({ state, descriptors, navigation }) {
@@ -113,7 +113,7 @@ export default function TabbarPersonalizada({ state, descriptors, navigation }) 
             >
               <Ionicons
                 name={options.tabBarIcon}
-                size={22}
+                size={26}
                 color={isFocused ? '#fff' : "#333"}
               />
             </TouchableOpacity>

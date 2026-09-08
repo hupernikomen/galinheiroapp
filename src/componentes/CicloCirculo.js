@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState, useMemo } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import {
   View,
   Text,
@@ -10,60 +10,62 @@ import {
 import { useTheme } from '@react-navigation/native';
 import {
   TAMANHO,
-  VIDA_TOTAL_SEMANAS,
-  DURACAO_MARCO_MS,
-  semanaParaAngulo,
+  DIAS_TOTAL,
+  DURACAO_PONTEIRO_MS,
+  INTERVALO_SLIDER_MS,
+  diaParaAngulo,
 } from '../constants/ciclo';
 
-export default function CicloCirculo({ semanas = 0, marcos = [], loteId }) {
+export default function CicloCirculo({
+  dias = 0,
+  semanas = 0,
+  marcosDaSemana = [],
+  loteId,
+}) {
   const { colors } = useTheme();
-
   const [indiceMarco, setIndiceMarco] = useState(0);
   const listaRef = useRef(null);
+
   const anguloPonteiroAnim = useRef(
-    new Animated.Value(semanaParaAngulo(semanas || 1))
+    new Animated.Value(diaParaAngulo(dias || 1))
   ).current;
 
-  const tracos = Array.from({ length: VIDA_TOTAL_SEMANAS }, (_, i) => i + 1);
+  // Traços = dias (630). Em aparelhos fracos, se pesar, troque o passo para 1 a cada 2 dias.
+  const tracos = Array.from({ length: DIAS_TOTAL }, (_, i) => i + 1);
 
-  // Índice do próximo evento futuro (destaque especial no dot)
-  const indiceProximo = useMemo(() => {
-    if (!marcos.length) return -1;
-    const idx = marcos.findIndex((m) => Number(m.semana) > semanas);
-    return idx >= 0 ? idx : marcos.length - 1;
-  }, [marcos, semanas]);
-
-  // Ponteiro só na semana atual
+  // Ponteiro acompanha o dia
   useEffect(() => {
-    const semanaAlvo = Math.min(Math.max(semanas || 1, 1), VIDA_TOTAL_SEMANAS);
+    const diaAlvo = Math.min(Math.max(dias || 1, 1), DIAS_TOTAL);
     Animated.timing(anguloPonteiroAnim, {
-      toValue: semanaParaAngulo(semanaAlvo),
-      duration: DURACAO_MARCO_MS,
+      toValue: diaParaAngulo(diaAlvo),
+      duration: DURACAO_PONTEIRO_MS,
       easing: Easing.out(Easing.cubic),
       useNativeDriver: true,
     }).start();
-  }, [semanas, loteId]);
+  }, [dias, loteId]);
 
-  // Abre no próximo evento futuro
+  // Slide automático só com os marcos da semana atual
   useEffect(() => {
-    if (!marcos.length || indiceProximo < 0) return;
+    setIndiceMarco(0);
+    if (marcosDaSemana.length <= 1) return;
 
-    setIndiceMarco(indiceProximo);
+    const id = setInterval(() => {
+      setIndiceMarco((prev) => {
+        const next = (prev + 1) % marcosDaSemana.length;
+        try {
+          listaRef.current?.scrollToIndex({ index: next, animated: true });
+        } catch (e) {}
+        return next;
+      });
+    }, INTERVALO_SLIDER_MS);
 
-    setTimeout(() => {
-      try {
-        listaRef.current?.scrollToIndex({
-          index: indiceProximo,
-          animated: false,
-        });
-      } catch (e) {}
-    }, 80);
-  }, [marcos.length, loteId, indiceProximo]);
+    return () => clearInterval(id);
+  }, [marcosDaSemana, loteId, semanas]);
 
   function onScrollMarcos(e) {
     const x = e.nativeEvent.contentOffset.x;
     const idx = Math.round(x / TAMANHO);
-    if (idx >= 0 && idx < marcos.length) {
+    if (idx >= 0 && idx < marcosDaSemana.length) {
       setIndiceMarco(idx);
     }
   }
@@ -75,13 +77,14 @@ export default function CicloCirculo({ semanas = 0, marcos = [], loteId }) {
 
   return (
     <View style={[styles.camada, { width: TAMANHO, height: TAMANHO }]}>
-      {tracos.map((semana) => {
-        const anguloTraco = (semana / VIDA_TOTAL_SEMANAS) * 360;
-        const passado = semana > 0 && semana <= semanas;
+      {tracos.map((dia) => {
+        const anguloTraco = diaParaAngulo(dia);
+        const passado = dia <= dias;
+        const inicioSemana = (dia - 1) % 7 === 0; // traço um pouco maior a cada semana
 
         return (
           <View
-            key={semana}
+            key={dia}
             pointerEvents="box-none"
             style={[
               styles.tracoContainer,
@@ -96,6 +99,7 @@ export default function CicloCirculo({ semanas = 0, marcos = [], loteId }) {
               style={[
                 styles.traco,
                 {
+                  height: inicioSemana ? 10 : 5,
                   backgroundColor: passado ? colors.principal : colors.neutro,
                 },
               ]}
@@ -131,14 +135,21 @@ export default function CicloCirculo({ semanas = 0, marcos = [], loteId }) {
           },
         ]}
       >
-        {marcos.length === 0 ? (
-          <Text style={styles.mensagem}>Sem marcos</Text>
+        <Text style={styles.legendaDia}>
+          Dia {dias || 0}
+          {semanas > 0 ? `  ·  Semana ${semanas}` : ''}
+        </Text>
+
+        {marcosDaSemana.length === 0 ? (
+          <Text style={styles.mensagem}>Sem eventos nesta semana</Text>
         ) : (
           <>
             <FlatList
               ref={listaRef}
-              data={marcos}
-              keyExtractor={(item, i) => `${item.semana}-${item.mensagem}-${i}`}
+              data={marcosDaSemana}
+              keyExtractor={(item, i) =>
+                `${item.id || i}-${item.semana}-${item.mensagem}`
+              }
               horizontal
               pagingEnabled
               showsHorizontalScrollIndicator={false}
@@ -155,24 +166,26 @@ export default function CicloCirculo({ semanas = 0, marcos = [], loteId }) {
                   {!!item.titulo && (
                     <Text style={styles.titulo}>{item.titulo}</Text>
                   )}
-                  <Text style={styles.mensagem}>
-                    Na semana {String(item.semana).split('.')[0]}
-                  </Text>
-                  <Text style={styles.mensagem} numberOfLines={3}>
+                  <Text style={styles.mensagem} numberOfLines={4}>
                     {item.mensagem}
                   </Text>
                 </View>
               )}
             />
 
-            <View style={styles.dots}>
-              {marcos.map((m, i) => {
-                const ativo = i === indiceMarco;
-                const ehProximo = i === indiceProximo;
-
-                
-              })}
-            </View>
+            {marcosDaSemana.length > 1 && (
+              <View style={styles.dots}>
+                {marcosDaSemana.map((_, i) => (
+                  <View
+                    key={i}
+                    style={[
+                      styles.dot,
+                      i === indiceMarco && styles.dotAtivo,
+                    ]}
+                  />
+                ))}
+              </View>
+            )}
           </>
         )}
       </View>
@@ -196,7 +209,6 @@ const styles = StyleSheet.create({
     position: 'absolute',
     top: -1,
     width: 1,
-    height: 7,
     borderRadius: 1,
   },
   marcoContainer: {
@@ -206,10 +218,9 @@ const styles = StyleSheet.create({
     zIndex: 6,
   },
   marcoFocado: {
-    width: 1.8,
-    height: 25,
-    marginTop: -20,
-    marginLeft: 1.5,
+    width: 2,
+    height: 22,
+    marginTop: -18,
   },
   ciclo: {
     position: 'absolute',
@@ -219,28 +230,52 @@ const styles = StyleSheet.create({
     elevation: 15,
     overflow: 'hidden',
     paddingBottom: 10,
+    paddingTop: 12,
+  },
+  legendaDia: {
+    fontFamily: 'Roboto-Medium',
+    fontSize: 13,
+    color: '#fff',
+    marginBottom: 6,
+    textAlign: 'center',
   },
   listaMarcos: {
     flexGrow: 0,
-    maxHeight: 90,
+    maxHeight: 78,
   },
   slide: {
-    paddingHorizontal: 16,
+    paddingHorizontal: 18,
     alignItems: 'center',
     justifyContent: 'center',
   },
   titulo: {
-    fontSize: 16,
+    fontSize: 15,
     fontFamily: 'Roboto-Medium',
     color: '#fff',
-    marginBottom: 10,
+    marginBottom: 4,
     textAlign: 'center',
   },
   mensagem: {
     fontFamily: 'Roboto-Regular',
     textAlign: 'center',
-    fontSize: 13,
+    fontSize: 12,
     color: '#fff',
-    marginTop: 2,
+    lineHeight: 17,
+  },
+  dots: {
+    flexDirection: 'row',
+    justifyContent: 'center',
+    gap: 4,
+    marginTop: 6,
+  },
+  dot: {
+    width: 5,
+    height: 5,
+    borderRadius: 3,
+    backgroundColor: 'rgba(255,255,255,0.35)',
+  },
+  dotAtivo: {
+    backgroundColor: '#fff',
+    width: 8,
   },
 });

@@ -70,7 +70,7 @@ export default function Menu() {
           <View style={styles.listaCard}>
             {bloco.lista.map((item, index) => (
               <Pressable
-                key={item.rota}
+                key={index}
                 onPress={() => irPara(item.rota)}
                 style={({ pressed }) => [
                   styles.item,
@@ -98,7 +98,7 @@ const styles = StyleSheet.create({
     backgroundColor: '#fff',
   },
   bloco: {
-    marginBottom: 8,
+    marginBottom: 28,
   },
   tituloSecao: {
     fontFamily: 'Roboto-Medium',
@@ -107,9 +107,11 @@ const styles = StyleSheet.create({
     textTransform: 'uppercase',
     letterSpacing: 0.5,
     marginLeft: 28,
+    marginBottom:14
   },
   listaCard: {
     marginHorizontal: 16,
+    gap:12,
     overflow: 'hidden',
   },
   item: {

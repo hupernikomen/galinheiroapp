@@ -236,16 +236,10 @@ export default function Custos() {
     );
   }
 
-  const totalGeral = lista.reduce((s, i) => s + montarValor(i), 0);
 
   return (
     <View style={styles.container}>
-      {!loading && lista.length > 0 && (
-        <Text style={styles.saldo}>
-          {lote?.nome ? `${lote.nome}  ·  ` : ''}
-          Total: R$ {totalGeral.toFixed(2)}
-        </Text>
-      )}
+      
 
       {loading ? (
         <View style={styles.loading}>
@@ -291,11 +285,9 @@ const styles = StyleSheet.create({
     textAlign: 'center',
     paddingTop: 16,
     paddingHorizontal: 16,
-    color: '#333',
   },
   vazio: {
     textAlign: 'center',
     marginTop: 30,
-    color: '#999',
   },
 });

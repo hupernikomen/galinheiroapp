@@ -4,29 +4,31 @@ import {
   StyleSheet,
   FlatList,
   ActivityIndicator,
-  Pressable,
   Alert,
 } from 'react-native';
 import { useState, useEffect } from 'react';
 import { db } from '../../services/firebaseConnection/firebase';
-import { collection, query, where, onSnapshot, doc, deleteDoc } from 'firebase/firestore';
-import { useNavigation, useTheme } from '@react-navigation/native';
-import Ionicons from 'react-native-vector-icons/Ionicons';
+import {
+  collection,
+  query,
+  where,
+  onSnapshot,
+  doc,
+  deleteDoc,
+} from 'firebase/firestore';
+import { useTheme } from '@react-navigation/native';
 import { useAuth } from '../../contexts/AuthContext';
 import ItemLista from '../../componentes/ItemLista';
 import useHeaderAdd from '../../componentes/HeaderAdd';
 
 export default function EstoqueRacao() {
   const { colors } = useTheme();
-  const navigation = useNavigation();
   const { uid } = useAuth();
 
   const [lista, setLista] = useState([]);
   const [loading, setLoading] = useState(true);
 
-
-
-  useHeaderAdd('NovoEstoqueRacao', 'Estoque de ração')
+  useHeaderAdd('NovoEstoqueRacao', 'Estoque de ração');
 
   useEffect(() => {
     if (!uid) {
@@ -82,7 +84,19 @@ export default function EstoqueRacao() {
     ]);
   }
 
-  const kgTotal = lista.reduce((s, i) => s + (Number(i.kgRestante ?? i.kg) || 0), 0);
+  // Saldo total e preço médio do que ainda tem
+  const kgTotal = lista.reduce(
+    (s, i) => s + (Number(i.kgRestante ?? i.kg) || 0),
+    0
+  );
+
+  const valorPonderado = lista.reduce((s, i) => {
+    const rest = Number(i.kgRestante ?? i.kg) || 0;
+    const preco = Number(i.precoKg) || 0;
+    return rest > 0 ? s + rest * preco : s;
+  }, 0);
+
+  const precoMedio = kgTotal > 0 ? valorPonderado / kgTotal : 0;
 
   function renderItem({ item }) {
     const restante = Number(item.kgRestante ?? item.kg) || 0;
@@ -91,12 +105,15 @@ export default function EstoqueRacao() {
     return (
       <ItemLista
         titulo={item.descricao || 'Ração'}
-        subtitulo={`${formatarData(item.data)}  ·  R$ ${Number(item.precoKg || 0).toFixed(2)}/kg`}
+        subtitulo={`${formatarData(item.data)}  ·  R$ ${Number(
+          item.precoKg || 0
+        ).toFixed(2)}/kg`}
         direita={`${restante.toFixed(1)} kg`}
         onExcluir={() => excluir(item)}
       >
         <Text style={[styles.itemSub, negativo && { color: '#c0392b' }]}>
-          {Number(item.kg || 0).toFixed(1)} kg comprados  ·  R$ {Number(item.valor || 0).toFixed(2)}
+          {Number(item.kg || 0).toFixed(1)} kg comprados  ·  R${' '}
+          {Number(item.valor || 0).toFixed(2)}
           {negativo ? '  ·  saldo negativo' : ''}
         </Text>
       </ItemLista>
@@ -105,11 +122,7 @@ export default function EstoqueRacao() {
 
   return (
     <View style={styles.container}>
-      {!loading && (
-        <Text style={styles.saldo}>
-          Saldo total: {kgTotal.toFixed(1)} kg
-        </Text>
-      )}
+      
 
       {loading ? (
         <View style={styles.loading}>
@@ -126,7 +139,6 @@ export default function EstoqueRacao() {
               style={{
                 borderColor: colors.neutro,
                 borderBottomWidth: 0.3,
-                marginVertical: 14,
               }}
             />
           }

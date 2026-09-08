@@ -2,66 +2,112 @@ import {
   collection,
   addDoc,
   doc,
-  getDoc,
-  updateDoc,
+  getDocs,
+  query,
+  where,
+  writeBatch,
   increment,
 } from 'firebase/firestore';
 import { db } from './firebaseConnection/firebase';
 
-/** Ração: baixa estoque e lança distribuição no lote */
+/**
+ * Lista compras com saldo, preço médio ponderado e ordem FIFO (mais antigo primeiro).
+ */
+async function obterEstoqueUsuario(uid) {
+  const snap = await getDocs(
+    query(collection(db, 'estoqueRacao'), where('userId', '==', uid))
+  );
+
+  const itens = snap.docs.map((d) => ({
+    id: d.id,
+    ...d.data(),
+    kgRestante: Number(d.data().kgRestante ?? d.data().kg) || 0,
+    precoKg: Number(d.data().precoKg) || 0,
+    data: Number(d.data().data) || 0,
+  }));
+
+  const comSaldo = itens
+    .filter((i) => i.kgRestante > 0.0001)
+    .sort((a, b) => a.data - b.data);
+
+  let kgTotal = 0;
+  let valorPonderado = 0;
+
+  comSaldo.forEach((i) => {
+    kgTotal += i.kgRestante;
+    valorPonderado += i.kgRestante * i.precoKg;
+  });
+
+  const precoMedioKg = kgTotal > 0 ? valorPonderado / kgTotal : 0;
+
+  return { comSaldo, kgTotal, precoMedioKg };
+}
+
+/**
+ * Consumo de ração no lote.
+ * - Não escolhe compra
+ * - Usa preço médio do estoque
+ * - Baixa kg em FIFO
+ */
 export async function registrarRacao({
   uid,
   loteId,
-  estoqueId,
   kg,
   data = Date.now(),
 }) {
   if (!uid) throw new Error('Usuário não logado');
   if (!loteId) throw new Error('Selecione um lote');
-  if (!estoqueId) throw new Error('Selecione o estoque de ração');
 
-  const kgNum = Number(kg);
+  const kgNum = Number(String(kg).replace(',', '.'));
   if (!kgNum || kgNum <= 0) {
     throw new Error('Informe a quantidade em kg');
   }
 
-  const estoqueRef = doc(db, 'estoqueRacao', estoqueId);
-  const estoqueSnap = await getDoc(estoqueRef);
-  if (!estoqueSnap.exists()) {
-    throw new Error('Estoque não encontrado');
+  const { comSaldo, kgTotal, precoMedioKg } = await obterEstoqueUsuario(uid);
+
+  if (kgNum > kgTotal + 0.0001) {
+    throw new Error(
+      `Saldo insuficiente. Disponível: ${kgTotal.toLocaleString('pt-BR', {
+        maximumFractionDigits: 1,
+      })} kg`
+    );
   }
 
-  const estoque = estoqueSnap.data();
-  if (estoque.userId !== uid) {
-    throw new Error('Estoque inválido');
+  if (precoMedioKg <= 0) {
+    throw new Error(
+      'Não há preço de ração no estoque. Cadastre uma compra antes.'
+    );
   }
 
-  const saldo = Number(estoque.kgRestante ?? estoque.kg) || 0;
-  if (kgNum > saldo + 0.0001) {
-    throw new Error('Quantidade maior que o saldo do estoque');
-  }
-
-  const precoKg = Number(estoque.precoKg) || 0;
-  const valor = Number((kgNum * precoKg).toFixed(2));
+  const valor = Number((kgNum * precoMedioKg).toFixed(2));
 
   await addDoc(collection(db, 'distribuicaoRacao'), {
     data,
     loteId,
-    estoqueId,
     kg: kgNum,
-    precoKg,
+    precoKg: Number(precoMedioKg.toFixed(4)),
     valor,
     userId: uid,
   });
 
-  await updateDoc(estoqueRef, {
-    kgRestante: increment(-kgNum),
-  });
+  let restante = kgNum;
+  const batch = writeBatch(db);
 
-  return { valor, kg: kgNum };
+  for (const item of comSaldo) {
+    if (restante <= 0) break;
+    const tira = Math.min(item.kgRestante, restante);
+    batch.update(doc(db, 'estoqueRacao', item.id), {
+      kgRestante: increment(-tira),
+    });
+    restante -= tira;
+  }
+
+  await batch.commit();
+
+  return { valor, kg: kgNum, precoMedioKg };
 }
 
-/** Cartela: embalagem vinculada ao lote */
+/** Cartela vinculada ao lote */
 export async function registrarCartela({
   uid,
   loteId,
@@ -76,7 +122,7 @@ export async function registrarCartela({
 
   const qtdNum = Number(qtd);
   const capNum = Number(capacidade);
-  const valorNum = Number(valorTotal);
+  const valorNum = Number(String(valorTotal).replace(',', '.'));
 
   if (!qtdNum || !capNum || !valorNum) {
     throw new Error('Preencha quantidade, capacidade e valor');
@@ -95,10 +141,7 @@ export async function registrarCartela({
   return { valorTotal: valorNum, ovos: qtdNum * capNum };
 }
 
-/**
- * Cama: custo do lote
- * No ovo: total ÷ produção estimada do lote
- */
+/** Cama do lote (diluída na produção estimada) */
 export async function registrarCama({
   uid,
   loteId,
@@ -109,7 +152,7 @@ export async function registrarCama({
   if (!uid) throw new Error('Usuário não logado');
   if (!loteId) throw new Error('Selecione um lote');
 
-  const valorNum = Number(valor);
+  const valorNum = Number(String(valor).replace(',', '.'));
   if (!valorNum || valorNum <= 0) {
     throw new Error('Informe o valor da cama');
   }

@@ -16,7 +16,7 @@ import NovoEstoqueRacao from '../pages/NovoEstoqueRacao';
 import EstoqueRacao from '../pages/EstoqueRacao';
 // import NovaDistribuicaoRacao from '../pages/NovaDistribuicaoRacao';
 
-import NovaCartela from '../pages/NovaCartela';
+// import NovaCartela from '../pages/NovaCartela';
 // import Cartelas from '../pages/Cartelas';
 
 
@@ -45,7 +45,7 @@ export default function Rotas() {
         options={{ title: 'Distribuir ração' }}
       /> */}
       {/* <Stack.Screen name="Cartelas" component={Cartelas} options={{ title: 'Cartelas' }} /> */}
-      <Stack.Screen name="NovaCartela" component={NovaCartela} options={{ title: 'Compra de cartelas' }} />
+      {/* <Stack.Screen name="NovaCartela" component={NovaCartela} options={{ title: 'Compra de cartelas' }} /> */}
       <Stack.Screen name="NovoEstoqueRacao" component={NovoEstoqueRacao} options={{ title: 'Estoque de ração' }} />
       <Stack.Screen name="EstoqueRacao" component={EstoqueRacao} options={{ title: 'Estoque de ração' }} />
       <Stack.Screen name="NovoCusto" component={NovoCusto} options={{ title: 'Novo custo' }} />

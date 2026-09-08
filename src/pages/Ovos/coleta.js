@@ -23,6 +23,8 @@ import {
   updateDoc,
 } from 'firebase/firestore';
 import { useTheme, useNavigation } from '@react-navigation/native';
+import DataCampo from '../../componentes/DataCampo';
+import InputCampo from '../../componentes/InputCampo';
 
 export default function Coleta() {
   const [qt, setQt] = useState('');
@@ -136,23 +138,21 @@ export default function Coleta() {
 
   return (
     <View style={styles.container}>
-      <Pressable
-        onPress={abrirCalendario}
-        style={[styles.botaoInput, { backgroundColor: colors.neutro }]}
-      >
-        <Text style={styles.dataTexto}>{data.toLocaleDateString('pt-BR')}</Text>
-        <Ionicons name="calendar-outline" size={24} color={colors.principal} />
-      </Pressable>
 
-      <TextInput
-        style={[styles.input, { backgroundColor: colors.neutro }]}
+      <DataCampo
+        value={data}
+        onChange={setData}
+        maximumDate={new Date()}
+      />
+
+      <InputCampo
         placeholder="Quantidade coletada"
-        keyboardType="numeric"
         value={qt}
         onChangeText={setQt}
-        placeholderTextColor="#999"
-        underlineColorAndroid="transparent"
+        keyboardType="numeric"
       />
+
+
 
       <Pressable
         onPress={CadastrarColeta}
@@ -164,16 +164,9 @@ export default function Coleta() {
         </Text>
       </Pressable>
 
-      {mostrarData && (
-        <DateTimePicker
-          value={data}
-          mode="date"
-          display="default"
-          onValueChange={onValueChange}
-          onDismiss={() => setMostrarData(false)}
-          maximumDate={new Date()}
-        />
-      )}
+
+
+
     </View>
   );
 }
@@ -184,29 +177,10 @@ const styles = StyleSheet.create({
     backgroundColor: '#fff',
     padding: 16,
   },
-  input: {
-    height: 50,
-    borderRadius: 22,
-    paddingHorizontal: 16,
-    fontSize: 16,
-    marginBottom: 12,
-  },
-  botaoInput: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'space-between',
-    height: 50,
-    borderRadius: 22,
-    paddingHorizontal: 16,
-    marginBottom: 12,
-  },
-  dataTexto: {
-    fontSize: 16,
-    color: '#333',
-  },
+
   botaoSalvar: {
-    height: 52,
-    borderRadius: 22,
+    height: 55,
+    borderRadius: 30,
     alignItems: 'center',
     justifyContent: 'center',
   },
