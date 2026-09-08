@@ -11,7 +11,6 @@ import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 const ITENS = [
   {
-    secao: 'Cadastros',
     lista: [
       {
         titulo: 'Lotes',
@@ -19,32 +18,18 @@ const ITENS = [
         rota: 'Lote',
       },
       {
-        titulo: 'Custos',
-        subtitulo: 'Outros gastos do lote',
-        rota: 'Custos',
-      },
-      {
         titulo: 'Investimentos',
         subtitulo: 'Galpão, equipamentos e depreciação',
         rota: 'Investimentos',
       },
-    ],
-  },
-  {
-    secao: 'Ração e embalagem',
-    lista: [
       {
         titulo: 'Estoque de ração',
         subtitulo: 'Compras e saldo em kg',
         rota: 'EstoqueRacao',
       },
-      {
-        titulo: 'Cartelas',
-        subtitulo: 'Compras de embalagem',
-        rota: 'Cartelas',
-      },
     ],
   },
+
   {
     secao: 'Ciclo e ajuda',
     lista: [
@@ -74,7 +59,6 @@ export default function Menu() {
     <ScrollView
       style={styles.container}
       contentContainerStyle={{
-        paddingTop: 12,
         paddingBottom: 40 + insets.bottom,
       }}
       showsVerticalScrollIndicator={false}
@@ -122,7 +106,6 @@ const styles = StyleSheet.create({
     color: '#999',
     textTransform: 'uppercase',
     letterSpacing: 0.5,
-    marginVertical: 16,
     marginLeft: 28,
   },
   listaCard: {

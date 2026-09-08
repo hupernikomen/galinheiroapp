@@ -26,29 +26,16 @@ export default function Home() {
     navigation.setOptions({
       headerLeft: () => (
         <View style={styles.headerLeft}>
-          <Picker
-            style={styles.picker}
-            selectedValue={lote?.id || ''}
-            onValueChange={(itemValue) => {
-              if (!itemValue) {
-                setLote(null);
-                return;
-              }
-              const loteSelecionado = (listaLotes || []).find(
-                (l) => l.id === itemValue
-              );
-              if (loteSelecionado) setLote(loteSelecionado);
-            }}
+          <Pressable
+            onPress={() => navigation.navigate('Menu')}
           >
-            <Picker.Item label="Selecione um lote" value="" />
-            {(listaLotes || []).map((item) => (
-              <Picker.Item
-                key={item.id}
-                label={item?.nome || 'Lote'}
-                value={item.id}
-              />
-            ))}
-          </Picker>
+
+            <Ionicons
+              name="menu"
+              size={26}
+            />
+          </Pressable>
+
         </View>
       ),
       headerRight: () => (
@@ -90,6 +77,33 @@ export default function Home() {
 
   return (
     <View style={styles.container}>
+      <View style={{ paddingHorizontal: 22, backgroundColor: '#f9f9f9', alignItems:"center" }}>
+
+        <Picker
+          style={styles.picker}
+          selectedValue={lote?.id || ''}
+          onValueChange={(itemValue) => {
+            if (!itemValue) {
+              setLote(null);
+              return;
+            }
+            const loteSelecionado = (listaLotes || []).find(
+              (l) => l.id === itemValue
+            );
+            if (loteSelecionado) setLote(loteSelecionado);
+          }}
+        >
+          <Picker.Item label="Selecione um lote" value="" />
+          {(listaLotes || []).map((item) => (
+            <Picker.Item
+              key={item.id}
+              label={item?.nome || 'Lote'}
+              value={item.id}
+            />
+          ))}
+        </Picker>
+      </View>
+
       <View style={[styles.main, { paddingBottom: paddingBottomMain }]}>
         <View style={styles.blocoGrafico}>
           <Ciclo />
@@ -102,9 +116,9 @@ export default function Home() {
             kgRacaoDistribuida={custoOvo?.kgRacaoDistribuida || 0}
             totalCartelas={custoOvo?.totalCartelas || 0}
             custoCartelaPorOvo={custoOvo?.custoCartelaPorOvo || 0}
+            totalOutrosCustos={custoOvo?.totalOutrosCustos || 0}
             custoProjetado={custoOvo?.custoProjetado || 0}
             precoSugerido={custoOvo?.precoSugerido || 0}
-            desempenho={custoOvo?.desempenho}
             margem={custoOvo?.margem}
           />
         </View>
@@ -177,12 +191,15 @@ const styles = StyleSheet.create({
     backgroundColor: '#fff',
   },
   headerLeft: {
+    flexDirection: "row",
+    alignItems: "center",
     marginLeft: 8,
     maxWidth: 220,
     justifyContent: 'center',
   },
   picker: {
-    width: 200,
+    backgroundColor: '#f9f9f9',
+    width: '90%',
     height: 50,
   },
   avatar: {

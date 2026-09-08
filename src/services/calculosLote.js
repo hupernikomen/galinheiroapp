@@ -71,6 +71,8 @@ function custoOvoVazio() {
   return {
     totalCriacao: 0,
     totalPostura: 0,
+    totalCama: 0,
+    totalOutrosCustos: 0,
     totalRacao: 0,
     kgRacaoDistribuida: 0,
     custoRacaoPorOvo: 0,
@@ -87,7 +89,15 @@ function custoOvoVazio() {
   };
 }
 
-
+/**
+ * Regras no ovo:
+ * - Criação / Postura / Cama → ÷ produção estimada do lote
+ * - Ração → ÷ ovos já coletados
+ * - Cartela (do lote) → ÷ (qtd × capacidade)
+ * - Investimento → parcela mensal ÷ ovos/mês estimados
+ *
+ * Outros custos (tela) = Criação + Postura + Cama
+ */
 export async function calcularTudoDoLote(lote, uid) {
   const vazio = {
     producao: 0,
@@ -98,9 +108,7 @@ export async function calcularTudoDoLote(lote, uid) {
     custoOvo: custoOvoVazio(),
   };
 
-  if (!lote?.id || !uid) {
-    return vazio;
-  }
+  if (!lote?.id || !uid) return vazio;
 
   const qtdGalinhas = Number(lote.qtAtual ?? lote.qt) || 0;
   const producaoPorGalinha = Number(lote.prodEstimada) || 0;
@@ -125,14 +133,9 @@ export async function calcularTudoDoLote(lote, uid) {
 
     let diaKey = '';
     const raw = data.data;
-    if (raw?.toDate) {
-      diaKey = raw.toDate().toISOString().slice(0, 10);
-    } else if (raw) {
-      diaKey = new Date(Number(raw)).toISOString().slice(0, 10);
-    }
-    if (diaKey) {
-      porDia[diaKey] = (porDia[diaKey] || 0) + qtd;
-    }
+    if (raw?.toDate) diaKey = raw.toDate().toISOString().slice(0, 10);
+    else if (raw) diaKey = new Date(Number(raw)).toISOString().slice(0, 10);
+    if (diaKey) porDia[diaKey] = (porDia[diaKey] || 0) + qtd;
   });
 
   let producao = 0;
@@ -142,7 +145,7 @@ export async function calcularTudoDoLote(lote, uid) {
     producao = Number(((porDia[ultimo] / qtdGalinhas) * 100).toFixed(1));
   }
 
-  // --- Custos Criação / Postura ---
+  // --- Custos: Criação, Postura, Cama ---
   const custosSnap = await getDocs(
     query(
       collection(db, 'custos'),
@@ -153,16 +156,21 @@ export async function calcularTudoDoLote(lote, uid) {
 
   let totalCriacao = 0;
   let totalPostura = 0;
+  let totalCama = 0;
 
   custosSnap.forEach((d) => {
     const data = d.data();
     const valor = Number(data.valor) || 0;
     const tipo = data.idade || data.tipo || '';
+
     if (tipo === 'Criacao') totalCriacao += valor;
     if (tipo === 'Postura') totalPostura += valor;
+    if (tipo === 'Cama') totalCama += valor;
   });
 
-  // --- Ração distribuída ---
+  const totalOutrosCustos = totalCriacao + totalPostura + totalCama;
+
+  // --- Ração do lote ---
   const racaoSnap = await getDocs(
     query(
       collection(db, 'distribuicaoRacao'),
@@ -183,14 +191,17 @@ export async function calcularTudoDoLote(lote, uid) {
     if (!Number.isNaN(valorLancado) && valorLancado > 0) {
       totalRacao += valorLancado;
     } else {
-      const precoKg = Number(data.precoKg) || 0;
-      totalRacao += kg * precoKg;
+      totalRacao += kg * (Number(data.precoKg) || 0);
     }
   });
 
-  // --- Cartelas ---
+  // --- Cartelas do lote ---
   const cartelasSnap = await getDocs(
-    query(collection(db, 'cartelas'), where('userId', '==', uid))
+    query(
+      collection(db, 'cartelas'),
+      where('loteId', '==', lote.id),
+      where('userId', '==', uid)
+    )
   );
 
   let totalCartelas = 0;
@@ -205,7 +216,7 @@ export async function calcularTudoDoLote(lote, uid) {
     capacidadeTotalOvos += qtd * capacidade;
   });
 
-  // --- Investimentos ---
+  // --- Investimentos (conta, sem lote) ---
   const invSnap = await getDocs(
     query(collection(db, 'investimentos'), where('userId', '==', uid))
   );
@@ -224,27 +235,23 @@ export async function calcularTudoDoLote(lote, uid) {
       ? producaoTotalEstimada / MESES_POSTURA_ESTIMADOS
       : 0;
 
-  // 1) Criação ÷ meta do lote
   const custoCriacaoPorOvo =
     producaoTotalEstimada > 0 ? totalCriacao / producaoTotalEstimada : 0;
-
-  // 2) Outros custos de postura ÷ meta do lote
   const custoPosturaPorOvo =
     producaoTotalEstimada > 0 ? totalPostura / producaoTotalEstimada : 0;
-
-  // 3) Ração ÷ ovos já coletados (0 ovos → 0, não explode)
+  const custoCamaPorOvo =
+    producaoTotalEstimada > 0 ? totalCama / producaoTotalEstimada : 0;
   const custoRacaoPorOvo =
     totalOvosProduzidos > 0 ? totalRacao / totalOvosProduzidos : 0;
-
   const custoCartelaPorOvo =
     capacidadeTotalOvos > 0 ? totalCartelas / capacidadeTotalOvos : 0;
-
   const custoDepreciacaoPorOvo =
     ovosMesEstimado > 0 ? totalDepreciacaoMes / ovosMesEstimado : 0;
 
   const custoProjetado =
     custoCriacaoPorOvo +
     custoPosturaPorOvo +
+    custoCamaPorOvo +
     custoRacaoPorOvo +
     custoCartelaPorOvo +
     custoDepreciacaoPorOvo;
@@ -269,6 +276,9 @@ export async function calcularTudoDoLote(lote, uid) {
     custoOvo: {
       totalCriacao: Number(totalCriacao.toFixed(2)),
       totalPostura: Number(totalPostura.toFixed(2)),
+      totalCama: Number(totalCama.toFixed(2)),
+      totalOutrosCustos: Number(totalOutrosCustos.toFixed(2)),
+      custoCamaPorOvo: Number(custoCamaPorOvo.toFixed(4)),
       totalRacao: Number(totalRacao.toFixed(2)),
       kgRacaoDistribuida: Number(kgRacaoDistribuida.toFixed(3)),
       custoRacaoPorOvo: Number(custoRacaoPorOvo.toFixed(4)),

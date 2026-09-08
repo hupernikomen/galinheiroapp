@@ -4,8 +4,7 @@ import TabbarPersonalizada from '../componentes/TabbarPersonalizada';
 
 import Home from '../pages/Home';
 import Ovos from '../pages/Ovos';
-// import DistribuicaoRacao from '../pages/DistribuicaoRacao';
-import Menu from '../pages/Menu';
+import Custos from '../pages/Custos';
 
 const Tab = createBottomTabNavigator();
 
@@ -29,7 +28,7 @@ export default function Tabs() {
         <Tab.Screen
           name="Home"
           component={Home}
-          options={{ tabBarIcon: 'home-outline', headerShown: true, title: '', headerShadowVisible:false, }}
+          options={{ tabBarIcon: 'home-outline', headerShown: true, title: ''}}
         />
         <Tab.Screen
           name="Ovos"
@@ -42,9 +41,9 @@ export default function Tabs() {
             }
           }}
         />
-        {/* <Tab.Screen
-          name="DistribuicaoRacao"
-          component={DistribuicaoRacao}
+        <Tab.Screen
+          name="Custos"
+          component={Custos}
           options={{
             headerShown: true,
             tabBarIcon: 'beaker-outline',
@@ -52,15 +51,8 @@ export default function Tabs() {
               paddingRight: 16
             }
           }}
-        /> */}
-        <Tab.Screen
-          name="Menu"
-          component={Menu}
-          options={{
-            headerShown: true,
-            tabBarIcon: 'menu-outline',
-          }}
         />
+
 
       </Tab.Navigator>
     </SafeAreaView>

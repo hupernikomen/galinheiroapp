@@ -20,7 +20,6 @@ function AppProvider({ children }) {
   const [custoOvo, setCustoOvo] = useState(null);
   const [appPronto, setAppPronto] = useState(false);
 
-  // Lotes + último lote salvo
   useEffect(() => {
     if (!uid) {
       setListaLotes([]);
@@ -65,7 +64,6 @@ function AppProvider({ children }) {
     };
   }, [uid]);
 
-  // Recalcula quando muda qualquer dado que entra no preço do ovo
   useEffect(() => {
     if (!lote?.id || !uid) {
       setCustoOvo(null);
@@ -89,6 +87,7 @@ function AppProvider({ children }) {
     );
     const qCartelas = query(
       collection(db, 'cartelas'),
+      where('loteId', '==', lote.id),
       where('userId', '==', uid)
     );
     const qInv = query(
@@ -96,9 +95,7 @@ function AppProvider({ children }) {
       where('userId', '==', uid)
     );
 
-    const recalcular = () => {
-      calcularTudo();
-    };
+    const recalcular = () => calcularTudo();
 
     const unsubOvos = onSnapshot(qOvos, recalcular);
     const unsubCustos = onSnapshot(qCustos, recalcular);

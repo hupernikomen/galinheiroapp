@@ -31,7 +31,7 @@ export default function Ovos() {
   const [loading, setLoading] = useState(true);
 
 
-  useHeaderAdd('Coleta', 'Ovos');
+  useHeaderAdd('Coleta', 'Lista de Coleta de Ovos');
 
   useEffect(() => {
     if (!lote?.id || !uid) {
@@ -136,7 +136,7 @@ export default function Ovos() {
                 ? 'Selecione um lote'
                 : !uid
                   ? 'Usuário não logado'
-                  : 'Nenhuma coleta deste usuário'}
+                  : 'Nenhuma coleta registrada'}
             </Text>
           }
         />

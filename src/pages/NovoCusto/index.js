@@ -23,6 +23,7 @@ import {
   registrarCama,
 } from '../../services/registrarCustos';
 
+
 const TIPOS = [
   { value: 'racao', label: 'Consumo de ração' },
   { value: 'cartela', label: 'Cartela de ovos' },
@@ -30,6 +31,7 @@ const TIPOS = [
 ];
 
 export default function NovoCusto() {
+
   const { colors } = useTheme();
   const navigation = useNavigation();
   const { uid } = useAuth();

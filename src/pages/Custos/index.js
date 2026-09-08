@@ -25,6 +25,8 @@ import { useAuth } from '../../contexts/AuthContext';
 import { AppContext } from '../../contexts/AppContext';
 import ItemLista from '../../componentes/ItemLista';
 
+import HeaderAdd from '../../componentes/HeaderAdd';
+
 function formatarData(valor) {
   if (!valor) return '-';
   return new Date(Number(valor)).toLocaleDateString('pt-BR');
@@ -54,22 +56,9 @@ export default function Custos() {
   const [racoes, setRacoes] = useState([]);
   const [cartelas, setCartelas] = useState([]);
 
-  useEffect(() => {
-    navigation.setOptions({
-      title: 'Custos',
-      headerRight: () => (
-        <Pressable
-          onPress={() =>
-            navigation.navigate('HomeStack', { screen: 'NovoCusto' })
-          }
-          style={{ marginRight: 16 }}
-        >
-          <Ionicons name="add" size={26} color="#000" />
-        </Pressable>
-      ),
-    });
-  }, [navigation]);
+    HeaderAdd('NovoCusto', 'Lista de Custos');
 
+  
   // Escuta as 3 coleções do lote
   useEffect(() => {
     if (!uid || !lote?.id) {
@@ -273,7 +262,6 @@ export default function Custos() {
               style={{
                 borderColor: colors.neutro,
                 borderBottomWidth: 0.3,
-                marginVertical: 14,
               }}
             />
           }
