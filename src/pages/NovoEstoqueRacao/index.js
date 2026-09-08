@@ -1,4 +1,4 @@
-import { useState, useContext } from 'react';
+import { useState } from 'react';
 import {
   View,
   Text,
@@ -8,27 +8,28 @@ import {
   Alert,
   Platform,
 } from 'react-native';
-import { Picker } from '@react-native-picker/picker';
-import { AppContext } from '../../contexts/AppContext';
-import { useAuth } from '../../contexts/AuthContext';
+import Ionicons from 'react-native-vector-icons/Ionicons';
+import DateTimePicker from '@react-native-community/datetimepicker';
 import { db } from '../../services/firebaseConnection/firebase';
 import { collection, addDoc } from 'firebase/firestore';
-import { useTheme, useNavigation } from '@react-navigation/native';
-import DateTimePicker from '@react-native-community/datetimepicker';
-import Ionicons from 'react-native-vector-icons/Ionicons';
+import { useNavigation, useTheme } from '@react-navigation/native';
+import { useAuth } from '../../contexts/AuthContext';
 
-export default function NovoCusto() {
-  const { lote } = useContext(AppContext);
-  const { uid } = useAuth();
+export default function NovoEstoqueRacao() {
   const { colors } = useTheme();
   const navigation = useNavigation();
+  const { uid } = useAuth();
 
   const [descricao, setDescricao] = useState('');
+  const [kg, setKg] = useState('');
   const [valor, setValor] = useState('');
-  const [idade, setIdade] = useState('Criacao');
   const [data, setData] = useState(new Date());
   const [mostrarData, setMostrarData] = useState(false);
   const [salvando, setSalvando] = useState(false);
+
+  const kgNum = Number(String(kg).replace(',', '.')) || 0;
+  const valorNum = Number(String(valor).replace(',', '.')) || 0;
+  const precoKg = kgNum > 0 ? valorNum / kgNum : 0;
 
   function onChangeData(event, selectedDate) {
     if (Platform.OS === 'android') {
@@ -48,38 +49,31 @@ export default function NovoCusto() {
     setTimeout(() => setMostrarData(true), 50);
   }
 
-  async function CadastrarCusto() {
-    if (!lote?.id) {
-      Alert.alert('Selecione um lote primeiro');
-      return;
-    }
+  async function Cadastrar() {
     if (!uid) {
       Alert.alert('Erro', 'Usuário não logado');
       return;
     }
-    if (!descricao.trim() || !valor) {
-      Alert.alert('Atenção', 'Preencha descrição e valor');
+    if (kgNum <= 0 || valorNum <= 0) {
+      Alert.alert('Atenção', 'Informe quantidade (kg) e valor');
       return;
     }
 
     try {
       setSalvando(true);
-      await addDoc(collection(db, 'custos'), {
-        data: data.getTime(),
-        loteId: lote.id,
-        descricao: descricao.trim(),
-        valor: Number(valor),
-        idade: idade,
+      await addDoc(collection(db, 'estoqueRacao'), {
         userId: uid,
+        descricao: descricao.trim() || 'Ração',
+        kg: kgNum,
+        kgRestante: kgNum,
+        valor: valorNum,
+        precoKg: Number(precoKg.toFixed(4)),
+        data: data.getTime(),
       });
-      setDescricao('');
-      setValor('');
-      setIdade('Criacao');
-      setData(new Date());
       navigation.goBack();
-    } catch (error) {
-      console.log('Erro custo:', error);
-      Alert.alert('Erro', error?.message || 'Falha ao salvar');
+    } catch (e) {
+      console.log(e);
+      Alert.alert('Erro', 'Não foi possível guardar');
     } finally {
       setSalvando(false);
     }
@@ -87,56 +81,55 @@ export default function NovoCusto() {
 
   return (
     <View style={styles.container}>
-
-
-      <Pressable
-        onPress={abrirCalendario}
-        style={[styles.botaoData, { backgroundColor: colors.neutro }]}
-      >
-        <Text style={styles.dataTexto}>
-          Data: {data.toLocaleDateString('pt-BR')}
-        </Text>
-        <Ionicons name="calendar-outline" size={22} color={colors.principal} />
-      </Pressable>
-
-
       <TextInput
         style={[styles.input, { backgroundColor: colors.neutro }]}
-        placeholder="Descrição"
+        placeholder="Descrição (ex: Postura 16%)"
         value={descricao}
         onChangeText={setDescricao}
         placeholderTextColor="#999"
         underlineColorAndroid="transparent"
       />
+
       <TextInput
         style={[styles.input, { backgroundColor: colors.neutro }]}
-        placeholder="Valor"
-        keyboardType="numeric"
+        placeholder="Quantidade (kg)"
+        keyboardType="decimal-pad"
+        value={kg}
+        onChangeText={setKg}
+        placeholderTextColor="#999"
+        underlineColorAndroid="transparent"
+      />
+
+      <TextInput
+        style={[styles.input, { backgroundColor: colors.neutro }]}
+        placeholder="Valor pago (R$)"
+        keyboardType="decimal-pad"
         value={valor}
         onChangeText={setValor}
         placeholderTextColor="#999"
         underlineColorAndroid="transparent"
       />
 
-      <View style={[styles.pickerBox, { backgroundColor: colors.neutro }]}>
-        <Picker
-          selectedValue={idade}
-          onValueChange={setIdade}
-          style={styles.picker}
-        >
-          <Picker.Item label="Criação" value="Criacao" />
-          <Picker.Item label="Postura" value="Postura" />
-        </Picker>
-      </View>
+      <Pressable onPress={abrirCalendario} style={[styles.botaoInput, { backgroundColor: colors.neutro }]}>
+        <Text style={styles.dataTexto}>
+          {data.toLocaleDateString('pt-BR')}
+        </Text>
+        <Ionicons name="calendar-outline" size={24} color={colors.principal} />
+      </Pressable>
 
+      {precoKg > 0 && (
+        <Text style={styles.precoKg}>
+          Custo: R$ {precoKg.toFixed(2)} / kg
+        </Text>
+      )}
 
       <Pressable
-        onPress={CadastrarCusto}
+        onPress={Cadastrar}
         disabled={salvando}
         style={[styles.botao, { backgroundColor: colors.principal }]}
       >
         <Text style={styles.botaoTexto}>
-          {salvando ? 'Salvando...' : 'Guardar'}
+          {salvando ? 'Salvando...' : 'Guardar estoque'}
         </Text>
       </Pressable>
 
@@ -145,7 +138,7 @@ export default function NovoCusto() {
           value={data}
           mode="date"
           display="default"
-          onValueChange={onChangeData}
+          onChange={onChangeData}
           onDismiss={() => setMostrarData(false)}
           maximumDate={new Date()}
         />
@@ -167,26 +160,24 @@ const styles = StyleSheet.create({
     marginBottom: 12,
     fontSize: 16,
   },
-  pickerBox: {
-    borderRadius: 22,
-    marginBottom: 12,
-    overflow: 'hidden',
-  },
-  picker: {
-    height: 50,
-    width: '100%',
-  },
-  botaoData: {
+  botaoInput: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
     height: 50,
     borderRadius: 22,
     paddingHorizontal: 16,
     marginBottom: 12,
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'space-between',
   },
   dataTexto: {
     fontSize: 16,
+    color: '#333',
+  },
+  precoKg: {
+    fontFamily: 'Roboto-Medium',
+    fontSize: 15,
+    textAlign: 'center',
+    marginBottom: 16,
     color: '#333',
   },
   botao: {

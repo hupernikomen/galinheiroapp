@@ -16,20 +16,32 @@ const ITENS = [
       {
         titulo: 'Lotes',
         subtitulo: 'Cadastro e gestão dos lotes',
-        icone: 'cube-outline',
         rota: 'Lote',
       },
       {
         titulo: 'Custos',
-        subtitulo: 'Gastos de criação e postura',
-        icone: 'shapes-outline',
+        subtitulo: 'Outros gastos do lote',
         rota: 'Custos',
       },
       {
         titulo: 'Investimentos',
         subtitulo: 'Galpão, equipamentos e depreciação',
-        icone: 'storefront-outline',
         rota: 'Investimentos',
+      },
+    ],
+  },
+  {
+    secao: 'Ração e embalagem',
+    lista: [
+      {
+        titulo: 'Estoque de ração',
+        subtitulo: 'Compras e saldo em kg',
+        rota: 'EstoqueRacao',
+      },
+      {
+        titulo: 'Cartelas',
+        subtitulo: 'Compras de embalagem',
+        rota: 'Cartelas',
       },
     ],
   },
@@ -39,13 +51,11 @@ const ITENS = [
       {
         titulo: 'Marcos do ciclo',
         subtitulo: 'Alertas e fases do relógio',
-        icone: 'flag-outline',
         rota: 'Marcos',
       },
       {
         titulo: 'Como funciona',
         subtitulo: 'Custo do ovo e preço sugerido',
-        icone: 'information-circle-outline',
         rota: 'Info',
       },
     ],
@@ -113,7 +123,7 @@ const styles = StyleSheet.create({
     textTransform: 'uppercase',
     letterSpacing: 0.5,
     marginVertical: 16,
-    marginLeft: 28
+    marginLeft: 28,
   },
   listaCard: {
     marginHorizontal: 16,

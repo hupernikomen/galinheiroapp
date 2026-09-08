@@ -7,11 +7,7 @@ import {
   where,
 } from 'firebase/firestore';
 import { db } from '../services/firebaseConnection/firebase';
-import {
-  calcularTudoDoLote,
-  calcularSemanasLote as calcSemanas,
-} from '../services/calculosLote';
-import { formatarData } from '../utils/format';
+import { calcularTudoDoLote } from '../services/calculosLote';
 import { AuthContext } from './AuthContext';
 
 export const AppContext = createContext({});
@@ -19,24 +15,17 @@ export const AppContext = createContext({});
 function AppProvider({ children }) {
   const { uid } = useContext(AuthContext);
 
-  const [load, setLoad] = useState(false);
   const [lote, setLote] = useState(null);
   const [listaLotes, setListaLotes] = useState([]);
-  const [producao, setProducao] = useState(0);
   const [custoOvo, setCustoOvo] = useState(null);
-  const [dadosRelogio, setDadosRelogio] = useState({
-    totalOvosProduzidos: 0,
-    producaoTotalEstimada: 0,
-  });
   const [appPronto, setAppPronto] = useState(false);
 
+  // Lotes + último lote salvo
   useEffect(() => {
     if (!uid) {
       setListaLotes([]);
       setLote(null);
-      setProducao(0);
       setCustoOvo(null);
-      setDadosRelogio({ totalOvosProduzidos: 0, producaoTotalEstimada: 0 });
       setAppPronto(true);
       return;
     }
@@ -45,18 +34,11 @@ function AppProvider({ children }) {
     setAppPronto(false);
 
     const q = query(collection(db, 'lotes'), where('userId', '==', uid));
-
-    const unsubLotes = onSnapshot(
-      q,
-      (snapshot) => {
-        const dados = snapshot.docs.map((d) => ({
-          id: d.id,
-          ...d.data(),
-        }));
-        setListaLotes(dados);
-      },
-      (error) => console.log('Erro lotes:', error)
-    );
+    const unsubLotes = onSnapshot(q, (snapshot) => {
+      setListaLotes(
+        snapshot.docs.map((d) => ({ id: d.id, ...d.data() }))
+      );
+    });
 
     AsyncStorage.getItem('@lote')
       .then((res) => {
@@ -83,11 +65,10 @@ function AppProvider({ children }) {
     };
   }, [uid]);
 
+  // Recalcula quando muda qualquer dado que entra no preço do ovo
   useEffect(() => {
     if (!lote?.id || !uid) {
-      setProducao(0);
       setCustoOvo(null);
-      setDadosRelogio({ totalOvosProduzidos: 0, producaoTotalEstimada: 0 });
       return;
     }
 
@@ -101,15 +82,29 @@ function AppProvider({ children }) {
       where('loteId', '==', lote.id),
       where('userId', '==', uid)
     );
+    const qRacao = query(
+      collection(db, 'distribuicaoRacao'),
+      where('loteId', '==', lote.id),
+      where('userId', '==', uid)
+    );
+    const qCartelas = query(
+      collection(db, 'cartelas'),
+      where('userId', '==', uid)
+    );
     const qInv = query(
       collection(db, 'investimentos'),
       where('userId', '==', uid)
     );
 
-    const unsubOvos = onSnapshot(qOvos, () => calcularTudo());
-    const unsubCustos = onSnapshot(qCustos, () => calcularTudo());
-    const unsubInv = onSnapshot(qInv, () => calcularTudo(), (e) => {
-      // se ainda não há userId em investimentos, não quebra o app
+    const recalcular = () => {
+      calcularTudo();
+    };
+
+    const unsubOvos = onSnapshot(qOvos, recalcular);
+    const unsubCustos = onSnapshot(qCustos, recalcular);
+    const unsubRacao = onSnapshot(qRacao, recalcular);
+    const unsubCartelas = onSnapshot(qCartelas, recalcular);
+    const unsubInv = onSnapshot(qInv, recalcular, (e) => {
       console.log('Investimentos:', e?.message);
     });
 
@@ -118,25 +113,21 @@ function AppProvider({ children }) {
     return () => {
       unsubOvos();
       unsubCustos();
+      unsubRacao();
+      unsubCartelas();
       unsubInv();
     };
-  }, [lote?.id, uid]);
+  }, [lote?.id, uid, listaLotes]);
 
   async function calcularTudo() {
-    if (!lote?.id) return;
+    if (!lote?.id || !uid) return;
 
-    setLoad(true);
     try {
       const loteAtual = listaLotes.find((l) => l.id === lote.id) || lote;
       const resultado = await calcularTudoDoLote(loteAtual, uid);
-
-      setProducao(resultado.producao);
-      setDadosRelogio(resultado.dadosRelogio);
       setCustoOvo(resultado.custoOvo);
     } catch (error) {
       console.log('Erro ao calcular:', error);
-    } finally {
-      setLoad(false);
     }
   }
 
@@ -149,25 +140,15 @@ function AppProvider({ children }) {
     }
   }
 
-  function calcularSemanasLote() {
-    const loteAtual = listaLotes.find((l) => l.id === lote?.id) || lote;
-    return calcSemanas(loteAtual);
-  }
-
   return (
     <AppContext.Provider
       value={{
         appPronto,
-        load,
         lote,
         setLote: salvarLote,
         listaLotes,
-        producao,
         custoOvo,
-        dadosRelogio,
         calcularTudo,
-        calcularSemanasLote,
-        formatarData,
       }}
     >
       {children}

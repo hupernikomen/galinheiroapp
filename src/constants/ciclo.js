@@ -13,7 +13,6 @@ export const MARCOS_PADRAO = [
   { semana: 8, titulo: 'Vacina', mensagem: 'Newcastle (3º reforço)' },
   { semana: 12, titulo: 'Vacina', mensagem: 'Bronquite Infecciosa (3º reforço)' },
   { semana: 14, titulo: 'Vacina', mensagem: 'Newcastle + Bronquite (oleosa)' },
-  { semana: 18, titulo: '', mensagem: 'Início da postura' },
   { semana: 70, titulo: 'Alerta', mensagem: 'Comprar novo Lote' },
   { semana: 90, titulo: '', mensagem: 'Fim do ciclo' },
 ];

@@ -9,6 +9,6 @@ export function formatarValor(v, casas = 2) {
   return Number(v || 0).toFixed(casas);
 }
 
-export function formatarMoeda(v, casas = 2) {
-  return `R$ ${formatarValor(v, casas)}`;
-}
+// export function formatarMoeda(v, casas = 2) {
+//   return `R$ ${formatarValor(v, casas)}`;
+// }

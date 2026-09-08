@@ -17,8 +17,8 @@ if (
   UIManager.setLayoutAnimationEnabledExperimental(true);
 }
 
-const TAB_SIZE = 56; // área de cada aba
-const PILL_SIZE = 54; // bolinha da cor principal
+const TAB_SIZE = 52; // área de cada aba
+const PILL_SIZE = 52; // bolinha da cor principal
 
 export default function TabbarPersonalizada({ state, descriptors, navigation }) {
   const { colors } = useTheme();
@@ -65,7 +65,7 @@ export default function TabbarPersonalizada({ state, descriptors, navigation }) 
 
   return (
     <View style={styles.container}>
-      <View style={[styles.content, { backgroundColor: colors.neutro }]}>
+      <View style={[styles.content, { borderWidth: 1, borderColor: '#ddd' }]}>
         {/* Bolinha que desliza (cor principal) */}
         <Animated.View
           pointerEvents="none"
@@ -74,6 +74,7 @@ export default function TabbarPersonalizada({ state, descriptors, navigation }) 
             {
               backgroundColor: colors.principal,
               transform: [{ translateX: slideX }],
+              elevation: 5
             },
           ]}
         />
@@ -100,38 +101,21 @@ export default function TabbarPersonalizada({ state, descriptors, navigation }) 
             }
           };
 
-          const onLongPress = () => {
-            navigation.emit({
-              type: 'tabLongPress',
-              target: route.key,
-            });
-          };
+
 
           return (
             <TouchableOpacity
               key={route.key}
-              accessibilityRole="button"
-              accessibilityState={isFocused ? { selected: true } : {}}
-              accessibilityLabel={options.tabBarAccessibilityLabel}
-              testID={options.tabBarTestID}
               onPress={onPress}
-              onLongPress={onLongPress}
               onLayout={(e) => onLayoutTab(index, e)}
-              style={styles.buttonTab}
+              style={[styles.buttonTab, { elevation: isFocused ? 15 : 0 }]}
               activeOpacity={0.85}
             >
-              <Animated.View
-                style={[
-                  styles.iconWrap,
-                  { transform: [{ scale }] },
-                ]}
-              >
-                <Ionicons
-                  name={options.tabBarIcon}
-                  size={20}
-                  color={isFocused ? '#fff' : "#333"}
-                />
-              </Animated.View>
+              <Ionicons
+                name={options.tabBarIcon}
+                size={22}
+                color={isFocused ? '#fff' : "#333"}
+              />
             </TouchableOpacity>
           );
         })}
@@ -152,7 +136,7 @@ const styles = StyleSheet.create({
     position: 'absolute',
     bottom: -10,
     marginBottom: 28,
-    padding: 4,
+    padding: 2,
     borderRadius: 35,
   },
   pill: {

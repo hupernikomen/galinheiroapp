@@ -7,9 +7,11 @@ import {
 } from '../constants/ciclo';
 import { useTheme } from '@react-navigation/native';
 
-export default function CicloMarcosPadrao({ visivel = true }) {
-
-  const {colors} = useTheme()
+export default function CicloMarcosPadrao({
+  visivel = true,
+  semanaDestaque = null,
+}) {
+  const { colors } = useTheme();
 
   if (!visivel) return null;
 
@@ -22,21 +24,37 @@ export default function CicloMarcosPadrao({ visivel = true }) {
       pointerEvents="none"
       style={[styles.camada, { width: TAMANHO, height: TAMANHO }]}
     >
-      {lista.map((marco) => (
-        <View
-          key={`padrao-${marco.semana}-${marco.mensagem}`}
-          style={[
-            styles.marcoContainer,
-            {
-              width: TAMANHO,
-              height: TAMANHO,
-              transform: [{ rotate: `${semanaParaAngulo(marco.semana)}deg` }],
-            },
-          ]}
-        >
-          <View style={[styles.marco, {backgroundColor:colors.destaque}]} />
-        </View>
-      ))}
+      {lista.map((marco) => {
+        const destaque = Number(marco.semana) === Number(semanaDestaque);
+
+        return (
+          <View
+            key={`padrao-${marco.semana}-${marco.mensagem}`}
+            style={[
+              styles.marcoContainer,
+              {
+                width: TAMANHO,
+                height: TAMANHO,
+                transform: [{ rotate: `${semanaParaAngulo(marco.semana)}deg` }],
+              },
+            ]}
+          >
+            <View
+              style={[
+                styles.marco,
+                {
+                  backgroundColor: destaque
+                    ? colors.destaque || '#f39c12'
+                    : colors.destaque
+                      ? colors.destaque + '99'
+                      : '#999',
+                },
+                destaque && styles.marcoDestaque,
+              ]}
+            />
+          </View>
+        );
+      })}
     </View>
   );
 }
@@ -57,5 +75,14 @@ const styles = StyleSheet.create({
     width: 5,
     height: 4,
     marginTop: -15,
+    borderRadius: 2,
+  },
+  marcoDestaque: {
+    width: 10,
+    height: 10,
+    borderRadius: 5,
+    marginTop: -18,
+    borderWidth: 2,
+    borderColor: '#fff',
   },
 });

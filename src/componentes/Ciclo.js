@@ -1,4 +1,4 @@
-import { useContext, useEffect, useState, useCallback } from 'react';
+import { useContext, useEffect, useState, useCallback, useMemo } from 'react';
 import { View, StyleSheet } from 'react-native';
 import { AppContext } from '../contexts/AppContext';
 import { useAuth } from '../contexts/AuthContext';
@@ -47,6 +47,7 @@ export default function Ciclo() {
           id: d.id,
           semana: Number(d.data().semana) || 0,
           mensagem: d.data().mensagem || '',
+          titulo: d.data().titulo || '',
         }));
         setMarcosBanco(dados);
       },
@@ -78,25 +79,32 @@ export default function Ciclo() {
 
   const semanas = calcularSemanas();
 
-  const marcosCarrossel = (() => {
+  const marcosCarrossel = useMemo(() => {
     const lista = [];
     if (usarPadrao) {
       MARCOS_PADRAO.forEach((m) => lista.push({ ...m, tipo: 'padrao' }));
     }
     marcosBanco.forEach((m) => lista.push({ ...m, tipo: 'personalizado' }));
     return lista.sort((a, b) => a.semana - b.semana);
-  })();
+  }, [usarPadrao, marcosBanco]);
+
+  // Próximo marco futuro (para destacar na borda)
+  const semanaDestaque = useMemo(() => {
+    const proximo = marcosCarrossel.find((m) => Number(m.semana) > semanas);
+    return proximo ? Number(proximo.semana) : null;
+  }, [marcosCarrossel, semanas]);
 
   return (
     <View style={styles.container}>
       <View style={[styles.relogio, { width: TAMANHO, height: TAMANHO }]}>
-        {/* Fundo */}
-        <CicloMarcosPadrao visivel={usarPadrao} />
-
-        {/* Meio */}
-        <CicloMarcosPersonalizados marcos={marcosBanco} />
-
-        {/* Topo: traços, círculo, ponteiro focado */}
+        <CicloMarcosPadrao
+          visivel={usarPadrao}
+          semanaDestaque={semanaDestaque}
+        />
+        <CicloMarcosPersonalizados
+          marcos={marcosBanco}
+          semanaDestaque={semanaDestaque}
+        />
         <CicloCirculo
           semanas={semanas}
           marcos={marcosCarrossel}
@@ -115,6 +123,5 @@ const styles = StyleSheet.create({
   relogio: {
     justifyContent: 'center',
     alignItems: 'center',
-    marginBottom: 28,
   },
 });

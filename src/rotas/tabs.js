@@ -4,6 +4,7 @@ import TabbarPersonalizada from '../componentes/TabbarPersonalizada';
 
 import Home from '../pages/Home';
 import Ovos from '../pages/Ovos';
+// import DistribuicaoRacao from '../pages/DistribuicaoRacao';
 import Menu from '../pages/Menu';
 
 const Tab = createBottomTabNavigator();
@@ -41,6 +42,17 @@ export default function Tabs() {
             }
           }}
         />
+        {/* <Tab.Screen
+          name="DistribuicaoRacao"
+          component={DistribuicaoRacao}
+          options={{
+            headerShown: true,
+            tabBarIcon: 'beaker-outline',
+            headerRightContainerStyle: {
+              paddingRight: 16
+            }
+          }}
+        /> */}
         <Tab.Screen
           name="Menu"
           component={Menu}

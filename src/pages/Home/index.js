@@ -1,45 +1,26 @@
-import { StyleSheet, View, Pressable, Image, Text, Modal, Alert } from 'react-native';
+import { StyleSheet, View, Pressable, Text, Image, Modal, Alert } from 'react-native';
 import { Picker } from '@react-native-picker/picker';
 import { AppContext } from '../../contexts/AppContext';
-import { useContext, useEffect, useState, useRef } from 'react';
+import { useAuth } from '../../contexts/AuthContext';
+import { useContext, useEffect, useState } from 'react';
 import Ciclo from '../../componentes/Ciclo';
 import InfoHome from '../../componentes/InfoHome';
-import { useNavigation } from '@react-navigation/native';
+import { useNavigation, useTheme } from '@react-navigation/native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import Ionicons from 'react-native-vector-icons/Ionicons';
-import { useAuth } from '../../contexts/AuthContext';
 
 const ALTURA_TABBAR = 78;
 
 export default function Home() {
-  const { lote, setLote, custoOvo, dadosRelogio, listaLotes } =
-    useContext(AppContext);
+  const { lote, setLote, custoOvo, listaLotes } = useContext(AppContext);
   const { user, logout } = useAuth();
   const navigation = useNavigation();
   const insets = useSafeAreaInsets();
+  const { colors } = useTheme();
 
   const [menuAberto, setMenuAberto] = useState(false);
-  const avisouLoteRef = useRef(false);
 
   const paddingBottomMain = ALTURA_TABBAR + Math.max(insets.bottom, 8);
-
-  async function handleSair() {
-    setMenuAberto(false);
-    Alert.alert('Sair', 'Deseja sair da sua conta?', [
-      { text: 'Cancelar', style: 'cancel' },
-      {
-        text: 'Sair',
-        style: 'destructive',
-        onPress: async () => {
-          try {
-            await logout();
-          } catch (e) {
-            Alert.alert('Erro', e?.message || 'Não foi possível sair');
-          }
-        },
-      },
-    ]);
-  }
 
   useEffect(() => {
     navigation.setOptions({
@@ -63,12 +44,8 @@ export default function Home() {
             {(listaLotes || []).map((item) => (
               <Picker.Item
                 key={item.id}
-                label={item?.nome || 'Sem nome'}
+                label={item?.nome || 'Lote'}
                 value={item.id}
-                style={{
-                  fontFamily: 'Roboto-Medium',
-                  fontSize: 16,
-                }}
               />
             ))}
           </Picker>
@@ -77,31 +54,39 @@ export default function Home() {
       headerRight: () => (
         <Pressable
           onPress={() => setMenuAberto(true)}
-          style={styles.headerRightBtn}
-          hitSlop={8}
+          style={{ marginRight: 12 }}
         >
           {user?.photoURL ? (
             <Image source={{ uri: user.photoURL }} style={styles.avatar} />
           ) : (
-            <View style={[styles.avatar, styles.avatarFallback]}>
-              <Ionicons name="person" size={22} color="#666" />
-            </View>
+            <Ionicons
+              name="person-circle"
+              size={36}
+              color={colors.principal || '#66796b'}
+            />
           )}
         </Pressable>
       ),
     });
-  }, [navigation, listaLotes, lote, setLote, user]);
+  }, [navigation, listaLotes, lote, setLote, user, colors]);
 
-  // Avisa uma vez se há lotes e nenhum está selecionado
-  useEffect(() => {
-    if (listaLotes.length > 0 && !lote && !avisouLoteRef.current) {
-      avisouLoteRef.current = true;
-      Alert.alert('Lote não selecionado', 'Selecione um dos lotes criados');
-    }
-    if (lote) {
-      avisouLoteRef.current = false;
-    }
-  }, [listaLotes, lote]);
+  async function handleSair() {
+    setMenuAberto(false);
+    Alert.alert('Sair', 'Deseja sair da conta?', [
+      { text: 'Não', style: 'cancel' },
+      {
+        text: 'Sim',
+        style: 'destructive',
+        onPress: async () => {
+          try {
+            await logout();
+          } catch (e) {
+            console.log(e);
+          }
+        },
+      },
+    ]);
+  }
 
   return (
     <View style={styles.container}>
@@ -112,16 +97,15 @@ export default function Home() {
 
         <View style={styles.blocoInfo}>
           <InfoHome
-            totalCriacao={custoOvo?.totalCriacao || 0}
-            totalPostura={custoOvo?.totalPostura || 0}
+            totalRacao={custoOvo?.totalRacao || 0}
+            custoRacaoPorOvo={custoOvo?.custoRacaoPorOvo || 0}
+            kgRacaoDistribuida={custoOvo?.kgRacaoDistribuida || 0}
+            totalCartelas={custoOvo?.totalCartelas || 0}
+            custoCartelaPorOvo={custoOvo?.custoCartelaPorOvo || 0}
             custoProjetado={custoOvo?.custoProjetado || 0}
             precoSugerido={custoOvo?.precoSugerido || 0}
             desempenho={custoOvo?.desempenho}
-            totalDepreciacao={custoOvo?.totalDepreciacao || 0}
-            margem={custoOvo?.margem ?? 0.6}
-            ovosEsperadosAteHoje={custoOvo?.ovosEsperadosAteHoje || 0}
-            semanasPostura={custoOvo?.semanasPostura || 0}
-            totalOvosProduzidos={dadosRelogio?.totalOvosProduzidos || 0}
+            margem={custoOvo?.margem}
           />
         </View>
       </View>
@@ -137,7 +121,10 @@ export default function Home() {
           onPress={() => setMenuAberto(false)}
         >
           <View
-            style={[styles.menuBox, { top: insets.top + 52, right: 12 }]}
+            style={[
+              styles.menuBox,
+              { top: insets.top + 48, right: 12 },
+            ]}
           >
             <View style={styles.menuUser}>
               {user?.photoURL ? (
@@ -146,9 +133,7 @@ export default function Home() {
                   style={styles.menuAvatar}
                 />
               ) : (
-                <View style={[styles.menuAvatar, styles.avatarFallback]}>
-                  <Ionicons name="person" size={20} color="#666" />
-                </View>
+                <Ionicons name="person-circle" size={40} color="#999" />
               )}
               <View style={{ flex: 1 }}>
                 <Text style={styles.menuNome} numberOfLines={1}>
@@ -163,12 +148,17 @@ export default function Home() {
             <View style={styles.menuDivider} />
 
             <Pressable
-              onPress={handleSair}
-              style={({ pressed }) => [
-                styles.menuItem,
-                pressed && { backgroundColor: '#fdf2f2' },
-              ]}
+              style={styles.menuItem}
+              onPress={() => {
+                setMenuAberto(false);
+                navigation.navigate('Menu');
+              }}
             >
+              <Ionicons name="menu-outline" size={20} color="#333" />
+              <Text style={styles.menuItemTexto}>Menu</Text>
+            </Pressable>
+
+            <Pressable style={styles.menuItem} onPress={handleSair}>
               <Ionicons name="log-out-outline" size={20} color="#c0392b" />
               <Text style={[styles.menuItemTexto, { color: '#c0392b' }]}>
                 Sair
@@ -192,22 +182,13 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
   },
   picker: {
-    width: 220,
-    height: 60,
-    marginLeft: 14,
-  },
-  headerRightBtn: {
-    marginRight: 16,
+    width: 200,
+    height: 50,
   },
   avatar: {
-    width: 36,
-    height: 36,
-    borderRadius: 18,
-  },
-  avatarFallback: {
-    backgroundColor: '#eee',
-    alignItems: 'center',
-    justifyContent: 'center',
+    width: 34,
+    height: 34,
+    borderRadius: 17,
   },
   main: {
     flex: 1,

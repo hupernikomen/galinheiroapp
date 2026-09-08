@@ -7,9 +7,7 @@ import {
   Pressable,
   Alert,
 } from 'react-native';
-import { useContext, useState, useEffect } from 'react';
-import { AppContext } from '../../contexts/AppContext';
-import { useAuth } from '../../contexts/AuthContext';
+import { useState, useEffect, useContext } from 'react';
 import { db } from '../../services/firebaseConnection/firebase';
 import {
   collection,
@@ -18,24 +16,66 @@ import {
   onSnapshot,
   doc,
   deleteDoc,
+  updateDoc,
+  increment,
 } from 'firebase/firestore';
 import { useNavigation, useTheme } from '@react-navigation/native';
-import useHeaderAdd from '../../componentes/HeaderAdd';
+import Ionicons from 'react-native-vector-icons/Ionicons';
+import { useAuth } from '../../contexts/AuthContext';
+import { AppContext } from '../../contexts/AppContext';
 import ItemLista from '../../componentes/ItemLista';
 
+function formatarData(valor) {
+  if (!valor) return '-';
+  return new Date(Number(valor)).toLocaleDateString('pt-BR');
+}
+
+function labelTipo(item) {
+  if (item._origem === 'racao') return 'Ração';
+  if (item._origem === 'cartela') return 'Cartela';
+  const t = item.idade || item.tipo || '';
+  if (t === 'Criacao') return 'Criação';
+  if (t === 'Postura') return 'Postura';
+  if (t === 'Cama') return 'Cama';
+  return t || 'Custo';
+}
+
 export default function Custos() {
-  const { lote } = useContext(AppContext);
-  const { uid } = useAuth();
   const { colors } = useTheme();
   const navigation = useNavigation();
+  const { uid } = useAuth();
+  const { lote } = useContext(AppContext);
 
   const [lista, setLista] = useState([]);
   const [loading, setLoading] = useState(true);
 
-  useHeaderAdd('NovoCusto', 'Custos Diários');
+  // dados brutos de cada coleção
+  const [custos, setCustos] = useState([]);
+  const [racoes, setRacoes] = useState([]);
+  const [cartelas, setCartelas] = useState([]);
 
   useEffect(() => {
-    if (!lote?.id || !uid) {
+    navigation.setOptions({
+      title: 'Custos',
+      headerRight: () => (
+        <Pressable
+          onPress={() =>
+            navigation.navigate('HomeStack', { screen: 'NovoCusto' })
+          }
+          style={{ marginRight: 16 }}
+        >
+          <Ionicons name="add" size={26} color="#000" />
+        </Pressable>
+      ),
+    });
+  }, [navigation]);
+
+  // Escuta as 3 coleções do lote
+  useEffect(() => {
+    if (!uid || !lote?.id) {
+      setCustos([]);
+      setRacoes([]);
+      setCartelas([]);
       setLista([]);
       setLoading(false);
       return;
@@ -43,79 +83,189 @@ export default function Custos() {
 
     setLoading(true);
 
-    const q = query(
+    const qCustos = query(
       collection(db, 'custos'),
-      where('loteId', '==', lote.id),
-      where('userId', '==', uid)
+      where('userId', '==', uid),
+      where('loteId', '==', lote.id)
+    );
+    const qRacao = query(
+      collection(db, 'distribuicaoRacao'),
+      where('userId', '==', uid),
+      where('loteId', '==', lote.id)
+    );
+    const qCartela = query(
+      collection(db, 'cartelas'),
+      where('userId', '==', uid),
+      where('loteId', '==', lote.id)
     );
 
-    const unsub = onSnapshot(
-      q,
-      (snapshot) => {
-        const dados = snapshot.docs.map((d) => ({
+    const unsub1 = onSnapshot(qCustos, (snap) => {
+      setCustos(
+        snap.docs.map((d) => ({
           id: d.id,
           ...d.data(),
-        }));
-        dados.sort((a, b) => (b.data || 0) - (a.data || 0));
-        setLista(dados.slice(0, 30));
-        setLoading(false);
-      },
-      (error) => {
-        console.log('Erro custos:', error);
-        setLoading(false);
-        Alert.alert(
-          'Índice do Firebase',
-          'Se o erro pedir índice, abra o link do console e crie o índice.'
-        );
+          _origem: 'custo',
+        }))
+      );
+    });
+
+    const unsub2 = onSnapshot(qRacao, (snap) => {
+      setRacoes(
+        snap.docs.map((d) => ({
+          id: d.id,
+          ...d.data(),
+          _origem: 'racao',
+        }))
+      );
+    });
+
+    const unsub3 = onSnapshot(qCartela, (snap) => {
+      setCartelas(
+        snap.docs.map((d) => ({
+          id: d.id,
+          ...d.data(),
+          _origem: 'cartela',
+        }))
+      );
+    });
+
+    return () => {
+      unsub1();
+      unsub2();
+      unsub3();
+    };
+  }, [uid, lote?.id]);
+
+  // Junta e ordena
+  useEffect(() => {
+    if (!lote?.id) {
+      setLista([]);
+      setLoading(false);
+      return;
+    }
+
+    const junta = [...custos, ...racoes, ...cartelas];
+    junta.sort((a, b) => (b.data || 0) - (a.data || 0));
+    setLista(junta);
+    setLoading(false);
+  }, [custos, racoes, cartelas, lote?.id]);
+
+  async function excluirRacao(item) {
+    await deleteDoc(doc(db, 'distribuicaoRacao', item.id));
+    // devolve kg ao estoque, se houver
+    if (item.estoqueId && Number(item.kg) > 0) {
+      try {
+        await updateDoc(doc(db, 'estoqueRacao', item.estoqueId), {
+          kgRestante: increment(Number(item.kg)),
+        });
+      } catch (e) {
+        console.log('Não foi possível devolver ao estoque:', e);
       }
-    );
-
-    return () => unsub();
-  }, [lote?.id, uid]);
-
-  function formatarData(valor) {
-    if (!valor) return '-';
-    return new Date(Number(valor)).toLocaleDateString('pt-BR');
+    }
   }
 
-  function excluirItem(item) {
-    Alert.alert('Excluir', 'Remover este custo?', [
-      { text: 'Cancelar', style: 'cancel' },
+  function excluir(item) {
+    const tipo = labelTipo(item);
+    Alert.alert('Excluir', `Excluir este lançamento (${tipo})?`, [
+      { text: 'Não', style: 'cancel' },
       {
-        text: 'Excluir',
+        text: 'Sim',
         style: 'destructive',
         onPress: async () => {
           try {
-            await deleteDoc(doc(db, 'custos', item.id));
+            if (item._origem === 'racao') {
+              await excluirRacao(item);
+            } else if (item._origem === 'cartela') {
+              await deleteDoc(doc(db, 'cartelas', item.id));
+            } else {
+              await deleteDoc(doc(db, 'custos', item.id));
+            }
           } catch (e) {
-            Alert.alert('Erro', e?.message || 'Falha ao excluir');
+            console.log(e);
+            Alert.alert('Erro', 'Não foi possível excluir');
           }
         },
       },
     ]);
   }
 
+  function montarTitulo(item) {
+    if (item._origem === 'racao') {
+      const kg = Number(item.kg) || 0;
+      return `Ração · ${kg.toLocaleString('pt-BR', {
+        maximumFractionDigits: 1,
+      })} kg`;
+    }
+    if (item._origem === 'cartela') {
+      const qtd = Number(item.qtd) || 0;
+      const cap = Number(item.capacidade) || 0;
+      return item.descricao || `Cartela · ${qtd} × ${cap}`;
+    }
+    return item.descricao || labelTipo(item);
+  }
+
+  function montarSub(item) {
+    const dataStr = formatarData(item.data);
+    if (item._origem === 'racao') {
+      return `${labelTipo(item)} · ${dataStr}`;
+    }
+    if (item._origem === 'cartela') {
+      const qtd = Number(item.qtd) || 0;
+      const cap = Number(item.capacidade) || 0;
+      return `${qtd} cartelas × ${cap} ovos · ${dataStr}`;
+    }
+    return `${labelTipo(item)} · ${dataStr}`;
+  }
+
+  function montarValor(item) {
+    if (item._origem === 'racao') {
+      return Number(item.valor) || 0;
+    }
+    if (item._origem === 'cartela') {
+      return Number(item.valorTotal ?? item.valor) || 0;
+    }
+    return Number(item.valor) || 0;
+  }
+
   function renderItem({ item }) {
+    const valor = montarValor(item);
     return (
       <ItemLista
-        titulo={item.descricao || 'Sem descrição'}
-        subtitulo={`${item.idade || '-'} · ${formatarData(item.data)}`}
-        direita={`R$ ${Number(item.valor || 0).toFixed(2)}`}
-        onExcluir={() => excluirItem(item)}
+        titulo={montarTitulo(item)}
+        subtitulo={montarSub(item)}
+        direita={`R$ ${valor.toFixed(2)}`}
+        onExcluir={() => excluir(item)}
       />
     );
   }
 
+  if (!lote?.id) {
+    return (
+      <View style={styles.container}>
+        <Text style={styles.vazio}>Selecione um lote na Home</Text>
+      </View>
+    );
+  }
+
+  const totalGeral = lista.reduce((s, i) => s + montarValor(i), 0);
+
   return (
     <View style={styles.container}>
+      {!loading && lista.length > 0 && (
+        <Text style={styles.saldo}>
+          {lote?.nome ? `${lote.nome}  ·  ` : ''}
+          Total: R$ {totalGeral.toFixed(2)}
+        </Text>
+      )}
+
       {loading ? (
         <View style={styles.loading}>
-          <ActivityIndicator color={colors.principal} />
+          <ActivityIndicator color="red" />
         </View>
       ) : (
         <FlatList
           data={lista}
-          keyExtractor={(item) => item.id}
+          keyExtractor={(item) => `${item._origem}-${item.id}`}
           renderItem={renderItem}
           showsVerticalScrollIndicator={false}
           ItemSeparatorComponent={
@@ -127,15 +277,9 @@ export default function Custos() {
               }}
             />
           }
-          contentContainerStyle={{ paddingBottom: 100, paddingTop: 7 }}
+          contentContainerStyle={{ paddingBottom: 100, paddingTop: 8 }}
           ListEmptyComponent={
-            <Text style={styles.vazio}>
-              {!lote
-                ? 'Selecione um lote'
-                : !uid
-                  ? 'Usuário não logado'
-                  : 'Nenhum custo deste usuário'}
-            </Text>
+            <Text style={styles.vazio}>Nenhum custo neste lote</Text>
           }
         />
       )}
@@ -152,6 +296,14 @@ const styles = StyleSheet.create({
     flex: 1,
     justifyContent: 'center',
     alignItems: 'center',
+  },
+  saldo: {
+    fontFamily: 'Roboto-Medium',
+    fontSize: 14,
+    textAlign: 'center',
+    paddingTop: 16,
+    paddingHorizontal: 16,
+    color: '#333',
   },
   vazio: {
     textAlign: 'center',
