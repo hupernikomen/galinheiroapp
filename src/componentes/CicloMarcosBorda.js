@@ -36,8 +36,8 @@ export default function CicloMarcosBorda({
                 styles.marco,
                 {
                   backgroundColor: destaque
-                    ? colors.destaque || '#f39c12'
-                    : colors.destaque || '#999',
+                    ? colors.destaque
+                    :  '#ddd',
                 },
                 destaque && styles.marcoDestaque,
               ]}
@@ -62,17 +62,15 @@ const styles = StyleSheet.create({
     alignItems: 'center',
   },
   marco: {
-    width: 5,
-    height: 5,
-    marginTop: -15,
+    width: 4,
+    height: 6,
+    marginTop: -18,
     borderRadius: 3,
   },
   marcoDestaque: {
-    width: 10,
-    height: 10,
-    borderRadius: 5,
+    width: 4,
+    height: 8,
+    borderRadius: 3,
     marginTop: -18,
-    borderWidth: 2,
-    borderColor: '#fff',
   },
 });

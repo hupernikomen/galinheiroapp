@@ -4,7 +4,6 @@ import {
   StyleSheet,
   FlatList,
   ActivityIndicator,
-  Pressable,
   Alert,
 } from 'react-native';
 import { useState, useEffect, useContext } from 'react';
@@ -24,6 +23,7 @@ import useHeaderAdd from '../../componentes/HeaderAdd';
 import { useAuth } from '../../contexts/AuthContext';
 import { AppContext } from '../../contexts/AppContext';
 import ItemLista from '../../componentes/ItemLista';
+import { qtdAtualLote } from '../../services/calculosLote';
 
 export default function Lote() {
   const { colors } = useTheme();
@@ -71,9 +71,6 @@ export default function Lote() {
     return new Date(Number(valor)).toLocaleDateString('pt-BR');
   }
 
-  /**
-   * Apaga documentos de uma query em lotes de até 450 (limite seguro do batch = 500)
-   */
   async function apagarPorQuery(q) {
     const snap = await getDocs(q);
     if (snap.empty) return 0;
@@ -101,53 +98,57 @@ export default function Lote() {
     return apagados;
   }
 
-  async function excluirLoteCompleto(item) {
-    if (!uid) {
-      Alert.alert('Erro', 'Usuário não logado');
-      return;
-    }
-
-    try {
-      // 1) Coletas do lote + usuário
-      const qOvos = query(
-        collection(db, 'coletaOvos'),
-        where('loteId', '==', item.id),
-        where('userId', '==', uid)
-      );
-      const nOvos = await apagarPorQuery(qOvos);
-
-      // 2) Custos do lote + usuário
-      const qCustos = query(
-        collection(db, 'custos'),
-        where('loteId', '==', item.id),
-        where('userId', '==', uid)
-      );
-      const nCustos = await apagarPorQuery(qCustos);
-
-      // 3) O próprio lote
-      await deleteDoc(doc(db, 'lotes', item.id));
-
-      // 4) Se era o lote selecionado na Home, limpa
-      if (lote?.id === item.id) {
-        setLote(null);
-      }
-
-      console.log(
-        `Lote ${item.id} excluído. Coletas: ${nOvos}, Custos: ${nCustos}`
-      );
-    } catch (e) {
-      console.log('Erro ao excluir lote:', e);
-      Alert.alert(
-        'Erro',
-        e?.message || 'Não foi possível excluir o lote e os dados ligados'
-      );
-    }
+async function excluirLoteCompleto(item) {
+  if (!uid) {
+    Alert.alert('Erro', 'Usuário não logado');
+    return;
   }
+
+  try {
+    const filtrosLoteUser = [
+      where('loteId', '==', item.id),
+      where('userId', '==', uid),
+    ];
+
+    const nOvos = await apagarPorQuery(
+      query(collection(db, 'coletaOvos'), ...filtrosLoteUser)
+    );
+    const nCustos = await apagarPorQuery(
+      query(collection(db, 'custos'), ...filtrosLoteUser)
+    );
+    const nRacao = await apagarPorQuery(
+      query(collection(db, 'distribuicaoRacao'), ...filtrosLoteUser)
+    );
+    const nCartelas = await apagarPorQuery(
+      query(collection(db, 'cartelas'), ...filtrosLoteUser)
+    );
+    // NOVO: registros de morte/venda do lote
+    const nBaixas = await apagarPorQuery(
+      query(collection(db, 'baixas'), ...filtrosLoteUser)
+    );
+
+    await deleteDoc(doc(db, 'lotes', item.id));
+
+    if (lote?.id === item.id) {
+      setLote(null);
+    }
+
+    console.log(
+      `Lote ${item.id} excluído. Ovos: ${nOvos}, Custos: ${nCustos}, Ração: ${nRacao}, Cartelas: ${nCartelas}, Baixas: ${nBaixas}`
+    );
+  } catch (e) {
+    console.log('Erro ao excluir lote:', e);
+    Alert.alert(
+      'Erro',
+      e?.message || 'Não foi possível excluir o lote e os dados ligados'
+    );
+  }
+}
 
   function confirmarExclusao(item) {
     Alert.alert(
       'Excluir lote',
-      `Excluir "${item.nome}"?\n\nTambém serão apagadas todas as coletas de ovos e os custos deste lote.`,
+      `Excluir "${item.nome}"?\n\nTambém serão apagadas coletas, custos, ração e cartelas deste lote.`,
       [
         { text: 'Cancelar', style: 'cancel' },
         {
@@ -160,12 +161,25 @@ export default function Lote() {
   }
 
   function renderItem({ item }) {
+    const atuais = qtdAtualLote(item);
+    const iniciais = Number(item.qt) || 0;
+    const saidas = Number(item.qtSaida) || 0;
+
     return (
       <ItemLista
         titulo={item.nome || 'Sem nome'}
-        subtitulo={`${item.raca || '-'} · ${item.qtAtual ?? item.qt ?? 0} aves · ${formatarData(item.chegada)}`}
+        subtitulo={`${item.raca || '-'} · ${atuais} aves · ${formatarData(
+          item.chegada
+        )}`}
         onExcluir={() => confirmarExclusao(item)}
-      />
+      >
+        {(saidas > 0 || iniciais > 0) && (
+          <Text style={styles.itemExtra}>
+            Inicial: {iniciais}
+            {saidas > 0 ? ` · Saídas: ${saidas}` : ''}
+          </Text>
+        )}
+      </ItemLista>
     );
   }
 
@@ -216,5 +230,11 @@ const styles = StyleSheet.create({
     textAlign: 'center',
     marginTop: 30,
     color: '#999',
+  },
+  itemExtra: {
+    fontFamily: 'Roboto-Light',
+    fontSize: 12,
+    color: '#888',
+    marginTop: 2,
   },
 });

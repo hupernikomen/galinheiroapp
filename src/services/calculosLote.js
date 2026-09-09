@@ -21,6 +21,36 @@ const PRODUCAO_PCT_POR_SEMANA = [
   0.2, 0.15,
 ];
 
+/**
+ * Quantidade atual do lote:
+ * qt (inicial) - qtSaida (morte + venda)
+ * Compatível com lotes antigos que ainda têm qtAtual.
+ */
+export function qtdAtualLote(lote) {
+  const qt = Number(lote?.qt) || 0;
+
+  if (lote?.qtSaida != null && lote.qtSaida !== '') {
+    return Math.max(0, qt - (Number(lote.qtSaida) || 0));
+  }
+
+  if (lote?.qtAtual != null && lote.qtAtual !== '') {
+    return Math.max(0, Number(lote.qtAtual) || 0);
+  }
+
+  return qt;
+}
+
+/**
+ * Galinhas usadas na formação (congeladas no início da postura).
+ * Se ainda não gravou qtInicioPostura, usa a quantidade atual.
+ */
+export function qtdFormacaoLote(lote) {
+  if (lote?.qtInicioPostura != null && lote.qtInicioPostura !== '') {
+    return Math.max(0, Number(lote.qtInicioPostura) || 0);
+  }
+  return qtdAtualLote(lote);
+}
+
 function toDataDia(valor) {
   if (!valor && valor !== 0) return null;
   let d;
@@ -73,6 +103,8 @@ function custoOvoVazio() {
     totalPostura: 0,
     totalCama: 0,
     totalOutrosCustos: 0,
+    custoFormacaoPorGalinha: 0,
+    custoFormacaoPorOvo: 0,
     totalRacao: 0,
     kgRacaoDistribuida: 0,
     custoRacaoPorOvo: 0,
@@ -90,13 +122,16 @@ function custoOvoVazio() {
 }
 
 /**
- * Regras no ovo:
- * - Criação / Postura / Cama → ÷ produção estimada do lote
- * - Ração → ÷ ovos já coletados
- * - Cartela (do lote) → ÷ (qtd × capacidade)
- * - Investimento → parcela mensal ÷ ovos/mês estimados
+ * Formação da galinha:
+ *   custo/galinha = totalCriacao ÷ galinhas no início da postura
+ *   custo/ovo     = custo/galinha ÷ ovos estimados por galinha
+ *                 = totalCriacao ÷ (galinhas × prodEstimada)
  *
- * Outros custos (tela) = Criação + Postura + Cama
+ * Operacional:
+ *   Postura / Cama → ainda diluídos na meta de ovos da formação
+ *   Ração → ÷ ovos coletados
+ *   Cartela → ÷ capacidade
+ *   Investimento → parcela mensal ÷ ovos/mês estimados
  */
 export async function calcularTudoDoLote(lote, uid) {
   const vazio = {
@@ -110,9 +145,12 @@ export async function calcularTudoDoLote(lote, uid) {
 
   if (!lote?.id || !uid) return vazio;
 
-  const qtdGalinhas = Number(lote.qtAtual ?? lote.qt) || 0;
+  const qtdGalinhas = qtdAtualLote(lote);
+  const qtdFormacao = qtdFormacaoLote(lote);
   const producaoPorGalinha = Number(lote.prodEstimada) || 0;
-  const producaoTotalEstimada = qtdGalinhas * producaoPorGalinha;
+
+  // Meta de ovos da vida com base nas aves do início da postura
+  const producaoTotalEstimada = qtdFormacao * producaoPorGalinha;
 
   // --- Ovos ---
   const ovosSnap = await getDocs(
@@ -145,7 +183,7 @@ export async function calcularTudoDoLote(lote, uid) {
     producao = Number(((porDia[ultimo] / qtdGalinhas) * 100).toFixed(1));
   }
 
-  // --- Custos: Criação, Postura, Cama ---
+  // --- Custos: Criação (formação), Postura, Cama ---
   const custosSnap = await getDocs(
     query(
       collection(db, 'custos'),
@@ -169,6 +207,14 @@ export async function calcularTudoDoLote(lote, uid) {
   });
 
   const totalOutrosCustos = totalCriacao + totalPostura + totalCama;
+
+  // Formação: R$ por galinha e R$ por ovo
+  const custoFormacaoPorGalinha =
+    qtdFormacao > 0 ? totalCriacao / qtdFormacao : 0;
+  const custoFormacaoPorOvo =
+    qtdFormacao > 0 && producaoPorGalinha > 0
+      ? totalCriacao / (qtdFormacao * producaoPorGalinha)
+      : 0;
 
   // --- Ração do lote ---
   const racaoSnap = await getDocs(
@@ -235,8 +281,7 @@ export async function calcularTudoDoLote(lote, uid) {
       ? producaoTotalEstimada / MESES_POSTURA_ESTIMADOS
       : 0;
 
-  const custoCriacaoPorOvo =
-    producaoTotalEstimada > 0 ? totalCriacao / producaoTotalEstimada : 0;
+  // Operacional (exceto formação)
   const custoPosturaPorOvo =
     producaoTotalEstimada > 0 ? totalPostura / producaoTotalEstimada : 0;
   const custoCamaPorOvo =
@@ -249,7 +294,7 @@ export async function calcularTudoDoLote(lote, uid) {
     ovosMesEstimado > 0 ? totalDepreciacaoMes / ovosMesEstimado : 0;
 
   const custoProjetado =
-    custoCriacaoPorOvo +
+    custoFormacaoPorOvo +
     custoPosturaPorOvo +
     custoCamaPorOvo +
     custoRacaoPorOvo +
@@ -278,6 +323,10 @@ export async function calcularTudoDoLote(lote, uid) {
       totalPostura: Number(totalPostura.toFixed(2)),
       totalCama: Number(totalCama.toFixed(2)),
       totalOutrosCustos: Number(totalOutrosCustos.toFixed(2)),
+      custoFormacaoPorGalinha: Number(custoFormacaoPorGalinha.toFixed(2)),
+      custoFormacaoPorOvo: Number(custoFormacaoPorOvo.toFixed(4)),
+      // alias antigo (mesma coisa que formação/ovo)
+      custoCriacaoPorOvo: Number(custoFormacaoPorOvo.toFixed(4)),
       custoCamaPorOvo: Number(custoCamaPorOvo.toFixed(4)),
       totalRacao: Number(totalRacao.toFixed(2)),
       kgRacaoDistribuida: Number(kgRacaoDistribuida.toFixed(3)),
@@ -292,6 +341,8 @@ export async function calcularTudoDoLote(lote, uid) {
       margem: MARGEM_DE_LUCRO,
       ovosEsperadosAteHoje: Number(ovosEsperadosAteHoje.toFixed(0)),
       semanasPostura,
+      qtdAtual: qtdGalinhas,
+      qtdFormacao,
     },
   };
 }

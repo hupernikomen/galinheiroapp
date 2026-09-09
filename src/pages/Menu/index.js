@@ -27,9 +27,13 @@ const ITENS = [
         subtitulo: 'Compras e saldo em kg',
         rota: 'EstoqueRacao',
       },
+      {
+        titulo: 'Baixas',
+        subtitulo: 'Dar baixas em galinhas mortas ou vendidas',
+        rota: 'Baixas',
+      },
     ],
   },
-
   {
     secao: 'Ciclo e ajuda',
     lista: [
@@ -63,8 +67,8 @@ export default function Menu() {
       }}
       showsVerticalScrollIndicator={false}
     >
-      {ITENS.map((bloco) => (
-        <View key={bloco.secao} style={styles.bloco}>
+      {ITENS.map((bloco, index) => (
+        <View key={index} style={styles.bloco}>
           <Text style={styles.tituloSecao}>{bloco.secao}</Text>
 
           <View style={styles.listaCard}>

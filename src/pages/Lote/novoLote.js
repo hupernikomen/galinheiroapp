@@ -109,11 +109,12 @@ export default function NovoLote() {
         nome: nome.trim(),
         raca: nomeRaca,
         racaId: racaId,
-        qt: quantidade,
-        qtAtual: quantidade,
+        qt: quantidade, // quantidade inicial (fixa)
+        qtSaida: 0, // mortes + vendas (sobe com o tempo)
         prodEstimada: String(prodEstimada),
         status: 'Cria',
         inicioPostura: null,
+        qtInicioPostura: null, // preenchido na 1ª coleta
         userId: uid,
       });
 
@@ -194,7 +195,8 @@ export default function NovoLote() {
 
       {!!racaId && !isOutra && (
         <Text style={styles.dica}>
-          Produção preenchida pela raça. Escolha "Outra" para informar manualmente.
+          Produção preenchida pela raça. Escolha "Outra" para informar
+          manualmente.
         </Text>
       )}
 
@@ -213,7 +215,7 @@ export default function NovoLote() {
           value={chegada}
           mode="date"
           display="default"
-          onValueChange={onChangeData}
+          onChange={onChangeData}
           onDismiss={() => setMostrarData(false)}
           maximumDate={new Date()}
         />

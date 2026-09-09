@@ -8,7 +8,6 @@ import InfoHome from '../../componentes/InfoHome';
 import { useNavigation, useTheme } from '@react-navigation/native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import Ionicons from 'react-native-vector-icons/Ionicons';
-import PickerCampo from '../../componentes/PickerCampo';
 
 const ALTURA_TABBAR = 78;
 
@@ -32,7 +31,7 @@ export default function Home() {
           >
 
             <Ionicons
-              name="menu"
+              name="menu-outline"
               size={26}
             />
           </Pressable>
@@ -45,7 +44,11 @@ export default function Home() {
           style={{ marginRight: 12 }}
         >
           {user?.photoURL ? (
-            <Image source={{ uri: user.photoURL }} style={styles.avatar} />
+            <View style={{alignItems:"center", flexDirection:"row"}}>
+
+    
+              <Image source={{ uri: user.photoURL }} style={styles.avatar} />
+            </View>
           ) : (
             <Ionicons
               name="person-circle"
@@ -79,7 +82,7 @@ export default function Home() {
   return (
     <View style={styles.container}>
 
-      <View style={{ paddingHorizontal: 22, backgroundColor: '#f9f9f9', alignItems:"center" }}>
+      <View style={{ paddingHorizontal: 22, backgroundColor: '#f9f9f9', alignItems: "center" }}>
 
 
         <Picker
@@ -114,6 +117,7 @@ export default function Home() {
 
         <View style={styles.blocoInfo}>
           <InfoHome
+            lote={lote}
             totalRacao={custoOvo?.totalRacao || 0}
             custoRacaoPorOvo={custoOvo?.custoRacaoPorOvo || 0}
             kgRacaoDistribuida={custoOvo?.kgRacaoDistribuida || 0}
@@ -164,7 +168,7 @@ export default function Home() {
 
             <View style={styles.menuDivider} />
 
-            <Pressable
+            {/* <Pressable
               style={styles.menuItem}
               onPress={() => {
                 setMenuAberto(false);
@@ -173,7 +177,7 @@ export default function Home() {
             >
               <Ionicons name="menu-outline" size={20} color="#333" />
               <Text style={styles.menuItemTexto}>Menu</Text>
-            </Pressable>
+            </Pressable> */}
 
             <Pressable style={styles.menuItem} onPress={handleSair}>
               <Ionicons name="log-out-outline" size={20} color="#c0392b" />
@@ -202,7 +206,7 @@ const styles = StyleSheet.create({
   },
   picker: {
     backgroundColor: '#f9f9f9',
-    width: '90%',
+    width: '98%',
     height: 50,
   },
   avatar: {

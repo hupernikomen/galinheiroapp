@@ -133,7 +133,7 @@ export default function Ciclo() {
 
 const styles = StyleSheet.create({
   container: {
-    marginTop: 14,
+    marginTop: 38,
     alignItems: 'center',
   },
   relogio: {

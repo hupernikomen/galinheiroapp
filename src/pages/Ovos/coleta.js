@@ -2,14 +2,10 @@ import { useState, useContext } from 'react';
 import {
   View,
   Text,
-  TextInput,
   Pressable,
   StyleSheet,
   Alert,
-  Platform,
 } from 'react-native';
-import Ionicons from 'react-native-vector-icons/Ionicons';
-import DateTimePicker from '@react-native-community/datetimepicker';
 import { AppContext } from '../../contexts/AppContext';
 import { useAuth } from '../../contexts/AuthContext';
 import { db } from '../../services/firebaseConnection/firebase';
@@ -25,11 +21,11 @@ import {
 import { useTheme, useNavigation } from '@react-navigation/native';
 import DataCampo from '../../componentes/DataCampo';
 import InputCampo from '../../componentes/InputCampo';
+import { qtdAtualLote } from '../../services/calculosLote';
 
 export default function Coleta() {
   const [qt, setQt] = useState('');
   const [data, setData] = useState(new Date());
-  const [mostrarData, setMostrarData] = useState(false);
   const [salvando, setSalvando] = useState(false);
 
   const { lote, setLote } = useContext(AppContext);
@@ -37,27 +33,10 @@ export default function Coleta() {
   const { colors } = useTheme();
   const navigation = useNavigation();
 
-  function onValueChange(event, selectedDate) {
-    if (Platform.OS === 'android') {
-      setMostrarData(false);
-    }
-    if (event?.type === 'dismissed') {
-      setMostrarData(false);
-      return;
-    }
-    if (selectedDate) {
-      setData(selectedDate);
-    }
-  }
-
-  function abrirCalendario() {
-    setMostrarData(false);
-    setTimeout(() => setMostrarData(true), 50);
-  }
-
   /**
-   * Se o lote ainda não tem início de postura, grava a data
-   * da coleta mais antiga (incluindo a que acabou de ser salva).
+   * Primeira coleta do lote:
+   * - inicioPostura = data da coleta mais antiga
+   * - qtInicioPostura = galinhas vivas naquele momento (qt - qtSaida)
    */
   async function garantirInicioPostura(dataColetaMs) {
     if (!lote?.id || !uid) return;
@@ -77,13 +56,17 @@ export default function Coleta() {
       if (t > 0 && t < inicio) inicio = t;
     });
 
-    await updateDoc(doc(db, 'lotes', lote.id), {
-      inicioPostura: inicio,
-    });
+    const galinhasVivas = qtdAtualLote(lote);
 
-    // Mantém o lote selecionado atualizado no app
+    const dadosUpdate = {
+      inicioPostura: inicio,
+      qtInicioPostura: galinhasVivas,
+    };
+
+    await updateDoc(doc(db, 'lotes', lote.id), dadosUpdate);
+
     if (setLote) {
-      setLote({ ...lote, inicioPostura: inicio });
+      setLote({ ...lote, ...dadosUpdate });
     }
   }
 
@@ -103,7 +86,9 @@ export default function Coleta() {
 
     Alert.alert(
       '',
-      `Confirma a coleta de ${qt} ovos na data de ${data.toLocaleDateString('pt-BR')}?`,
+      `Confirma a coleta de ${qt} ovos na data de ${data.toLocaleDateString(
+        'pt-BR'
+      )}?`,
       [
         { text: 'Não', style: 'cancel' },
         {
@@ -138,7 +123,6 @@ export default function Coleta() {
 
   return (
     <View style={styles.container}>
-
       <DataCampo
         value={data}
         onChange={setData}
@@ -152,8 +136,6 @@ export default function Coleta() {
         keyboardType="numeric"
       />
 
-
-
       <Pressable
         onPress={CadastrarColeta}
         disabled={salvando}
@@ -163,10 +145,6 @@ export default function Coleta() {
           {salvando ? 'Salvando...' : 'Salvar coleta'}
         </Text>
       </Pressable>
-
-
-
-
     </View>
   );
 }
@@ -177,7 +155,6 @@ const styles = StyleSheet.create({
     backgroundColor: '#fff',
     padding: 16,
   },
-
   botaoSalvar: {
     height: 55,
     borderRadius: 30,
