@@ -1,20 +1,16 @@
 import { useState } from 'react';
 import {
   View,
-  TextInput,
   Pressable,
   StyleSheet,
   Alert,
   Text,
   Platform,
 } from 'react-native';
-import { Picker } from '@react-native-picker/picker';
 import { db } from '../../services/firebaseConnection/firebase';
 import { collection, addDoc, query, where, getDocs } from 'firebase/firestore';
 import { useNavigation, useTheme } from '@react-navigation/native';
 import { useAuth } from '../../contexts/AuthContext';
-import DateTimePicker from '@react-native-community/datetimepicker';
-import Ionicons from 'react-native-vector-icons/Ionicons';
 import { RACAS, buscarRacaPorId } from '../../constants/racas';
 import InputCampo from '../../componentes/InputCampo';
 import PickerCampo from '../../componentes/PickerCampo';
@@ -30,7 +26,6 @@ export default function NovoLote() {
   const [qt, setQt] = useState('');
   const [prodEstimada, setProdEstimada] = useState('');
   const [chegada, setChegada] = useState(new Date());
-  const [mostrarData, setMostrarData] = useState(false);
   const [salvando, setSalvando] = useState(false);
 
   const isOutra = racaId === 'outra';
@@ -45,23 +40,7 @@ export default function NovoLote() {
     setProdEstimada(String(raca.producaoEstimada));
   }
 
-  function onChangeData(event, selectedDate) {
-    if (Platform.OS === 'android') {
-      setMostrarData(false);
-    }
-    if (event?.type === 'dismissed') {
-      setMostrarData(false);
-      return;
-    }
-    if (selectedDate) {
-      setChegada(selectedDate);
-    }
-  }
 
-  function abrirCalendario() {
-    setMostrarData(false);
-    setTimeout(() => setMostrarData(true), 50);
-  }
 
   async function CadastrarLote() {
     if (!uid) {

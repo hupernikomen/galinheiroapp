@@ -2,18 +2,16 @@ import { useState } from 'react';
 import {
   View,
   Text,
-  TextInput,
   Pressable,
   StyleSheet,
   Alert,
-  Platform,
 } from 'react-native';
 import { db } from '../../services/firebaseConnection/firebase';
 import { collection, addDoc } from 'firebase/firestore';
 import { useNavigation, useTheme } from '@react-navigation/native';
 import { useAuth } from '../../contexts/AuthContext';
-import DateTimePicker from '@react-native-community/datetimepicker';
-import Ionicons from 'react-native-vector-icons/Ionicons';
+import InputCampo from '../../componentes/InputCampo';
+import DataCampo from '../../componentes/DataCampo';
 
 export default function NovoInvestimento() {
   const { colors } = useTheme();
@@ -24,26 +22,9 @@ export default function NovoInvestimento() {
   const [valorTotal, setValorTotal] = useState('');
   const [vidaUtilAnos, setVidaUtilAnos] = useState('');
   const [dataInicio, setDataInicio] = useState(new Date());
-  const [mostrarData, setMostrarData] = useState(false);
   const [salvando, setSalvando] = useState(false);
 
-  function onChangeData(event, selectedDate) {
-    if (Platform.OS === 'android') {
-      setMostrarData(false);
-    }
-    if (event?.type === 'dismissed') {
-      setMostrarData(false);
-      return;
-    }
-    if (selectedDate) {
-      setDataInicio(selectedDate);
-    }
-  }
 
-  function abrirCalendario() {
-    setMostrarData(false);
-    setTimeout(() => setMostrarData(true), 50);
-  }
 
   async function Cadastrar() {
     if (!uid) {
@@ -80,45 +61,31 @@ export default function NovoInvestimento() {
   return (
     <View style={styles.container}>
 
-      
-      <Pressable
-        onPress={abrirCalendario}
-        style={[styles.botaoData, { backgroundColor: colors.neutro }]}
-      >
-        <Text style={styles.dataTexto}>
-          Início: {dataInicio.toLocaleDateString('pt-BR')}
-        </Text>
-        <Ionicons name="calendar-outline" size={22} color={colors.principal} />
-      </Pressable>
+      <DataCampo
+        value={dataInicio}
+        onChange={setDataInicio}
+        maximumDate={new Date()}
+      />
 
-
-
-      <TextInput
-        style={[styles.input, { backgroundColor: colors.neutro }]}
-        placeholder="Descrição (ex: Galpão)"
+      <InputCampo
         value={descricao}
         onChangeText={setDescricao}
-        placeholderTextColor="#999"
-        underlineColorAndroid="transparent"
+        placeholder={'Quantidade (ex: Galpão)'}
       />
-      <TextInput
-        style={[styles.input, { backgroundColor: colors.neutro }]}
-        placeholder="Valor total"
-        keyboardType="numeric"
+
+      <InputCampo
         value={valorTotal}
         onChangeText={setValorTotal}
-        placeholderTextColor="#999"
-        underlineColorAndroid="transparent"
+        placeholder={'Valor total'}
+        keyboardType='numeric'
       />
-      <TextInput
-        style={[styles.input, { backgroundColor: colors.neutro }]}
-        placeholder="Vida útil (anos)"
-        keyboardType="numeric"
+      <InputCampo
         value={vidaUtilAnos}
         onChangeText={setVidaUtilAnos}
-        placeholderTextColor="#999"
-        underlineColorAndroid="transparent"
+        placeholder={'Vida útil (anos)'}
+        keyboardType='numeric'
       />
+
 
       <Pressable
         onPress={Cadastrar}
@@ -130,16 +97,6 @@ export default function NovoInvestimento() {
         </Text>
       </Pressable>
 
-      {mostrarData && (
-        <DateTimePicker
-          value={dataInicio}
-          mode="date"
-          display="default"
-          onValueChange={onChangeData}
-          onDismiss={() => setMostrarData(false)}
-          maximumDate={new Date()}
-        />
-      )}
     </View>
   );
 }
@@ -150,29 +107,9 @@ const styles = StyleSheet.create({
     backgroundColor: '#fff',
     padding: 16,
   },
-  input: {
-    height: 50,
-    borderRadius: 22,
-    paddingHorizontal: 16,
-    marginBottom: 12,
-    fontSize: 16,
-  },
-  botaoData: {
-    height: 50,
-    borderRadius: 22,
-    paddingHorizontal: 16,
-    marginBottom: 12,
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'space-between',
-  },
-  dataTexto: {
-    fontSize: 16,
-    color: '#333',
-  },
   botao: {
-    height: 52,
-    borderRadius: 22,
+    height: 55,
+    borderRadius: 30,
     alignItems: 'center',
     justifyContent: 'center',
   },

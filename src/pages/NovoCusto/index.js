@@ -1,17 +1,11 @@
 import { useState, useEffect, useContext } from 'react';
 import {
-  View,
   Text,
-  TextInput,
   Pressable,
   StyleSheet,
   Alert,
-  Platform,
   ScrollView,
 } from 'react-native';
-import { Picker } from '@react-native-picker/picker';
-import DateTimePicker from '@react-native-community/datetimepicker';
-import Ionicons from 'react-native-vector-icons/Ionicons';
 import { useNavigation, useTheme } from '@react-navigation/native';
 import { collection, onSnapshot, query, where } from 'firebase/firestore';
 import { db } from '../../services/firebaseConnection/firebase';
@@ -40,7 +34,6 @@ export default function NovoCusto() {
 
   const [tipo, setTipo] = useState('racao');
   const [data, setData] = useState(new Date());
-  const [mostrarData, setMostrarData] = useState(false);
   const [salvando, setSalvando] = useState(false);
 
 
@@ -90,19 +83,6 @@ export default function NovoCusto() {
     return () => unsub();
   }, [uid]);
 
-  function onChangeData(event, selectedDate) {
-    if (Platform.OS === 'android') setMostrarData(false);
-    if (event?.type === 'dismissed') {
-      setMostrarData(false);
-      return;
-    }
-    if (selectedDate) setData(selectedDate);
-  }
-
-  function abrirCalendario() {
-    setMostrarData(false);
-    setTimeout(() => setMostrarData(true), 50);
-  }
 
   async function salvar() {
     if (!uid) {
