@@ -3,7 +3,7 @@ import { createNativeStackNavigator } from '@react-navigation/native-stack';
 import Tabs from './tabs';
 import Coleta from '../pages/Ovos/coleta';
 import Custos from '../pages/Custos'
-import NovoCusto from '../pages/NovoCusto';
+import NovoCusto from '../pages/Custos/novoCusto';
 import Lote from '../pages/Lote'
 import NovoLote from '../pages/Lote/novoLote';
 import Investimentos from '../pages/Investimentos';
@@ -11,8 +11,8 @@ import NovoInvestimento from '../pages/Investimentos/novoInvestimento';
 import Marcos from '../pages/Marcos';
 import NovoMarco from '../pages/Marcos/novoMarco';
 import Menu from '../pages/Menu'
-import NovoEstoqueRacao from '../pages/NovoEstoqueRacao';
 import EstoqueRacao from '../pages/EstoqueRacao';
+import NovoEstoqueRacao from '../pages/EstoqueRacao/novoEstoque';
 import Baixas from '../pages/Baixas';
 import NovaBaixa from '../pages/Baixas/NovaBaixa';
 

@@ -2,7 +2,6 @@ import { useState } from 'react';
 import {
   View,
   Text,
-  TextInput,
   Pressable,
   StyleSheet,
   Alert,
@@ -11,6 +10,7 @@ import { db } from '../../services/firebaseConnection/firebase';
 import { collection, addDoc } from 'firebase/firestore';
 import { useNavigation, useTheme } from '@react-navigation/native';
 import { useAuth } from '../../contexts/AuthContext';
+import InputCampo from '../../componentes/InputCampo';
 
 export default function NovoMarco() {
   const { colors } = useTheme();
@@ -52,22 +52,17 @@ export default function NovoMarco() {
 
   return (
     <View style={styles.container}>
-      <TextInput
-        style={[styles.input, { backgroundColor: colors.neutro }]}
+
+      <InputCampo
         placeholder="Semana (número)"
-        keyboardType="numeric"
         value={semana}
         onChangeText={setSemana}
-        placeholderTextColor="#999"
-        underlineColorAndroid="transparent"
+        keyboardType="numeric"
       />
-      <TextInput
-        style={[styles.input, { backgroundColor: colors.neutro }]}
+      <InputCampo
         placeholder="Mensagem"
         value={mensagem}
         onChangeText={setMensagem}
-        placeholderTextColor="#999"
-        underlineColorAndroid="transparent"
       />
 
       <Pressable
@@ -85,16 +80,10 @@ export default function NovoMarco() {
 
 const styles = StyleSheet.create({
   container: { flex: 1, backgroundColor: '#fff', padding: 16 },
-  input: {
-    height: 50,
-    borderRadius: 22,
-    paddingHorizontal: 16,
-    marginBottom: 12,
-    fontSize: 16,
-  },
+ 
   botao: {
-    height: 52,
-    borderRadius: 22,
+    height: 55,
+    borderRadius: 30,
     alignItems: 'center',
     justifyContent: 'center',
   },

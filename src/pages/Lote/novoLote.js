@@ -5,7 +5,6 @@ import {
   StyleSheet,
   Alert,
   Text,
-  Platform,
 } from 'react-native';
 import { db } from '../../services/firebaseConnection/firebase';
 import { collection, addDoc, query, where, getDocs } from 'firebase/firestore';

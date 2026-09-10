@@ -29,8 +29,6 @@ export default function NovoEstoqueRacao() {
   const precoKg = kgNum > 0 ? valorNum / kgNum : 0;
 
 
-
-
   async function Cadastrar() {
     if (!uid) {
       Alert.alert('Erro', 'Usuário não logado');
@@ -63,28 +61,30 @@ export default function NovoEstoqueRacao() {
 
   return (
     <View style={styles.container}>
+      <DataCampo
+        value={data}
+        onChange={setData}
+        maximumDate={new Date()}
+      />
 
       <InputCampo
         value={descricao}
         onChangeText={setDescricao}
         placeholder={'Descrição (ex: Postura 16%)'}
       />
+
       <InputCampo
         value={kg}
         onChangeText={setKg}
         placeholder={'Quantidade (kg)'}
         keyboardType='decimal-pad'
       />
+
       <InputCampo
         value={valor}
         onChangeText={setValor}
         placeholder={'Valor pago (R$)'}
         keyboardType='decimal-pad'
-      />
-      <DataCampo
-        value={data}
-        onChange={setData}
-        maximumDate={new Date()}
       />
 
 
@@ -115,7 +115,7 @@ const styles = StyleSheet.create({
     backgroundColor: '#fff',
     padding: 16,
   },
-  
+
   precoKg: {
     fontFamily: 'Roboto-Medium',
     fontSize: 15,
