@@ -84,7 +84,7 @@ export default function InfoHome({
             <Text style={styles.itemValor}>
               R$ {Number(totalOutrosCustos).toFixed(2)}
             </Text>
-            <Text style={styles.itemSub}>Cama, criação e demais</Text>
+            <Text style={styles.itemSub}>Cama, bebedouros e demais</Text>
           </View>
         </View>
 
