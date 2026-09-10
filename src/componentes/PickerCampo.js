@@ -61,7 +61,7 @@ export default function PickerCampo({
           {items.map((item) => (
             <Picker.Item
               key={String(item.value)}
-              label={item.label}
+              label={item.label || item.nome}
               value={item.value}
               color="#222"
             />

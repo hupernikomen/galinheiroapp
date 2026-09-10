@@ -62,15 +62,13 @@ const styles = StyleSheet.create({
     alignItems: 'center',
   },
   marco: {
-    width: 4,
-    height: 6,
+    width: 3,
+    height: 5,
     marginTop: -18,
-    borderRadius: 3,
   },
   marcoDestaque: {
-    width: 4,
-    height: 8,
-    borderRadius: 3,
+    width: 3,
+    height: 7,
     marginTop: -18,
   },
 });

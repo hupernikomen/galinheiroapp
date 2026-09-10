@@ -42,11 +42,6 @@ const ITENS = [
         subtitulo: 'Alertas e fases do relógio',
         rota: 'Marcos',
       },
-      {
-        titulo: 'Como funciona',
-        subtitulo: 'Custo do ovo e preço sugerido',
-        rota: 'Info',
-      },
     ],
   },
 ];

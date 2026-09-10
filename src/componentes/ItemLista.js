@@ -71,7 +71,7 @@ export default function ItemLista({
       </View>
       <View style={styles.direita}>
         {typeof direita === 'string' ? (
-          <Text style={[styles.direitaTexto, { color: colors.principal }]}>
+          <Text style={[styles.direitaTexto]}>
             {direita}
           </Text>
         ) : (
@@ -156,7 +156,7 @@ const styles = StyleSheet.create({
     paddingHorizontal: 28,
     flexDirection: 'row',
     justifyContent: 'space-between',
-    alignItems: 'center',
+    alignItems: 'flex-start',
   },
   esquerda: {
     flex: 1,

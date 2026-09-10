@@ -104,8 +104,11 @@ export default function Ciclo() {
   }, [todosMarcos]);
 
   const semanaDestaque = useMemo(() => {
-    const proxima = semanasNaBorda.find((s) => s > semanas);
-    return proxima ?? null;
+    // destaca o marco da semana em que o lote está agora
+    if (semanasNaBorda.some((s) => Number(s) === Number(semanas))) {
+      return semanas;
+    }
+    return null; // se não houver marco nesta semana, nada em destaque
   }, [semanasNaBorda, semanas]);
 
   // Marcos da semana atual (slide automático no centro)
@@ -133,7 +136,7 @@ export default function Ciclo() {
 
 const styles = StyleSheet.create({
   container: {
-    marginTop: 38,
+    marginTop: 45,
     alignItems: 'center',
   },
   relogio: {

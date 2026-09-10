@@ -168,16 +168,6 @@ export default function Home() {
 
             <View style={styles.menuDivider} />
 
-            {/* <Pressable
-              style={styles.menuItem}
-              onPress={() => {
-                setMenuAberto(false);
-                navigation.navigate('Menu');
-              }}
-            >
-              <Ionicons name="menu-outline" size={20} color="#333" />
-              <Text style={styles.menuItemTexto}>Menu</Text>
-            </Pressable> */}
 
             <Pressable style={styles.menuItem} onPress={handleSair}>
               <Ionicons name="log-out-outline" size={20} color="#c0392b" />

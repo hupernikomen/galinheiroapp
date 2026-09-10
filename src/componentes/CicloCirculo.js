@@ -54,9 +54,6 @@ export default function CicloCirculo({
 
   return (
     <View style={[styles.camada, { width: TAMANHO, height: TAMANHO }]}>
-      {/* Ponteiro fixo (sem animação) */}
-      
-
       <View
         style={[
           styles.ciclo,

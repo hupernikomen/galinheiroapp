@@ -16,6 +16,9 @@ import { useAuth } from '../../contexts/AuthContext';
 import DateTimePicker from '@react-native-community/datetimepicker';
 import Ionicons from 'react-native-vector-icons/Ionicons';
 import { RACAS, buscarRacaPorId } from '../../constants/racas';
+import InputCampo from '../../componentes/InputCampo';
+import PickerCampo from '../../componentes/PickerCampo';
+import DataCampo from '../../componentes/DataCampo';
 
 export default function NovoLote() {
   const { colors } = useTheme();
@@ -134,64 +137,40 @@ export default function NovoLote() {
 
   return (
     <View style={styles.container}>
-      <Pressable
-        onPress={abrirCalendario}
-        style={[styles.botaoData, { backgroundColor: colors.neutro }]}
-      >
-        <Text style={styles.dataTexto}>
-          Chegada: {chegada.toLocaleDateString('pt-BR')}
-        </Text>
-        <Ionicons name="calendar-outline" size={22} color={colors.principal} />
-      </Pressable>
 
-      <TextInput
-        style={[styles.input, { backgroundColor: colors.neutro }]}
+      <DataCampo
+        value={chegada}
+        onChange={setChegada}
+        maximumDate={new Date()}
+      />
+
+      <InputCampo
         placeholder="Nome do lote"
         value={nome}
         onChangeText={setNome}
-        placeholderTextColor="#999"
-        underlineColorAndroid="transparent"
       />
 
-      <View style={[styles.pickerBox, { backgroundColor: colors.neutro }]}>
-        <Picker
-          selectedValue={racaId}
-          onValueChange={onChangeRaca}
-          style={styles.picker}
-        >
-          <Picker.Item label="Selecione a raça" value="" />
-          {RACAS.map((r) => (
-            <Picker.Item key={r.id} label={r.nome} value={r.id} />
-          ))}
-        </Picker>
-      </View>
+      <PickerCampo
+        placeholder="Selecione um tipo de custo"
+        selectedValue={racaId}
+        onValueChange={onChangeRaca}
+        items={RACAS}
+      />
 
-      <TextInput
-        style={[styles.input, { backgroundColor: colors.neutro }]}
+      <InputCampo
         placeholder="Quantidade de galinhas"
-        keyboardType="numeric"
         value={qt}
         onChangeText={setQt}
-        placeholderTextColor="#999"
-        underlineColorAndroid="transparent"
+        keyboardType='numeric'
       />
-
-      <TextInput
-        style={[
-          styles.input,
-          {
-            backgroundColor: colors.neutro,
-            opacity: isOutra || !racaId ? 1 : 0.85,
-          },
-        ]}
+      <InputCampo
         placeholder="Produção estimada por galinha (ovos)"
-        keyboardType="numeric"
         value={prodEstimada}
         onChangeText={setProdEstimada}
+        keyboardType='numeric'
         editable={isOutra || !racaId}
-        placeholderTextColor="#999"
-        underlineColorAndroid="transparent"
       />
+
 
       {!!racaId && !isOutra && (
         <Text style={styles.dica}>
@@ -210,16 +189,6 @@ export default function NovoLote() {
         </Text>
       </Pressable>
 
-      {mostrarData && (
-        <DateTimePicker
-          value={chegada}
-          mode="date"
-          display="default"
-          onChange={onChangeData}
-          onDismiss={() => setMostrarData(false)}
-          maximumDate={new Date()}
-        />
-      )}
     </View>
   );
 }
@@ -230,35 +199,7 @@ const styles = StyleSheet.create({
     backgroundColor: '#fff',
     padding: 16,
   },
-  input: {
-    height: 50,
-    borderRadius: 22,
-    paddingHorizontal: 16,
-    marginBottom: 12,
-    fontSize: 16,
-  },
-  pickerBox: {
-    borderRadius: 22,
-    marginBottom: 12,
-    overflow: 'hidden',
-  },
-  picker: {
-    height: 50,
-    width: '100%',
-  },
-  botaoData: {
-    height: 50,
-    borderRadius: 22,
-    paddingHorizontal: 16,
-    marginBottom: 12,
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'space-between',
-  },
-  dataTexto: {
-    fontSize: 16,
-    color: '#333',
-  },
+ 
   dica: {
     fontSize: 12,
     color: '#888',
@@ -267,8 +208,8 @@ const styles = StyleSheet.create({
     paddingHorizontal: 4,
   },
   botao: {
-    height: 52,
-    borderRadius: 22,
+    height: 55,
+    borderRadius: 30,
     alignItems: 'center',
     justifyContent: 'center',
     marginTop: 6,

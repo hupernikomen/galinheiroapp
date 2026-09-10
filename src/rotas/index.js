@@ -10,7 +10,6 @@ import Investimentos from '../pages/Investimentos';
 import NovoInvestimento from '../pages/Investimentos/novoInvestimento';
 import Marcos from '../pages/Marcos';
 import NovoMarco from '../pages/Marcos/novoMarco';
-import Info from '../pages/Info'; // se existir
 import Menu from '../pages/Menu'
 import NovoEstoqueRacao from '../pages/NovoEstoqueRacao';
 import EstoqueRacao from '../pages/EstoqueRacao';
@@ -50,7 +49,6 @@ export default function Rotas() {
       <Stack.Screen name="NovoInvestimento" component={NovoInvestimento} options={{ title: 'Novo investimento' }} />
       <Stack.Screen name="Marcos" component={Marcos} options={{ title: 'Marcos do lote' }} />
       <Stack.Screen name="NovoMarco" component={NovoMarco} options={{ title: 'Novo marco' }} />
-      <Stack.Screen name="Info" component={Info} options={{ title: 'Como funciona' }} />
       <Stack.Screen name="Menu" component={Menu} options={{animation:'slide_from_left'}} />
     </Stack.Navigator>
   );

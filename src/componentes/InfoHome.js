@@ -50,7 +50,7 @@ export default function InfoHome({
             </Text>
             <Text style={styles.itemSub}>
               {Number(custoRacaoPorOvo) > 0
-                ? `R$ ${Number(custoRacaoPorOvo).toFixed(3)}/ovo`
+                ? `R$ ${Number(custoRacaoPorOvo).toFixed(2)}/ovo`
                 : Number(kgRacaoDistribuida) > 0
                   ? `${Number(kgRacaoDistribuida).toLocaleString('pt-BR', {
                       maximumFractionDigits: 1,
@@ -70,7 +70,7 @@ export default function InfoHome({
             </Text>
             <Text style={styles.itemSub}>
               {Number(custoCartelaPorOvo) > 0
-                ? `R$ ${Number(custoCartelaPorOvo).toFixed(3)}/ovo`
+                ? `R$ ${Number(custoCartelaPorOvo).toFixed(2)}/ovo`
                 : '—'}
             </Text>
           </View>
@@ -93,7 +93,7 @@ export default function InfoHome({
         <View style={styles.item}>
           <Text style={styles.itemLabel}>Preço sugerido / ovo</Text>
           <View style={styles.itemDireita}>
-            <Text style={[styles.itemValor, { color: colors.principal }]}>
+            <Text style={[styles.itemValor, ]}>
               R$ {Number(precoSugerido || 0).toFixed(2)}
             </Text>
             <Text style={styles.itemSub}>
@@ -115,7 +115,7 @@ const styles = StyleSheet.create({
   },
   lista: {
     paddingHorizontal: 8,
-    marginTop: 14,
+    marginTop: 21,
   },
   item: {
     flexDirection: 'row',

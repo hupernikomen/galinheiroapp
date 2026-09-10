@@ -6,11 +6,13 @@ import {
   StyleSheet,
   ActivityIndicator,
   Alert,
-  Image,
+  StatusBar,
 } from 'react-native';
 import { useAuth } from '../../contexts/AuthContext';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
-import Ionicons from 'react-native-vector-icons/Ionicons';
+
+const PRINCIPAL = '#66796b';
+const CREME = '#efdfcc';
 
 export default function Login() {
   const { loginComGoogle } = useAuth();
@@ -30,146 +32,115 @@ export default function Login() {
   }
 
   return (
-    <View
-      style={[
-        styles.container,
-        { paddingTop: insets.top + 24, paddingBottom: insets.bottom + 24 },
-      ]}
-    >
+    <View style={[styles.root, { paddingTop: insets.top + 24, paddingBottom: insets.bottom + 28 }]}>
+      <StatusBar barStyle="light-content" backgroundColor={PRINCIPAL} />
+
+      {/* Deco: identidade */}
       <View style={styles.topo}>
-        <View style={styles.logoCircle}>
-          <Ionicons name="egg-outline" size={40} color="#66796b" />
-        </View>
-        <Text style={styles.titulo}>Galinheiro</Text>
-        <Text style={styles.sub}>
-          Controle de lotes, produção, custos e preço do ovo em um só lugar.
+        <Text style={styles.selo}>APP DO CRIADOR</Text>
+        <Text style={styles.marca}>Meu{'\n'}Galinheiro</Text>
+        <View style={styles.linhaMarca} />
+        <Text style={styles.heroTexto}>
+          Produção, custos e o preço do ovo com clareza — do lote ao bolso.
         </Text>
       </View>
 
-      <View style={styles.card}>
-        <Text style={styles.cardTitulo}>Entrar na sua conta</Text>
-        <Text style={styles.cardSub}>
-          Use o Google para acessar o app e manter seus dados com segurança.
-        </Text>
-
+      {/* Base: botão Google */}
+      <View style={styles.base}>
         <Pressable
-          style={[styles.botaoGoogle, loading && { opacity: 0.7 }]}
           onPress={handleLogin}
           disabled={loading}
+          style={[styles.botaoGoogle, loading && { opacity: 0.75 }]}
         >
           {loading ? (
-            <ActivityIndicator color="#333" />
+            <ActivityIndicator color="#3c4043" />
           ) : (
-            <>
-              <View style={styles.googleIconWrap}>
-                <Text style={styles.googleG}>G</Text>
+            <View style={styles.botaoInner}>
+              <View style={styles.gBadge}>
+                <Text style={styles.gAzul}>G</Text>
               </View>
-              <Text style={styles.botaoGoogleTexto}>Entrar com Google</Text>
-            </>
+              <Text style={styles.botaoTexto}>Continuar com o Google</Text>
+            </View>
           )}
         </Pressable>
       </View>
-
-      <Text style={styles.rodape}>
-        Ao entrar, você concorda em usar seus dados para cadastro e manutenção da sua conta no app.
-      </Text>
     </View>
   );
 }
 
 const styles = StyleSheet.create({
-  container: {
+  root: {
     flex: 1,
-    backgroundColor: '#fff',
-    paddingHorizontal: 24,
+    backgroundColor: PRINCIPAL,
+    paddingHorizontal: 28,
     justifyContent: 'space-between',
   },
   topo: {
     marginTop: 32,
-    alignItems: 'flex-start',
   },
-  logoCircle: {
-    width: 72,
-    height: 72,
-    borderRadius: 36,
-    backgroundColor: '#fff',
-    alignItems: 'center',
-    justifyContent: 'center',
-    marginBottom: 20,
-    borderWidth: StyleSheet.hairlineWidth,
-    borderColor: '#e5e0d8',
+  selo: {
+    fontFamily: 'Roboto-Medium',
+    fontSize: 11,
+    letterSpacing: 2.2,
+    color: CREME,
+    opacity: 0.9,
+    marginBottom: 16,
   },
-  titulo: {
-    fontFamily: 'Roboto-Bold',
-    fontSize: 32,
-    color: '#1a1a1a',
-    marginBottom: 10,
+  marca: {
+    fontFamily: 'Roboto-Black',
+    fontSize: 42,
+    lineHeight: 44,
+    color: '#fff',
+    letterSpacing: -1,
   },
-  sub: {
+  linhaMarca: {
+    width: 44,
+    height: 3,
+    backgroundColor: CREME,
+    borderRadius: 2,
+    marginTop: 18,
+    marginBottom: 16,
+  },
+  heroTexto: {
     fontFamily: 'Roboto-Light',
     fontSize: 16,
-    color: '#666',
     lineHeight: 24,
-    maxWidth: 320,
+    color: '#ffffffcc',
+    maxWidth: 300,
   },
-  card: {
-    alignItems:"center",
-    justifyContent:'center',
-    backgroundColor: '#fff',
-    borderRadius: 20,
-    padding: 22,
-    borderWidth: StyleSheet.hairlineWidth,
-    borderColor: '#e8e4de',
-  },
-  cardTitulo: {
-    fontFamily: 'Roboto-Medium',
-    fontSize: 18,
-    color: '#111',
-    marginBottom: 8,
-  },
-  cardSub: {
-    fontFamily: 'Roboto-Light',
-    fontSize: 14,
-    color: '#777',
-    lineHeight: 20,
-    marginBottom: 22,
-    textAlign:"center"
+  base: {
+    width: '100%',
   },
   botaoGoogle: {
-    height: 52,
-    paddingHorizontal:14,
-    borderRadius: 26,
+    height: 54,
+    borderRadius: 14,
     backgroundColor: '#fff',
-    borderWidth: 1,
-    borderColor: '#ddd',
+    borderWidth: 1.5,
+    borderColor: '#dadce0',
+    justifyContent: 'center',
+    paddingHorizontal: 14,
+  },
+  botaoInner: {
     flexDirection: 'row',
     alignItems: 'center',
-    justifyContent: 'center',
-    gap: 10,
   },
-  googleIconWrap: {
-    width: 24,
-    height: 24,
-    borderRadius: 12,
+  gBadge: {
+    width: 32,
+    height: 32,
+    borderRadius: 8,
+    backgroundColor: '#f8f9fa',
     alignItems: 'center',
     justifyContent: 'center',
+    marginRight: 14,
   },
-  googleG: {
-    fontSize: 18,
-    fontWeight: '700',
+  gAzul: {
+    fontFamily: 'Roboto-Bold',
+    fontSize: 20,
     color: '#4285F4',
   },
-  botaoGoogleTexto: {
+  botaoTexto: {
     fontFamily: 'Roboto-Medium',
-    fontSize: 15,
-    color: '#222',
-  },
-  rodape: {
-    fontFamily: 'Roboto-Light',
-    fontSize: 12,
-    color: '#999',
-    textAlign: 'center',
-    lineHeight: 18,
-    paddingHorizontal: 8,
+    fontSize: 16,
+    color: '#3c4043',
   },
 });
