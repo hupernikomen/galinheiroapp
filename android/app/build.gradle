@@ -82,8 +82,8 @@ android {
         applicationId "com.galinheiro_app"
         minSdkVersion rootProject.ext.minSdkVersion
         targetSdkVersion rootProject.ext.targetSdkVersion
-        versionCode 13
-        versionName "1.2.10"
+        versionCode 15
+        versionName "1.2.12"
     }
     signingConfigs {
         debug {

@@ -1,6 +1,6 @@
 export const VIDA_TOTAL_SEMANAS = 90;
 export const DIAS_TOTAL = VIDA_TOTAL_SEMANAS * 7; // 630 dias
-export const TAMANHO = 210;
+export const TAMANHO = 220;
 export const CHAVE_PADRAO = '@usarMarcosPadrao';
 export const INTERVALO_SLIDER_MS = 3500;
 export const DURACAO_PONTEIRO_MS = 1200;

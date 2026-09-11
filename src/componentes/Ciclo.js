@@ -136,8 +136,9 @@ export default function Ciclo() {
 
 const styles = StyleSheet.create({
   container: {
-    marginTop: 45,
     alignItems: 'center',
+    padding:42,
+    borderRadius:'50%'
   },
   relogio: {
     justifyContent: 'center',

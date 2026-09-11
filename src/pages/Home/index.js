@@ -12,7 +12,11 @@ import Ionicons from 'react-native-vector-icons/Ionicons';
 const ALTURA_TABBAR = 78;
 
 export default function Home() {
-  const { lote, setLote, custoOvo, listaLotes } = useContext(AppContext);
+  const {
+    lote,
+    setLote,
+    listaLotes,
+  } = useContext(AppContext);
   const { user, logout } = useAuth();
   const navigation = useNavigation();
   const insets = useSafeAreaInsets();
@@ -26,16 +30,9 @@ export default function Home() {
     navigation.setOptions({
       headerLeft: () => (
         <View style={styles.headerLeft}>
-          <Pressable
-            onPress={() => navigation.navigate('Menu')}
-          >
-
-            <Ionicons
-              name="menu-outline"
-              size={26}
-            />
+          <Pressable onPress={() => navigation.navigate('Menu')}>
+            <Ionicons name="menu-outline" size={26} />
           </Pressable>
-
         </View>
       ),
       headerRight: () => (
@@ -44,9 +41,7 @@ export default function Home() {
           style={{ marginRight: 12 }}
         >
           {user?.photoURL ? (
-            <View style={{alignItems:"center", flexDirection:"row"}}>
-
-    
+            <View style={{ alignItems: 'center', flexDirection: 'row' }}>
               <Image source={{ uri: user.photoURL }} style={styles.avatar} />
             </View>
           ) : (
@@ -81,10 +76,13 @@ export default function Home() {
 
   return (
     <View style={styles.container}>
-
-      <View style={{ paddingHorizontal: 22, backgroundColor: '#f9f9f9', alignItems: "center" }}>
-
-
+      <View
+        style={{
+          paddingHorizontal: 22,
+          backgroundColor: '#f9f9f9',
+          alignItems: 'center',
+        }}
+      >
         <Picker
           style={styles.picker}
           selectedValue={lote?.id || ''}
@@ -111,24 +109,8 @@ export default function Home() {
       </View>
 
       <View style={[styles.main, { paddingBottom: paddingBottomMain }]}>
-        <View style={styles.blocoGrafico}>
-          <Ciclo />
-        </View>
-
-        <View style={styles.blocoInfo}>
-          <InfoHome
-            lote={lote}
-            totalRacao={custoOvo?.totalRacao || 0}
-            custoRacaoPorOvo={custoOvo?.custoRacaoPorOvo || 0}
-            kgRacaoDistribuida={custoOvo?.kgRacaoDistribuida || 0}
-            totalCartelas={custoOvo?.totalCartelas || 0}
-            custoCartelaPorOvo={custoOvo?.custoCartelaPorOvo || 0}
-            totalOutrosCustos={custoOvo?.totalOutrosCustos || 0}
-            custoProjetado={custoOvo?.custoProjetado || 0}
-            precoSugerido={custoOvo?.precoSugerido || 0}
-            margem={custoOvo?.margem}
-          />
-        </View>
+        <Ciclo />
+        <InfoHome />
       </View>
 
       <Modal
@@ -142,10 +124,7 @@ export default function Home() {
           onPress={() => setMenuAberto(false)}
         >
           <View
-            style={[
-              styles.menuBox,
-              { top: insets.top + 48, right: 12 },
-            ]}
+            style={[styles.menuBox, { top: insets.top + 48, right: 12 }]}
           >
             <View style={styles.menuUser}>
               {user?.photoURL ? (
@@ -168,7 +147,6 @@ export default function Home() {
 
             <View style={styles.menuDivider} />
 
-
             <Pressable style={styles.menuItem} onPress={handleSair}>
               <Ionicons name="log-out-outline" size={20} color="#c0392b" />
               <Text style={[styles.menuItemTexto, { color: '#c0392b' }]}>
@@ -188,8 +166,8 @@ const styles = StyleSheet.create({
     backgroundColor: '#fff',
   },
   headerLeft: {
-    flexDirection: "row",
-    alignItems: "center",
+    flexDirection: 'row',
+    alignItems: 'center',
     marginLeft: 8,
     maxWidth: 220,
     justifyContent: 'center',
@@ -208,15 +186,6 @@ const styles = StyleSheet.create({
     flex: 1,
     paddingHorizontal: 18,
     justifyContent: 'space-evenly',
-    alignItems: 'center',
-  },
-  blocoGrafico: {
-    width: '100%',
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
-  blocoInfo: {
-    width: '100%',
     alignItems: 'center',
   },
   modalOverlay: {

@@ -1,53 +1,99 @@
 import {
   collection,
   addDoc,
-  doc,
   getDocs,
   query,
   where,
-  writeBatch,
-  increment,
 } from 'firebase/firestore';
 import { db } from './firebaseConnection/firebase';
 
 /**
- * Lista compras com saldo, preço médio ponderado e ordem FIFO (mais antigo primeiro).
+ * Saldo = soma(kg comprados) - soma(kg distribuídos)
+ * Preço médio = média ponderada do que ainda resta (FIFO virtual, sem alterar o estoque)
  */
 async function obterEstoqueUsuario(uid) {
-  const snap = await getDocs(
-    query(collection(db, 'estoqueRacao'), where('userId', '==', uid))
-  );
+  const [snapEstoque, snapDist] = await Promise.all([
+    getDocs(
+      query(collection(db, 'estoqueRacao'), where('userId', '==', uid))
+    ),
+    getDocs(
+      query(collection(db, 'distribuicaoRacao'), where('userId', '==', uid))
+    ),
+  ]);
 
-  const itens = snap.docs.map((d) => ({
+  const compras = snapEstoque.docs
+    .map((d) => ({
+      id: d.id,
+      kg: Number(d.data().kg) || 0,
+      precoKg: Number(d.data().precoKg) || 0,
+      data: Number(d.data().data) || 0,
+    }))
+    .sort((a, b) => a.data - b.data);
+
+  const distribuicoes = snapDist.docs.map((d) => ({
     id: d.id,
-    ...d.data(),
-    kgRestante: Number(d.data().kgRestante ?? d.data().kg) || 0,
-    precoKg: Number(d.data().precoKg) || 0,
+    kg: Number(d.data().kg) || 0,
+    estoqueId: d.data().estoqueId || null,
     data: Number(d.data().data) || 0,
   }));
 
-  const comSaldo = itens
-    .filter((i) => i.kgRestante > 0.0001)
-    .sort((a, b) => a.data - b.data);
+  const totalComprado = compras.reduce((s, c) => s + c.kg, 0);
+  const totalDistribuido = distribuicoes.reduce((s, d) => s + d.kg, 0);
+  const kgTotal = totalComprado - totalDistribuido;
 
-  let kgTotal = 0;
-  let valorPonderado = 0;
-
-  comSaldo.forEach((i) => {
-    kgTotal += i.kgRestante;
-    valorPonderado += i.kgRestante * i.precoKg;
+  // Quanto cada compra já “perdeu” (por estoqueId, se existir)
+  const usadoPorCompra = {};
+  compras.forEach((c) => {
+    usadoPorCompra[c.id] = 0;
   });
 
-  const precoMedioKg = kgTotal > 0 ? valorPonderado / kgTotal : 0;
+  const semEstoqueId = [];
+
+  distribuicoes.forEach((d) => {
+    if (d.estoqueId && usadoPorCompra[d.estoqueId] !== undefined) {
+      usadoPorCompra[d.estoqueId] += d.kg;
+    } else {
+      semEstoqueId.push(d);
+    }
+  });
+
+  // Distribuições antigas sem estoqueId: consome FIFO nas compras
+  semEstoqueId
+    .sort((a, b) => a.data - b.data)
+    .forEach((d) => {
+      let falta = d.kg;
+      for (const c of compras) {
+        if (falta <= 0) break;
+        const rest = Math.max(0, c.kg - usadoPorCompra[c.id]);
+        const tira = Math.min(rest, falta);
+        usadoPorCompra[c.id] += tira;
+        falta -= tira;
+      }
+    });
+
+  const comSaldo = compras
+    .map((c) => ({
+      ...c,
+      kgRestante: Math.max(0, c.kg - usadoPorCompra[c.id]),
+    }))
+    .filter((c) => c.kgRestante > 0.0001);
+
+  let valorPonderado = 0;
+  let kgParaMedia = 0;
+  comSaldo.forEach((c) => {
+    kgParaMedia += c.kgRestante;
+    valorPonderado += c.kgRestante * c.precoKg;
+  });
+
+  const precoMedioKg = kgParaMedia > 0 ? valorPonderado / kgParaMedia : 0;
 
   return { comSaldo, kgTotal, precoMedioKg };
 }
 
 /**
  * Consumo de ração no lote.
- * - Não escolhe compra
- * - Usa preço médio do estoque
- * - Baixa kg em FIFO
+ * Só cria registro em distribuicaoRacao.
+ * NÃO altera estoqueRacao.
  */
 export async function registrarRacao({
   uid,
@@ -63,7 +109,7 @@ export async function registrarRacao({
     throw new Error('Informe a quantidade em kg');
   }
 
-  const { comSaldo, kgTotal, precoMedioKg } = await obterEstoqueUsuario(uid);
+  const { kgTotal, precoMedioKg } = await obterEstoqueUsuario(uid);
 
   if (kgNum > kgTotal + 0.0001) {
     throw new Error(
@@ -89,20 +135,6 @@ export async function registrarRacao({
     valor,
     userId: uid,
   });
-
-  let restante = kgNum;
-  const batch = writeBatch(db);
-
-  for (const item of comSaldo) {
-    if (restante <= 0) break;
-    const tira = Math.min(item.kgRestante, restante);
-    batch.update(doc(db, 'estoqueRacao', item.id), {
-      kgRestante: increment(-tira),
-    });
-    restante -= tira;
-  }
-
-  await batch.commit();
 
   return { valor, kg: kgNum, precoMedioKg };
 }

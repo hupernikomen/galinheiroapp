@@ -4,7 +4,6 @@ import {
   StyleSheet,
   FlatList,
   ActivityIndicator,
-  Pressable,
   Alert,
 } from 'react-native';
 import { useState, useEffect, useContext } from 'react';
@@ -16,15 +15,11 @@ import {
   onSnapshot,
   doc,
   deleteDoc,
-  updateDoc,
-  increment,
 } from 'firebase/firestore';
-import { useNavigation, useTheme } from '@react-navigation/native';
-import Ionicons from 'react-native-vector-icons/Ionicons';
+import { useTheme } from '@react-navigation/native';
 import { useAuth } from '../../contexts/AuthContext';
 import { AppContext } from '../../contexts/AppContext';
 import ItemLista from '../../componentes/ItemLista';
-
 import HeaderAdd from '../../componentes/HeaderAdd';
 
 function formatarData(valor) {
@@ -44,22 +39,18 @@ function labelTipo(item) {
 
 export default function Custos() {
   const { colors } = useTheme();
-  const navigation = useNavigation();
   const { uid } = useAuth();
   const { lote } = useContext(AppContext);
 
   const [lista, setLista] = useState([]);
   const [loading, setLoading] = useState(true);
 
-  // dados brutos de cada coleção
   const [custos, setCustos] = useState([]);
   const [racoes, setRacoes] = useState([]);
   const [cartelas, setCartelas] = useState([]);
 
-    HeaderAdd('NovoCusto', 'Lista de Custos');
+  HeaderAdd('NovoCusto', 'Lista de Custos');
 
-  
-  // Escuta as 3 coleções do lote
   useEffect(() => {
     if (!uid || !lote?.id) {
       setCustos([]);
@@ -125,7 +116,6 @@ export default function Custos() {
     };
   }, [uid, lote?.id]);
 
-  // Junta e ordena
   useEffect(() => {
     if (!lote?.id) {
       setLista([]);
@@ -139,18 +129,10 @@ export default function Custos() {
     setLoading(false);
   }, [custos, racoes, cartelas, lote?.id]);
 
+  // Só apaga o registro. O estoque é calculado em outro lugar:
+  // total entradas - total distribuído
   async function excluirRacao(item) {
     await deleteDoc(doc(db, 'distribuicaoRacao', item.id));
-    // devolve kg ao estoque, se houver
-    if (item.estoqueId && Number(item.kg) > 0) {
-      try {
-        await updateDoc(doc(db, 'estoqueRacao', item.estoqueId), {
-          kgRestante: increment(Number(item.kg)),
-        });
-      } catch (e) {
-        console.log('Não foi possível devolver ao estoque:', e);
-      }
-    }
   }
 
   function excluir(item) {
@@ -236,11 +218,8 @@ export default function Custos() {
     );
   }
 
-
   return (
     <View style={styles.container}>
-      
-
       {loading ? (
         <View style={styles.loading}>
           <ActivityIndicator color="red" />
@@ -278,13 +257,6 @@ const styles = StyleSheet.create({
     flex: 1,
     justifyContent: 'center',
     alignItems: 'center',
-  },
-  saldo: {
-    fontFamily: 'Roboto-Medium',
-    fontSize: 14,
-    textAlign: 'center',
-    paddingTop: 16,
-    paddingHorizontal: 16,
   },
   vazio: {
     textAlign: 'center',

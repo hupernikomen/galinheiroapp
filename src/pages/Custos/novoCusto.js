@@ -36,53 +36,85 @@ export default function NovoCusto() {
   const [data, setData] = useState(new Date());
   const [salvando, setSalvando] = useState(false);
 
-
-
-  // Ração (estoque unificado)
   const [kg, setKg] = useState('');
   const [saldoEstoque, setSaldoEstoque] = useState(0);
   const [precoMedioKg, setPrecoMedioKg] = useState(0);
 
-  // Cartela
   const [descricaoCartela, setDescricaoCartela] = useState('');
   const [qtd, setQtd] = useState('');
   const [capacidade, setCapacidade] = useState('');
   const [valorCartela, setValorCartela] = useState('');
 
-  // Cama
   const [descricaoCama, setDescricaoCama] = useState('');
   const [valorCama, setValorCama] = useState('');
 
-  // Atualiza saldo e preço médio do estoque
+  // Estoque = soma(kg comprados) - soma(kg distribuídos)
   useEffect(() => {
-    if (!uid) return;
+    if (!uid) {
+      setSaldoEstoque(0);
+      setPrecoMedioKg(0);
+      return;
+    }
 
-    const q = query(
+    let entradas = [];
+    let saidas = [];
+
+    function recalcular() {
+      const totalComprado = entradas.reduce(
+        (s, i) => s + (Number(i.kg) || 0),
+        0
+      );
+      const totalDistribuido = saidas.reduce(
+        (s, i) => s + (Number(i.kg) || 0),
+        0
+      );
+      setSaldoEstoque(totalComprado - totalDistribuido);
+
+      // preço médio do que ainda restaria por compra
+      const usadoPorEstoque = {};
+      saidas.forEach((d) => {
+        if (!d.estoqueId) return;
+        usadoPorEstoque[d.estoqueId] =
+          (usadoPorEstoque[d.estoqueId] || 0) + (Number(d.kg) || 0);
+      });
+
+      let kgRest = 0;
+      let valorRest = 0;
+      entradas.forEach((item) => {
+        const comprado = Number(item.kg) || 0;
+        const usado = usadoPorEstoque[item.id] || 0;
+        const rest = Math.max(0, comprado - usado);
+        const preco = Number(item.precoKg) || 0;
+        kgRest += rest;
+        valorRest += rest * preco;
+      });
+      setPrecoMedioKg(kgRest > 0 ? valorRest / kgRest : 0);
+    }
+
+    const qEstoque = query(
       collection(db, 'estoqueRacao'),
       where('userId', '==', uid)
     );
+    const qDist = query(
+      collection(db, 'distribuicaoRacao'),
+      where('userId', '==', uid)
+    );
 
-    const unsub = onSnapshot(q, (snap) => {
-      let kgTotal = 0;
-      let valorPond = 0;
-
-      snap.docs.forEach((d) => {
-        const dataDoc = d.data();
-        const rest = Number(dataDoc.kgRestante ?? dataDoc.kg) || 0;
-        const preco = Number(dataDoc.precoKg) || 0;
-        if (rest > 0) {
-          kgTotal += rest;
-          valorPond += rest * preco;
-        }
-      });
-
-      setSaldoEstoque(kgTotal);
-      setPrecoMedioKg(kgTotal > 0 ? valorPond / kgTotal : 0);
+    const unsub1 = onSnapshot(qEstoque, (snap) => {
+      entradas = snap.docs.map((d) => ({ id: d.id, ...d.data() }));
+      recalcular();
     });
 
-    return () => unsub();
-  }, [uid]);
+    const unsub2 = onSnapshot(qDist, (snap) => {
+      saidas = snap.docs.map((d) => ({ id: d.id, ...d.data() }));
+      recalcular();
+    });
 
+    return () => {
+      unsub1();
+      unsub2();
+    };
+  }, [uid]);
 
   async function salvar() {
     if (!uid) {
@@ -142,11 +174,7 @@ export default function NovoCusto() {
       contentContainerStyle={{ paddingBottom: 40 }}
       keyboardShouldPersistTaps="handled"
     >
-      <DataCampo
-        value={data}
-        onChange={setData}
-        maximumDate={new Date()}
-      />
+      <DataCampo value={data} onChange={setData} maximumDate={new Date()} />
 
       <PickerCampo
         placeholder="Selecione um tipo de custo"
@@ -154,8 +182,6 @@ export default function NovoCusto() {
         onValueChange={setTipo}
         items={TIPOS}
       />
-
-
 
       {tipo === 'racao' && (
         <>
@@ -175,8 +201,6 @@ export default function NovoCusto() {
               ? `  ·  média R$ ${precoMedioKg.toFixed(2)}/kg`
               : '  ·  cadastre uma compra de ração'}
           </Text>
-
-
         </>
       )}
 
@@ -191,19 +215,19 @@ export default function NovoCusto() {
             placeholder="Quantidade de cartelas"
             value={qtd}
             onChangeText={setQtd}
-            keyboardType='number-pad'
+            keyboardType="number-pad"
           />
           <InputCampo
             placeholder="Ovos por cartela"
             value={capacidade}
             onChangeText={setCapacidade}
-            keyboardType='number-pad'
+            keyboardType="number-pad"
           />
           <InputCampo
             placeholder="Valor total (R$)"
             value={valorCartela}
             onChangeText={setValorCartela}
-            keyboardType='decimal-pad'
+            keyboardType="decimal-pad"
           />
         </>
       )}
@@ -219,10 +243,8 @@ export default function NovoCusto() {
             placeholder="Valor total (R$)"
             value={valorCama}
             onChangeText={setValorCama}
-            keyboardType='decimal-pad'
+            keyboardType="decimal-pad"
           />
-
-
           <Text style={styles.dica}>
             Esse valor é dividido pela produção estimada do lote no preço do
             ovo.
@@ -239,8 +261,6 @@ export default function NovoCusto() {
           {salvando ? 'Salvando...' : 'Guardar'}
         </Text>
       </Pressable>
-
-
     </ScrollView>
   );
 }
@@ -251,18 +271,11 @@ const styles = StyleSheet.create({
     backgroundColor: '#fff',
     padding: 16,
   },
-  loteLabel: {
-    fontFamily: 'Roboto-Medium',
-    fontSize: 14,
-    color: '#555',
-    marginBottom: 12,
-  },
-
   dica: {
     fontFamily: 'Roboto-Light',
     fontSize: 13,
     marginBottom: 12,
-    marginHorizontal: 14
+    marginHorizontal: 14,
   },
   botao: {
     height: 55,
