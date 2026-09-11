@@ -94,6 +94,23 @@ export default function InfoHome() {
             ? `R$ ${custoCamaPorOvo.toFixed(2)}/ovo`
             : 'Cama do galinheiro',
       },
+            {
+        id: 'depreciacao',
+        label: 'Depreciação',
+        valor: `R$ ${totalDepreciacao.toFixed(2)}/mês`,
+        sub:
+          custoDepreciacao > 0
+            ? `R$ ${custoDepreciacao.toFixed(2)}/ovo`
+            : 'Investimentos diluídos',
+      },
+      
+      {
+        id: 'preco',
+        label: 'Preço sugerido',
+        valor: `R$ ${precoSugerido.toFixed(2)}`,
+        sub: `Custo R$ ${custoProjetado.toFixed(2)}  ·  ${margemPct}% lucro`,
+        destaque: true,
+      },
       {
         id: 'criacao',
         label: 'Criação',
@@ -114,15 +131,6 @@ export default function InfoHome() {
         label: 'Postura',
         valor: `R$ ${totalPostura.toFixed(2)}`,
         sub: 'Demais custos na postura',
-      },
-      {
-        id: 'depreciacao',
-        label: 'Depreciação',
-        valor: `R$ ${totalDepreciacao.toFixed(2)}/mês`,
-        sub:
-          custoDepreciacao > 0
-            ? `R$ ${custoDepreciacao.toFixed(2)}/ovo`
-            : 'Investimentos diluídos',
       },
       {
         id: 'ovos',
@@ -154,19 +162,7 @@ export default function InfoHome() {
                 ? 'Acima do esperado'
                 : 'Dentro da meta',
       },
-      {
-        id: 'custo',
-        label: 'Custo / ovo',
-        valor: `R$ ${custoProjetado.toFixed(2)}`,
-        sub: 'Soma de todos os custos',
-      },
-      {
-        id: 'preco',
-        label: 'Preço sugerido',
-        valor: `R$ ${precoSugerido.toFixed(2)}`,
-        sub: `Custo R$ ${custoProjetado.toFixed(2)}  ·  ${margemPct}% lucro`,
-        destaque: true,
-      },
+
     ];
   }, [
     lote,
@@ -202,17 +198,12 @@ export default function InfoHome() {
       <View
         style={[
           styles.card,
-          item.destaque && {
-            backgroundColor: `${colors.principal}12`,
-            borderColor: `${colors.principal}30`,
-          },
         ]}
       >
         <View style={styles.itemTopo}>
           <Text
             style={[
               styles.itemLabel,
-              item.destaque && { color: colors.principal },
             ]}
           >
             {item.label}
@@ -221,9 +212,9 @@ export default function InfoHome() {
             style={[
               styles.itemValor,
               item.destaque && {
-                color: colors.principal,
-                fontFamily: 'Roboto-Bold',
-                fontSize: 17,
+                backgroundColor: colors.destaque,
+                color:'#fff',
+                paddingHorizontal:4
               },
             ]}
           >
