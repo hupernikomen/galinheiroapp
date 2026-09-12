@@ -33,6 +33,25 @@ export default function ItemLista({
     }, [translateX])
   );
 
+  function animarPara(valor, ficouAberto) {
+    Animated.spring(translateX, {
+      toValue: valor,
+      useNativeDriver: true,
+      bounciness: 0,
+      speed: 20,
+    }).start();
+    aberto.current = ficouAberto;
+  }
+
+  function alternarAbertura() {
+    if (!onExcluir) return;
+    if (aberto.current) {
+      animarPara(0, false);
+    } else {
+      animarPara(-LARGURA_ACAO, true);
+    }
+  }
+
   const panResponder = useRef(
     PanResponder.create({
       onMoveShouldSetPanResponder: (_, g) =>
@@ -45,19 +64,16 @@ export default function ItemLista({
       onPanResponderRelease: (_, g) => {
         if (!onExcluir) return;
         const deveAbrir = g.dx < -LIMITE || (aberto.current && g.dx < -20);
-        Animated.spring(translateX, {
-          toValue: deveAbrir ? -LARGURA_ACAO : 0,
-          useNativeDriver: true,
-          bounciness: 0,
-          speed: 20,
-        }).start();
-        aberto.current = deveAbrir;
+        animarPara(deveAbrir ? -LARGURA_ACAO : 0, deveAbrir);
       },
     })
   ).current;
 
   const conteudo = (
-    <View style={styles.item}>
+    <Pressable
+      onPress={onExcluir ? alternarAbertura : undefined}
+      style={styles.item}
+    >
       <View style={styles.esquerda}>
         <Text style={styles.titulo} numberOfLines={2}>
           {titulo}
@@ -71,14 +87,12 @@ export default function ItemLista({
       </View>
       <View style={styles.direita}>
         {typeof direita === 'string' ? (
-          <Text style={[styles.direitaTexto]}>
-            {direita}
-          </Text>
+          <Text style={styles.direitaTexto}>{direita}</Text>
         ) : (
           direita
         )}
       </View>
-    </View>
+    </Pressable>
   );
 
   if (!onExcluir) {
@@ -147,13 +161,13 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
   },
   frente: {
-    elevation:5,
+    elevation: 5,
     backgroundColor: '#fff',
     borderRadius: 18,
-    paddingVertical:14
+    paddingVertical: 10,
   },
   item: {
-    paddingHorizontal: 28,
+    paddingHorizontal: 21,
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'flex-start',
@@ -166,14 +180,11 @@ const styles = StyleSheet.create({
     fontSize: 15,
     fontFamily: 'Roboto-Medium',
     color: '#1a1a1a',
-    letterSpacing: 0.1,
   },
   sub: {
     fontFamily: 'Roboto-Light',
     fontSize: 13,
-    color: '#6b6b6b',
-    marginTop: 4,
-    lineHeight: 18,
+    marginTop: 2,
   },
   direita: {
     alignItems: 'flex-end',
@@ -181,7 +192,6 @@ const styles = StyleSheet.create({
     maxWidth: '40%',
   },
   direitaTexto: {
-    fontSize: 15,
-    fontFamily: 'Roboto-Medium',
+    fontFamily: 'Roboto-Regular',
   },
 });

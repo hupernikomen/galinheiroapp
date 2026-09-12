@@ -21,11 +21,9 @@ import { useAuth } from '../../contexts/AuthContext';
 import { AppContext } from '../../contexts/AppContext';
 import ItemLista from '../../componentes/ItemLista';
 import HeaderAdd from '../../componentes/HeaderAdd';
+import {formatarData} from '../../utils/format'
 
-function formatarData(valor) {
-  if (!valor) return '-';
-  return new Date(Number(valor)).toLocaleDateString('pt-BR');
-}
+
 
 function labelTipo(item) {
   if (item._origem === 'racao') return 'Ração';

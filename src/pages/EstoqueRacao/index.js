@@ -21,6 +21,8 @@ import { useAuth } from '../../contexts/AuthContext';
 import ItemLista from '../../componentes/ItemLista';
 import useHeaderAdd from '../../componentes/HeaderAdd';
 
+import { formatarData } from '../../utils/format';
+
 export default function EstoqueRacao() {
   const { colors } = useTheme();
   const { uid } = useAuth();
@@ -124,10 +126,7 @@ export default function EstoqueRacao() {
     return kgRest > 0 ? valorRest / kgRest : 0;
   }, [lista, kgUsadoPorEstoque]);
 
-  function formatarData(valor) {
-    if (!valor) return '-';
-    return new Date(Number(valor)).toLocaleDateString('pt-BR');
-  }
+
 
   function excluir(item) {
     const usado = kgUsadoPorEstoque[item.id] || 0;

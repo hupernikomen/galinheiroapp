@@ -24,6 +24,7 @@ import { useAuth } from '../../contexts/AuthContext';
 import { AppContext } from '../../contexts/AppContext';
 import ItemLista from '../../componentes/ItemLista';
 import { qtdAtualLote } from '../../services/calculosLote';
+import { formatarData } from '../../utils/format';
 
 export default function Lote() {
   const { colors } = useTheme();
@@ -66,10 +67,6 @@ export default function Lote() {
     return () => unsub();
   }, [uid]);
 
-  function formatarData(valor) {
-    if (!valor) return '-';
-    return new Date(Number(valor)).toLocaleDateString('pt-BR');
-  }
 
   async function apagarPorQuery(q) {
     const snap = await getDocs(q);

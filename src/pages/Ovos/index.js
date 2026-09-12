@@ -21,6 +21,7 @@ import { useAuth } from '../../contexts/AuthContext';
 import { useTheme } from '@react-navigation/native';
 import ItemLista from '../../componentes/ItemLista';
 import useHeaderAdd from '../../componentes/HeaderAdd'
+import { formatarData } from '../../utils/format';
 
 export default function Ovos() {
   const { lote } = useContext(AppContext);
@@ -72,10 +73,7 @@ export default function Ovos() {
     return () => unsub();
   }, [lote?.id, uid]);
 
-  function formatarData(valor) {
-    if (!valor) return '-';
-    return new Date(Number(valor)).toLocaleDateString('pt-BR');
-  }
+
 
   function excluirItem(item) {
     Alert.alert('Excluir', 'Remover esta coleta?', [

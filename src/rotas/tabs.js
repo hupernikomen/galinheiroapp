@@ -34,6 +34,7 @@ export default function Tabs() {
             tabBarIcon: 'home-outline', 
             headerShown: true,
             title: '',
+            headerShadowVisible:false
           }}
         />
 

@@ -68,7 +68,7 @@ const styles = StyleSheet.create({
   },
   marcoDestaque: {
     width: 2,
-    height: 7,
-    marginTop: -18,
+    height: 8,
+    marginTop: -21,
   },
 });

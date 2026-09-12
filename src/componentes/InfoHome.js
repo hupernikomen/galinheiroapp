@@ -1,12 +1,17 @@
 import { useContext, useMemo } from 'react';
-import { View, Text, StyleSheet, FlatList } from 'react-native';
-import { useTheme } from '@react-navigation/native';
+import { View, Text, StyleSheet, FlatList, Pressable } from 'react-native';
+import { Picker } from '@react-native-picker/picker';
+import { useNavigation, useTheme } from '@react-navigation/native';
 import { AppContext } from '../contexts/AppContext';
 import { qtdAtualLote } from '../services/calculosLote';
 
+import Ionicons from 'react-native-vector-icons/Ionicons';
+
 export default function InfoHome() {
+
+  const navigation = useNavigation()
   const { colors } = useTheme();
-  const { lote, custoOvo } = useContext(AppContext);
+  const { lote, setLote, listaLotes, custoOvo } = useContext(AppContext);
 
   const qtInicial = Number(lote?.qt) || 0;
   const qtAtual =
@@ -49,32 +54,33 @@ export default function InfoHome() {
 
   const itens = useMemo(() => {
     return [
+      { id: 'picker', tipo: 'picker' },
       {
         id: 'lote',
         label: 'Lote',
         valor: lote ? `${qtAtual}` : '—',
         sub: lote
-          ? `${lote.raca || '-'} · inicial ${qtInicial}${
-              qtSaida > 0 ? ` · saídas ${qtSaida}` : ''
-            }`
+          ? `${lote.raca || '-'} · inicial ${qtInicial}${qtSaida > 0 ? ` · saídas ${qtSaida}` : ''
+          }`
           : 'Selecione um lote',
       },
       {
         id: 'racao',
         label: 'Ração',
         valor: `R$ ${totalRacao.toFixed(2)}`,
-        sub: [
-          kgRacaoDistribuida > 0
-            ? `${kgRacaoDistribuida.toLocaleString('pt-BR', {
+        sub:
+          [
+            kgRacaoDistribuida > 0
+              ? `${kgRacaoDistribuida.toLocaleString('pt-BR', {
                 maximumFractionDigits: 1,
               })} kg`
-            : null,
-          custoRacaoPorOvo > 0
-            ? `R$ ${custoRacaoPorOvo.toFixed(2)}/ovo`
-            : null,
-        ]
-          .filter(Boolean)
-          .join('  ·  ') || 'Sem lançamentos',
+              : null,
+            custoRacaoPorOvo > 0
+              ? `R$ ${custoRacaoPorOvo.toFixed(2)}/ovo`
+              : null,
+          ]
+            .filter(Boolean)
+            .join('  ·  ') || 'Sem lançamentos',
       },
       {
         id: 'embalagens',
@@ -94,7 +100,7 @@ export default function InfoHome() {
             ? `R$ ${custoCamaPorOvo.toFixed(2)}/ovo`
             : 'Cama do galinheiro',
       },
-            {
+      {
         id: 'depreciacao',
         label: 'Depreciação',
         valor: `R$ ${totalDepreciacao.toFixed(2)}/mês`,
@@ -103,7 +109,6 @@ export default function InfoHome() {
             ? `R$ ${custoDepreciacao.toFixed(2)}/ovo`
             : 'Investimentos diluídos',
       },
-      
       {
         id: 'preco',
         label: 'Preço sugerido',
@@ -115,16 +120,17 @@ export default function InfoHome() {
         id: 'criacao',
         label: 'Criação',
         valor: `R$ ${totalCriacao.toFixed(2)}`,
-        sub: [
-          custoFormacaoPorGalinha > 0
-            ? `R$ ${custoFormacaoPorGalinha.toFixed(2)}/ave`
-            : null,
-          custoCriacaoPorOvo > 0
-            ? `R$ ${custoCriacaoPorOvo.toFixed(2)}/ovo`
-            : null,
-        ]
-          .filter(Boolean)
-          .join('  ·  ') || 'Até o início da postura',
+        sub:
+          [
+            custoFormacaoPorGalinha > 0
+              ? `R$ ${custoFormacaoPorGalinha.toFixed(2)}/ave`
+              : null,
+            custoCriacaoPorOvo > 0
+              ? `R$ ${custoCriacaoPorOvo.toFixed(2)}/ovo`
+              : null,
+          ]
+            .filter(Boolean)
+            .join('  ·  ') || 'Até o início da postura',
       },
       {
         id: 'postura',
@@ -141,9 +147,8 @@ export default function InfoHome() {
             : '—',
         sub:
           ovosEsperadosAteHoje > 0
-            ? `Esperado: ${ovosEsperadosAteHoje.toLocaleString('pt-BR')}${
-                semanasPostura > 0 ? `  ·  ${semanasPostura} sem.` : ''
-              }`
+            ? `Esperado: ${ovosEsperadosAteHoje.toLocaleString('pt-BR')}${semanasPostura > 0 ? `  ·  ${semanasPostura} sem.` : ''
+            }`
             : 'Coletas registradas',
       },
       {
@@ -162,7 +167,6 @@ export default function InfoHome() {
                 ? 'Acima do esperado'
                 : 'Dentro da meta',
       },
-
     ];
   }, [
     lote,
@@ -191,30 +195,64 @@ export default function InfoHome() {
     margemPct,
   ]);
 
-  function renderItem({ item, index }) {
-    const isLast = index === itens.length - 1;
+  function onChangeLote(itemValue) {
+    if (!itemValue) {
+      setLote(null);
+      return;
+    }
+    const loteSelecionado = (listaLotes || []).find((l) => l.id === itemValue);
+    if (loteSelecionado) setLote(loteSelecionado);
+  }
+
+  function renderItem({ item }) {
+    if (item.tipo === 'picker') {
+      return (
+        <View style={[styles.card, { paddingVertical: 0, marginBottom: 14 }]}>
+          <View style={styles.pickerWrap}>
+            <Picker
+              style={styles.picker}
+              selectedValue={lote?.id || ''}
+              onValueChange={onChangeLote}
+            >
+              <Picker.Item label="Selecione um lote" value="" />
+              {(listaLotes || []).map((l) => (
+                <Picker.Item
+                  style={{ fontFamily: 'Roboto-Regular', color: '#444', fontSize: 15 }}
+                  key={l.id}
+                  label={l?.nome || 'Lote'}
+                  value={l.id}
+                />
+              ))}
+            </Picker>
+
+            <Pressable
+              onPress={() => navigation.navigate('NovoLote')}
+              style={{ width: 55, aspectRatio: 1, alignItems: "center", justifyContent: 'center', borderLeftWidth: 3, borderLeftColor: '#fff' }}>
+              <Ionicons name={'add'} size={22} />
+            </Pressable>
+          </View>
+        </View>
+      );
+    }
+
+    if (!lote) {
+      return
+    }
 
     return (
-      <View
-        style={[
-          styles.card,
-        ]}
-      >
+      <View style={[styles.card, { marginBottom: item.id === 'preco' ? 14 : 0 }]}>
         <View style={styles.itemTopo}>
-          <Text
-            style={[
-              styles.itemLabel,
-            ]}
-          >
-            {item.label}
-          </Text>
+          <Text style={styles.itemLabel}>{item.label}</Text>
           <Text
             style={[
               styles.itemValor,
               item.destaque && {
-                backgroundColor: colors.destaque,
-                color:'#fff',
-                paddingHorizontal:4
+                backgroundColor: colors.destaque || colors.principal,
+                color: '#fff',
+                paddingHorizontal: 6,
+                paddingVertical: 2,
+                borderRadius: 6,
+                overflow: 'hidden',
               },
             ]}
           >
@@ -222,7 +260,6 @@ export default function InfoHome() {
           </Text>
         </View>
         <Text style={styles.itemSub}>{item.sub}</Text>
-        {!isLast && !item.destaque ? null : null}
       </View>
     );
   }
@@ -258,7 +295,7 @@ export default function InfoHome() {
 const styles = StyleSheet.create({
   container: {
     width: '100%',
-    height: 280,
+    height: 350,
     position: 'relative',
   },
   listaScroll: {
@@ -266,7 +303,7 @@ const styles = StyleSheet.create({
   },
   lista: {
     paddingHorizontal: 10,
-    paddingTop: 28,
+    paddingTop: 21,
     paddingBottom: 36,
     gap: 8,
   },
@@ -300,6 +337,20 @@ const styles = StyleSheet.create({
     fontSize: 12,
     marginTop: 4,
     textAlign: 'right',
+    color: '#888',
+  },
+  pickerWrap: {
+    marginHorizontal: -8,
+    overflow: 'hidden',
+    flexDirection: "row",
+    alignItems: "center"
+  },
+  picker: {
+    fontFamily: 'Roboto-Regular',
+    fontSize: 14,
+    color: '#444',
+    flex: 1,
+    height: 55,
   },
   fadeTop: {
     position: 'absolute',

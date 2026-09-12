@@ -17,7 +17,7 @@ if (
   UIManager.setLayoutAnimationEnabledExperimental(true);
 }
 
-const TAB_SIZE = 56; // área de cada aba
+const TAB_SIZE = 60; // área de cada aba
 const PILL_SIZE = 52; // bolinha da cor principal
 
 export default function TabbarPersonalizada({ state, descriptors, navigation }) {
@@ -130,6 +130,7 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
   },
   content: {
+    backgroundColor:'#fff',
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'center',

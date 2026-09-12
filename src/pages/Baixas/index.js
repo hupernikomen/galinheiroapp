@@ -23,6 +23,7 @@ import useHeaderAdd from '../../componentes/HeaderAdd';
 import { useAuth } from '../../contexts/AuthContext';
 import { AppContext } from '../../contexts/AppContext';
 import ItemLista from '../../componentes/ItemLista';
+import { formatarData } from '../../utils/format';
 
 async function recalcularQtSaida(loteId, uid) {
   const snap = await getDocs(
@@ -90,10 +91,6 @@ export default function Baixas() {
     return () => unsub();
   }, [uid, lote?.id]);
 
-  function formatarData(valor) {
-    if (!valor) return '-';
-    return new Date(Number(valor)).toLocaleDateString('pt-BR');
-  }
 
   function labelTipo(tipo) {
     if (tipo === 'venda') return 'Venda';

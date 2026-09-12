@@ -76,7 +76,7 @@ export default function Home() {
 
   return (
     <View style={styles.container}>
-      <View
+      {/* <View
         style={{
           paddingHorizontal: 22,
           backgroundColor: '#f9f9f9',
@@ -106,7 +106,7 @@ export default function Home() {
             />
           ))}
         </Picker>
-      </View>
+      </View> */}
 
       <View style={[styles.main, { paddingBottom: paddingBottomMain }]}>
         <Ciclo />
