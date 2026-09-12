@@ -15,6 +15,14 @@ import InputCampo from '../../componentes/InputCampo';
 import PickerCampo from '../../componentes/PickerCampo';
 import DataCampo from '../../componentes/DataCampo';
 
+const ITENS_RACAS = RACAS.map((r) => ({
+  value: r.id,
+  label:
+    r.id === 'outra'
+      ? r.nome
+      : `${r.nome}`,
+}));
+
 export default function NovoLote() {
   const { colors } = useTheme();
   const navigation = useNavigation();
@@ -38,8 +46,6 @@ export default function NovoLote() {
     }
     setProdEstimada(String(raca.producaoEstimada));
   }
-
-
 
   async function CadastrarLote() {
     if (!uid) {
@@ -90,12 +96,12 @@ export default function NovoLote() {
         nome: nome.trim(),
         raca: nomeRaca,
         racaId: racaId,
-        qt: quantidade, // quantidade inicial (fixa)
-        qtSaida: 0, // mortes + vendas (sobe com o tempo)
+        qt: quantidade,
+        qtSaida: 0,
         prodEstimada: String(prodEstimada),
         status: 'Cria',
         inicioPostura: null,
-        qtInicioPostura: null, // preenchido na 1ª coleta
+        qtInicioPostura: null,
         userId: uid,
       });
 
@@ -115,7 +121,6 @@ export default function NovoLote() {
 
   return (
     <View style={styles.container}>
-
       <DataCampo
         value={chegada}
         onChange={setChegada}
@@ -129,26 +134,26 @@ export default function NovoLote() {
       />
 
       <PickerCampo
-        placeholder="Selecione um tipo de custo"
+        placeholder="Selecione a raça"
         selectedValue={racaId}
         onValueChange={onChangeRaca}
-        items={RACAS}
+        items={ITENS_RACAS}
       />
 
       <InputCampo
         placeholder="Quantidade de galinhas"
         value={qt}
         onChangeText={setQt}
-        keyboardType='numeric'
+        keyboardType="numeric"
       />
+
       <InputCampo
         placeholder="Produção estimada por galinha (ovos)"
         value={prodEstimada}
         onChangeText={setProdEstimada}
-        keyboardType='numeric'
+        keyboardType="numeric"
         editable={isOutra || !racaId}
       />
-
 
       {!!racaId && !isOutra && (
         <Text style={styles.dica}>
@@ -166,7 +171,6 @@ export default function NovoLote() {
           {salvando ? 'Salvando...' : 'Guardar'}
         </Text>
       </Pressable>
-
     </View>
   );
 }
@@ -177,7 +181,6 @@ const styles = StyleSheet.create({
     backgroundColor: '#fff',
     padding: 16,
   },
- 
   dica: {
     fontSize: 12,
     color: '#888',

@@ -21,11 +21,6 @@ const PRODUCAO_PCT_POR_SEMANA = [
   0.2, 0.15,
 ];
 
-/**
- * Quantidade atual do lote:
- * qt (inicial) - qtSaida (morte + venda)
- * Compatível com lotes antigos que ainda têm qtAtual.
- */
 export function qtdAtualLote(lote) {
   const qt = Number(lote?.qt) || 0;
 
@@ -40,14 +35,7 @@ export function qtdAtualLote(lote) {
   return qt;
 }
 
-/**
- * Galinhas usadas na formação (congeladas no início da postura).
- * Se ainda não gravou qtInicioPostura, usa a quantidade atual.
- */
 export function qtdFormacaoLote(lote) {
-  if (lote?.qtInicioPostura != null && lote.qtInicioPostura !== '') {
-    return Math.max(0, Number(lote.qtInicioPostura) || 0);
-  }
   return qtdAtualLote(lote);
 }
 
@@ -65,6 +53,15 @@ function toDataDia(valor) {
   return d;
 }
 
+function toTimestampMs(valor) {
+  if (valor == null || valor === '') return null;
+  if (valor?.toDate) return valor.toDate().getTime();
+  let ts = Number(valor);
+  if (Number.isNaN(ts) || ts <= 0) return null;
+  if (ts < 10000000000) ts *= 1000;
+  return ts;
+}
+
 export function calcularSemanasLote(lote) {
   if (!lote?.chegada) return 0;
   const dataChegada = toDataDia(lote.chegada);
@@ -75,10 +72,10 @@ export function calcularSemanasLote(lote) {
   return dias <= 0 ? 1 : Math.ceil(dias / 7);
 }
 
-export function calcularSemanasPostura(lote) {
-  if (!lote?.inicioPostura) return 0;
-  const inicio = toDataDia(lote.inicioPostura);
-  if (!inicio) return 0;
+export function calcularSemanasDesde(inicioMs) {
+  if (!inicioMs) return 0;
+  const inicio = new Date(inicioMs);
+  inicio.setHours(0, 0, 0, 0);
   const hoje = new Date();
   hoje.setHours(0, 0, 0, 0);
   const dias = Math.floor((hoje - inicio) / (1000 * 60 * 60 * 24));
@@ -122,22 +119,12 @@ function custoOvoVazio() {
     semanasPostura: 0,
     totalOvosProduzidos: 0,
     producaoTotalEstimada: 0,
+    inicioPostura: null,
     qtdAtual: 0,
     qtdFormacao: 0,
   };
 }
 
-/**
- * Formação da galinha:
- *   custo/galinha = totalCriacao ÷ galinhas no início da postura
- *   custo/ovo     = totalCriacao ÷ (galinhas × prodEstimada)
- *
- * Operacional:
- *   Postura / Cama → diluídos na meta de ovos da formação
- *   Ração → valor PEPS das distribuições ÷ ovos coletados
- *   Cartela → ÷ capacidade
- *   Investimento → parcela mensal ÷ ovos/mês estimados
- */
 export async function calcularTudoDoLote(lote, uid) {
   const vazio = {
     producao: 0,
@@ -153,10 +140,9 @@ export async function calcularTudoDoLote(lote, uid) {
   const qtdGalinhas = qtdAtualLote(lote);
   const qtdFormacao = qtdFormacaoLote(lote);
   const producaoPorGalinha = Number(lote.prodEstimada) || 0;
-
   const producaoTotalEstimada = qtdFormacao * producaoPorGalinha;
 
-  // --- Ovos ---
+  // --- Ovos: 1ª coleta = menor data (loteId + userId) ---
   const ovosSnap = await getDocs(
     query(
       collection(db, 'coletaOvos'),
@@ -166,6 +152,7 @@ export async function calcularTudoDoLote(lote, uid) {
   );
 
   let totalOvosProduzidos = 0;
+  let inicioPosturaMs = null;
   const porDia = {};
 
   ovosSnap.forEach((d) => {
@@ -173,11 +160,14 @@ export async function calcularTudoDoLote(lote, uid) {
     const qtd = Number(data.qt ?? data.quantidade) || 0;
     totalOvosProduzidos += qtd;
 
-    let diaKey = '';
-    const raw = data.data;
-    if (raw?.toDate) diaKey = raw.toDate().toISOString().slice(0, 10);
-    else if (raw) diaKey = new Date(Number(raw)).toISOString().slice(0, 10);
-    if (diaKey) porDia[diaKey] = (porDia[diaKey] || 0) + qtd;
+    const dataMs = toTimestampMs(data.data);
+    if (dataMs != null) {
+      if (inicioPosturaMs == null || dataMs < inicioPosturaMs) {
+        inicioPosturaMs = dataMs;
+      }
+      const diaKey = new Date(dataMs).toISOString().slice(0, 10);
+      porDia[diaKey] = (porDia[diaKey] || 0) + qtd;
+    }
   });
 
   let producao = 0;
@@ -187,7 +177,16 @@ export async function calcularTudoDoLote(lote, uid) {
     producao = Number(((porDia[ultimo] / qtdGalinhas) * 100).toFixed(1));
   }
 
-  // --- Custos: Criação, Postura, Cama ---
+  const semanasPostura = calcularSemanasDesde(inicioPosturaMs);
+  const fracao = fracaoEsperadaAcumulada(semanasPostura);
+  const ovosEsperadosAteHoje = producaoTotalEstimada * fracao;
+
+  let desempenho = null;
+  if (inicioPosturaMs && ovosEsperadosAteHoje > 0) {
+    desempenho = totalOvosProduzidos / ovosEsperadosAteHoje;
+  }
+
+  // --- Custos: Cama | Criação (antes da 1ª coleta) | Postura (na data ou depois) ---
   const custosSnap = await getDocs(
     query(
       collection(db, 'custos'),
@@ -205,9 +204,30 @@ export async function calcularTudoDoLote(lote, uid) {
     const valor = Number(data.valor) || 0;
     const tipo = data.idade || data.tipo || '';
 
-    if (tipo === 'Criacao') totalCriacao += valor;
-    if (tipo === 'Postura') totalPostura += valor;
-    if (tipo === 'Cama') totalCama += valor;
+    if (tipo === 'Cama') {
+      totalCama += valor;
+      return;
+    }
+
+    const dataCustoMs = toTimestampMs(data.data);
+
+    // Ainda sem 1ª coleta → tudo que não é cama conta como criação
+    if (!inicioPosturaMs) {
+      totalCriacao += valor;
+      return;
+    }
+
+    // Sem data no lançamento → criação (mais seguro)
+    if (dataCustoMs == null) {
+      totalCriacao += valor;
+      return;
+    }
+
+    if (dataCustoMs < inicioPosturaMs) {
+      totalCriacao += valor;
+    } else {
+      totalPostura += valor;
+    }
   });
 
   const totalOutrosCustos = totalCriacao + totalPostura + totalCama;
@@ -219,7 +239,7 @@ export async function calcularTudoDoLote(lote, uid) {
       ? totalCriacao / (qtdFormacao * producaoPorGalinha)
       : 0;
 
-  // --- Ração (PEPS: usa data.valor; fallback kg × precoKg) ---
+  // --- Ração (PEPS) ---
   const racaoSnap = await getDocs(
     query(
       collection(db, 'distribuicaoRacao'),
@@ -240,10 +260,7 @@ export async function calcularTudoDoLote(lote, uid) {
     if (!Number.isNaN(valorLancado) && valorLancado > 0) {
       totalRacao += valorLancado;
     } else if (Array.isArray(data.itens) && data.itens.length > 0) {
-      totalRacao += data.itens.reduce(
-        (s, i) => s + (Number(i.custo) || 0),
-        0
-      );
+      totalRacao += data.itens.reduce((s, i) => s + (Number(i.custo) || 0), 0);
     } else {
       totalRacao += kg * (Number(data.precoKg) || 0);
     }
@@ -270,7 +287,7 @@ export async function calcularTudoDoLote(lote, uid) {
     capacidadeTotalOvos += qtd * capacidade;
   });
 
-  // --- Investimentos (conta) ---
+  // --- Investimentos ---
   const invSnap = await getDocs(
     query(collection(db, 'investimentos'), where('userId', '==', uid))
   );
@@ -310,15 +327,6 @@ export async function calcularTudoDoLote(lote, uid) {
 
   const precoSugerido = custoProjetado * (1 + MARGEM_DE_LUCRO);
 
-  const semanasPostura = calcularSemanasPostura(lote);
-  const fracao = fracaoEsperadaAcumulada(semanasPostura);
-  const ovosEsperadosAteHoje = producaoTotalEstimada * fracao;
-
-  let desempenho = null;
-  if (lote.inicioPostura && ovosEsperadosAteHoje > 0) {
-    desempenho = totalOvosProduzidos / ovosEsperadosAteHoje;
-  }
-
   return {
     producao,
     dadosRelogio: {
@@ -349,6 +357,7 @@ export async function calcularTudoDoLote(lote, uid) {
       semanasPostura,
       totalOvosProduzidos,
       producaoTotalEstimada,
+      inicioPostura: inicioPosturaMs,
       qtdAtual: qtdGalinhas,
       qtdFormacao,
     },

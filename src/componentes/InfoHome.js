@@ -113,28 +113,6 @@ export default function InfoHome() {
         destaque: true,
       },
       {
-        id: 'criacao',
-        label: 'Criação',
-        valor: `R$ ${totalCriacao.toFixed(2)}`,
-        sub:
-          [
-            custoFormacaoPorGalinha > 0
-              ? `R$ ${custoFormacaoPorGalinha.toFixed(2)}/ave`
-              : null,
-            custoCriacaoPorOvo > 0
-              ? `R$ ${custoCriacaoPorOvo.toFixed(2)}/ovo`
-              : null,
-          ]
-            .filter(Boolean)
-            .join('  ·  ') || 'Até o início da postura',
-      },
-      {
-        id: 'postura',
-        label: 'Postura',
-        valor: `R$ ${totalPostura.toFixed(2)}`,
-        sub: 'Demais custos na postura',
-      },
-      {
         id: 'ovos',
         label: 'Ovos produzidos',
         valor:
@@ -206,7 +184,7 @@ export default function InfoHome() {
   function renderItem({ item }) {
     if (item.tipo === 'picker') {
       return (
-        <View style={[styles.card, { paddingVertical: 0, marginBottom: 14 }]}>
+        <View style={[styles.card, { paddingVertical: 0, paddingRight:3, marginBottom: 14, borderColor:colors.neutro }]}>
           <View style={styles.pickerWrap}>
             <Picker
               style={styles.picker}
@@ -232,7 +210,7 @@ export default function InfoHome() {
 
             <Pressable
               onPress={() => navigation.navigate('NovoLote')}
-              style={styles.botaoAdd}
+              style={[styles.botaoAdd,{backgroundColor: colors.neutro}]}
             >
               <Ionicons name="add" size={22} />
             </Pressable>
@@ -325,6 +303,7 @@ const styles = StyleSheet.create({
     paddingHorizontal: 14,
     borderWidth: StyleSheet.hairlineWidth,
     borderColor: '#ececec',
+    overflow:"hidden"
   },
   itemTopo: {
     flexDirection: 'row',
@@ -364,12 +343,10 @@ const styles = StyleSheet.create({
     height: 55,
   },
   botaoAdd: {
-    width: 55,
-    aspectRatio: 1,
+    width: 65,
+    height:55,
     alignItems: 'center',
     justifyContent: 'center',
-    borderLeftWidth: 3,
-    borderLeftColor: '#fff',
   },
   fadeTop: {
     position: 'absolute',

@@ -177,7 +177,7 @@ const styles = StyleSheet.create({
     paddingRight: 12,
   },
   titulo: {
-    fontSize: 15,
+    fontSize: 14,
     fontFamily: 'Roboto-Medium',
     color: '#1a1a1a',
   },

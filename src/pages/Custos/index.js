@@ -159,9 +159,10 @@ export default function Custos() {
   }
 
   function montarTitulo(item) {
+    const dataStr = formatarData(item.data);
     if (item._origem === 'racao') {
       const kg = Number(item.kg) || 0;
-      return `Ração · ${kg.toLocaleString('pt-BR', {
+      return `${dataStr}  · ${kg.toLocaleString('pt-BR', {
         maximumFractionDigits: 1,
       })} kg`;
     }
@@ -176,7 +177,7 @@ export default function Custos() {
   function montarSub(item) {
     const dataStr = formatarData(item.data);
     if (item._origem === 'racao') {
-      return `${labelTipo(item)} · ${dataStr}`;
+      return `${labelTipo(item)}`;
     }
     if (item._origem === 'cartela') {
       const qtd = Number(item.qtd) || 0;

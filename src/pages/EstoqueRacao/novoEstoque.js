@@ -18,7 +18,7 @@ export default function NovoEstoqueRacao() {
   const navigation = useNavigation();
   const { uid } = useAuth();
 
-  const [descricao, setDescricao] = useState('');
+  // const [descricao, setDescricao] = useState('');
   const [kg, setKg] = useState('');
   const [valor, setValor] = useState('');
   const [data, setData] = useState(new Date());
@@ -43,7 +43,7 @@ export default function NovoEstoqueRacao() {
       setSalvando(true);
       await addDoc(collection(db, 'estoqueRacao'), {
         userId: uid,
-        descricao: descricao.trim() || 'Ração',
+        // descricao: descricao.trim() || 'Ração',
         kg: kgNum,
         kgRestante: kgNum,
         valor: valorNum,
@@ -67,11 +67,11 @@ export default function NovoEstoqueRacao() {
         maximumDate={new Date()}
       />
 
-      <InputCampo
+      {/* <InputCampo
         value={descricao}
         onChangeText={setDescricao}
         placeholder={'Descrição (ex: Postura 16%)'}
-      />
+      /> */}
 
       <InputCampo
         value={kg}

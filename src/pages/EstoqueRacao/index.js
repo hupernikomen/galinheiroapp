@@ -162,16 +162,17 @@ export default function EstoqueRacao() {
 
     return (
       <ItemLista
-        titulo={item.descricao || 'Ração'}
-        subtitulo={`${formatarData(item.data)}  ·  R$ ${Number(
-          item.precoKg || 0
-        ).toFixed(2)}/kg`}
+        // titulo={item.descricao || 'Ração'}
+        titulo={`${formatarData(item.data)}`}
         direita={`${restante.toFixed(1)} kg`}
         onExcluir={() => excluir(item)}
       >
         <Text style={[styles.itemSub, negativo && { color: '#c0392b' }]}>
-          {comprado.toFixed(1)} kg comprados
-          {usado > 0 ? `  ·  ${usado.toFixed(1)} kg usados` : ''}
+          {/* {comprado.toFixed(1)} kg comprados */}
+          {/* {usado > 0 ? `  ·  ${usado.toFixed(1)} kg usados` : ''} */}
+          {`R$ ${Number(
+          item.precoKg || 0
+        ).toFixed(2)}/k`}
           {'  ·  R$ '}
           {Number(item.valor || 0).toFixed(2)}
           {negativo ? '  ·  saldo negativo' : ''}
@@ -182,19 +183,7 @@ export default function EstoqueRacao() {
 
   return (
     <View style={styles.container}>
-      {!loading && lista.length > 0 && (
-        <Text style={[styles.saldo, { color: colors.principal }]}>
-          Disponível: {kgDisponivelGeral.toFixed(1)} kg
-          {precoMedio > 0
-            ? `  ·  média R$ ${precoMedio.toFixed(2)}/kg`
-            : ''}
-          {'\n'}
-          <Text style={styles.saldoSub}>
-            {totalComprado.toFixed(1)} comprados − {totalDistribuido.toFixed(1)}{' '}
-            distribuídos
-          </Text>
-        </Text>
-      )}
+
 
       {loading ? (
         <View style={styles.loading}>

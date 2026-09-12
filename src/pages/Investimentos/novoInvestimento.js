@@ -70,7 +70,7 @@ export default function NovoInvestimento() {
       <InputCampo
         value={descricao}
         onChangeText={setDescricao}
-        placeholder={'Quantidade (ex: Galpão)'}
+        placeholder={'Descrição (ex: Galpão)'}
       />
 
       <InputCampo
