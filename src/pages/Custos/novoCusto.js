@@ -7,8 +7,6 @@ import {
   ScrollView,
 } from 'react-native';
 import { useNavigation, useTheme } from '@react-navigation/native';
-import { collection, onSnapshot, query, where } from 'firebase/firestore';
-import { db } from '../../services/firebaseConnection/firebase';
 import { useAuth } from '../../contexts/AuthContext';
 import { AppContext } from '../../contexts/AppContext';
 import PickerCampo from '../../componentes/PickerCampo';
@@ -18,6 +16,7 @@ import {
   registrarRacao,
   registrarCartela,
   registrarCama,
+  consultarEstoqueRacao,
 } from '../../services/registrarCustos';
 
 const TIPOS = [
@@ -38,7 +37,7 @@ export default function NovoCusto() {
 
   const [kg, setKg] = useState('');
   const [saldoEstoque, setSaldoEstoque] = useState(0);
-  const [precoMedioKg, setPrecoMedioKg] = useState(0);
+  const [precoAtualKg, setPrecoAtualKg] = useState(0);
 
   const [descricaoCartela, setDescricaoCartela] = useState('');
   const [qtd, setQtd] = useState('');
@@ -48,73 +47,40 @@ export default function NovoCusto() {
   const [descricaoCama, setDescricaoCama] = useState('');
   const [valorCama, setValorCama] = useState('');
 
-  // Estoque = soma(kg comprados) - soma(kg distribuídos)
+  // Estoque PEPS: saldo total + preço da compra que está sendo usada agora
   useEffect(() => {
     if (!uid) {
       setSaldoEstoque(0);
-      setPrecoMedioKg(0);
+      setPrecoAtualKg(0);
       return;
     }
 
-    let entradas = [];
-    let saidas = [];
+    let cancelado = false;
 
-    function recalcular() {
-      const totalComprado = entradas.reduce(
-        (s, i) => s + (Number(i.kg) || 0),
-        0
-      );
-      const totalDistribuido = saidas.reduce(
-        (s, i) => s + (Number(i.kg) || 0),
-        0
-      );
-      setSaldoEstoque(totalComprado - totalDistribuido);
-
-      // preço médio do que ainda restaria por compra
-      const usadoPorEstoque = {};
-      saidas.forEach((d) => {
-        if (!d.estoqueId) return;
-        usadoPorEstoque[d.estoqueId] =
-          (usadoPorEstoque[d.estoqueId] || 0) + (Number(d.kg) || 0);
-      });
-
-      let kgRest = 0;
-      let valorRest = 0;
-      entradas.forEach((item) => {
-        const comprado = Number(item.kg) || 0;
-        const usado = usadoPorEstoque[item.id] || 0;
-        const rest = Math.max(0, comprado - usado);
-        const preco = Number(item.precoKg) || 0;
-        kgRest += rest;
-        valorRest += rest * preco;
-      });
-      setPrecoMedioKg(kgRest > 0 ? valorRest / kgRest : 0);
+    async function carregar() {
+      try {
+        const { kgTotal, precoAtualKg: preco } =
+          await consultarEstoqueRacao(uid);
+        if (cancelado) return;
+        setSaldoEstoque(kgTotal);
+        setPrecoAtualKg(preco);
+      } catch (e) {
+        console.log('Erro estoque ração:', e);
+        if (!cancelado) {
+          setSaldoEstoque(0);
+          setPrecoAtualKg(0);
+        }
+      }
     }
 
-    const qEstoque = query(
-      collection(db, 'estoqueRacao'),
-      where('userId', '==', uid)
-    );
-    const qDist = query(
-      collection(db, 'distribuicaoRacao'),
-      where('userId', '==', uid)
-    );
+    carregar();
 
-    const unsub1 = onSnapshot(qEstoque, (snap) => {
-      entradas = snap.docs.map((d) => ({ id: d.id, ...d.data() }));
-      recalcular();
-    });
-
-    const unsub2 = onSnapshot(qDist, (snap) => {
-      saidas = snap.docs.map((d) => ({ id: d.id, ...d.data() }));
-      recalcular();
-    });
-
+    // Atualiza de tempos em tempos ao focar de novo na tela seria ideal;
+    // por enquanto recarrega quando muda o uid.
     return () => {
-      unsub1();
-      unsub2();
+      cancelado = true;
     };
-  }, [uid]);
+  }, [uid, tipo, salvando]);
 
   async function salvar() {
     if (!uid) {
@@ -168,6 +134,12 @@ export default function NovoCusto() {
     }
   }
 
+  const kgNum = Number(String(kg).replace(',', '.')) || 0;
+  const custoEstimado =
+    tipo === 'racao' && kgNum > 0 && precoAtualKg > 0
+      ? null // o custo real pode cruzar várias compras; a dica mostra o preço em uso
+      : null;
+
   return (
     <ScrollView
       style={styles.container}
@@ -197,10 +169,15 @@ export default function NovoCusto() {
               maximumFractionDigits: 1,
             })}{' '}
             kg
-            {precoMedioKg > 0
-              ? `  ·  média R$ ${precoMedioKg.toFixed(2)}/kg`
+            {precoAtualKg > 0
+              ? `  ·  usando R$ ${precoAtualKg.toFixed(2)}/kg`
               : '  ·  cadastre uma compra de ração'}
           </Text>
+          {kgNum > 0 && saldoEstoque > 0 && kgNum > saldoEstoque && (
+            <Text style={[styles.dica, { color: '#c0392b' }]}>
+              Quantidade maior que o estoque disponível
+            </Text>
+          )}
         </>
       )}
 
@@ -276,6 +253,7 @@ const styles = StyleSheet.create({
     fontSize: 13,
     marginBottom: 12,
     marginHorizontal: 14,
+    color: '#666',
   },
   botao: {
     height: 55,

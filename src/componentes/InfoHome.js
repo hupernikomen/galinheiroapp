@@ -4,12 +4,10 @@ import { Picker } from '@react-native-picker/picker';
 import { useNavigation, useTheme } from '@react-navigation/native';
 import { AppContext } from '../contexts/AppContext';
 import { qtdAtualLote } from '../services/calculosLote';
-
 import Ionicons from 'react-native-vector-icons/Ionicons';
 
 export default function InfoHome() {
-
-  const navigation = useNavigation()
+  const navigation = useNavigation();
   const { colors } = useTheme();
   const { lote, setLote, listaLotes, custoOvo } = useContext(AppContext);
 
@@ -42,11 +40,9 @@ export default function InfoHome() {
   const desempenho = custoOvo?.desempenho ?? null;
   const semanasPostura = Number(custoOvo?.semanasPostura) || 0;
 
-  const totalOvosProduzidos =
-    Number(custoOvo?.totalOvosProduzidos) ||
-    (desempenho != null && ovosEsperadosAteHoje > 0
-      ? Math.round(Number(desempenho) * ovosEsperadosAteHoje)
-      : 0);
+  const totalOvosProduzidos = Number(custoOvo?.totalOvosProduzidos) || 0;
+  const producaoTotalEstimada =
+    Number(custoOvo?.producaoTotalEstimada) || 0;
 
   const custoProjetado = Number(custoOvo?.custoProjetado) || 0;
   const precoSugerido = Number(custoOvo?.precoSugerido) || 0;
@@ -149,7 +145,9 @@ export default function InfoHome() {
           ovosEsperadosAteHoje > 0
             ? `Esperado: ${ovosEsperadosAteHoje.toLocaleString('pt-BR')}${semanasPostura > 0 ? `  ·  ${semanasPostura} sem.` : ''
             }`
-            : 'Coletas registradas',
+            : producaoTotalEstimada > 0
+              ? `Meta vida: ${producaoTotalEstimada.toLocaleString('pt-BR')}`
+              : 'Coletas registradas',
       },
       {
         id: 'desempenho',
@@ -188,6 +186,7 @@ export default function InfoHome() {
     custoDepreciacao,
     totalOvosProduzidos,
     ovosEsperadosAteHoje,
+    producaoTotalEstimada,
     semanasPostura,
     desempenho,
     custoProjetado,
@@ -214,10 +213,16 @@ export default function InfoHome() {
               selectedValue={lote?.id || ''}
               onValueChange={onChangeLote}
             >
-              <Picker.Item label="Selecione um lote" value="" />
+              <Picker.Item label="Selecione um lote" value="" style={{
+                fontFamily: 'Roboto-Regular',
+                fontSize: 15,
+              }} />
               {(listaLotes || []).map((l) => (
                 <Picker.Item
-                  style={{ fontFamily: 'Roboto-Regular', color: '#444', fontSize: 15 }}
+                  style={{
+                    fontFamily: 'Roboto-Regular',
+                    fontSize: 14,
+                  }}
                   key={l.id}
                   label={l?.nome || 'Lote'}
                   value={l.id}
@@ -227,8 +232,9 @@ export default function InfoHome() {
 
             <Pressable
               onPress={() => navigation.navigate('NovoLote')}
-              style={{ width: 55, aspectRatio: 1, alignItems: "center", justifyContent: 'center', borderLeftWidth: 3, borderLeftColor: '#fff' }}>
-              <Ionicons name={'add'} size={22} />
+              style={styles.botaoAdd}
+            >
+              <Ionicons name="add" size={22} />
             </Pressable>
           </View>
         </View>
@@ -236,11 +242,16 @@ export default function InfoHome() {
     }
 
     if (!lote) {
-      return
+      return null;
     }
 
     return (
-      <View style={[styles.card, { marginBottom: item.id === 'preco' ? 14 : 0 }]}>
+      <View
+        style={[
+          styles.card,
+          { marginBottom: item.id === 'preco' ? 14 : 0 },
+        ]}
+      >
         <View style={styles.itemTopo}>
           <Text style={styles.itemLabel}>{item.label}</Text>
           <Text
@@ -342,8 +353,8 @@ const styles = StyleSheet.create({
   pickerWrap: {
     marginHorizontal: -8,
     overflow: 'hidden',
-    flexDirection: "row",
-    alignItems: "center"
+    flexDirection: 'row',
+    alignItems: 'center',
   },
   picker: {
     fontFamily: 'Roboto-Regular',
@@ -351,6 +362,14 @@ const styles = StyleSheet.create({
     color: '#444',
     flex: 1,
     height: 55,
+  },
+  botaoAdd: {
+    width: 55,
+    aspectRatio: 1,
+    alignItems: 'center',
+    justifyContent: 'center',
+    borderLeftWidth: 3,
+    borderLeftColor: '#fff',
   },
   fadeTop: {
     position: 'absolute',
