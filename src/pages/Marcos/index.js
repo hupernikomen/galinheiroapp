@@ -21,12 +21,9 @@ import { useNavigation, useTheme } from '@react-navigation/native';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { useAuth } from '../../contexts/AuthContext';
 import ItemLista from '../../componentes/ItemLista';
-
 import useHeaderAdd from '../../componentes/HeaderAdd';
 
 const CHAVE_PADRAO = '@usarMarcosPadrao';
-
-
 
 export default function Marcos() {
   const { colors } = useTheme();
@@ -63,7 +60,12 @@ export default function Marcos() {
           id: d.id,
           ...d.data(),
         }));
-        dados.sort((a, b) => (a.semana || 0) - (b.semana || 0));
+        // Ordena por dia (marcos antigos só com semana ficam no fim)
+        dados.sort((a, b) => {
+          const diaA = Number(a.dia) || (Number(a.semana) || 0) * 7;
+          const diaB = Number(b.dia) || (Number(b.semana) || 0) * 7;
+          return diaA - diaB;
+        });
         setLista(dados);
         setLoading(false);
       },
@@ -81,8 +83,30 @@ export default function Marcos() {
     await AsyncStorage.setItem(CHAVE_PADRAO, valor ? 'true' : 'false');
   }
 
+  function tituloMarco(item) {
+    if (item.dia != null && item.dia !== '') {
+      return `Dia ${item.dia}`;
+    }
+    // Compatível com marcos antigos (só semana)
+    return `Semana ${item.semana}`;
+  }
+
+  function subtituloMarco(item) {
+    const partes = [];
+    if (item.dia != null && item.dia !== '' && item.semana) {
+      partes.push(`Semana ${item.semana}`);
+    }
+    if (item.mensagem) partes.push(item.mensagem);
+    return partes.join(' · ') || '—';
+  }
+
   function excluirItem(item) {
-    Alert.alert('Excluir', `Remover marco da semana ${item.semana}?`, [
+    const rotulo =
+      item.dia != null && item.dia !== ''
+        ? `dia ${item.dia}`
+        : `semana ${item.semana}`;
+
+    Alert.alert('Excluir', `Remover marco do ${rotulo}?`, [
       { text: 'Cancelar', style: 'cancel' },
       {
         text: 'Excluir',
@@ -109,11 +133,8 @@ export default function Marcos() {
           onValueChange={alternarPadrao}
           trackColor={{ false: '#ddd', true: '#ddd' }}
           thumbColor={usarPadrao ? colors.principal : '#fafafa'}
-
         />
       </View>
-
-     
 
       <Text style={styles.secao}>Meus marcos</Text>
 
@@ -125,8 +146,8 @@ export default function Marcos() {
           keyExtractor={(item) => item.id}
           renderItem={({ item }) => (
             <ItemLista
-              titulo={`Semana ${item.semana}`}
-              subtitulo={item.mensagem}
+              titulo={tituloMarco(item)}
+              subtitulo={subtituloMarco(item)}
               onExcluir={() => excluirItem(item)}
             />
           )}
@@ -159,20 +180,13 @@ const styles = StyleSheet.create({
     borderBottomColor: '#eee',
   },
   switchTitulo: { fontFamily: 'Roboto-Medium', fontSize: 15 },
-  switchSub: { fontFamily: 'Roboto-Light', fontSize: 12, color: '#777', marginTop: 2 },
-  padraoBox: { paddingTop: 12, paddingBottom: 8 },
   secao: {
     fontFamily: 'Roboto-Medium',
     fontSize: 13,
     color: '#888',
     textTransform: 'uppercase',
     marginLeft: 28,
-    marginVertical:14
-  },
-  padraoItem: {
-    fontFamily: 'Roboto-Light',
-    fontSize: 14,
-    color: '#333',
+    marginVertical: 14,
   },
   vazio: { textAlign: 'center', marginTop: 20, color: '#999' },
 });

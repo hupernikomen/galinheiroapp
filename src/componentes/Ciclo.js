@@ -39,6 +39,30 @@ function calcularDiasVida(lote) {
   return Math.min(dias + 1, DIAS_TOTAL); // dia 1 = dia da chegada
 }
 
+/** Converte semana → 1º dia da semana (1–7 → 1, 8–14 → 8, …) */
+function diaDaSemana(semana) {
+  const s = Number(semana) || 0;
+  if (s <= 0) return 1;
+  return (s - 1) * 7 + 1;
+}
+
+function normalizarMarco(m, origem, id) {
+  const semana = Number(m.semana) || 0;
+  let dia = Number(m.dia);
+  if (!dia || dia < 1) {
+    dia = diaDaSemana(semana);
+  }
+  return {
+    ...m,
+    id: id || m.id,
+    dia,
+    semana: semana || diasParaSemana(dia),
+    mensagem: m.mensagem || '',
+    titulo: m.titulo || '',
+    tipo: origem,
+  };
+}
+
 export default function Ciclo() {
   const { lote } = useContext(AppContext);
   const { uid } = useAuth();
@@ -64,12 +88,19 @@ export default function Ciclo() {
     const unsub = onSnapshot(
       q,
       (snapshot) => {
-        const dados = snapshot.docs.map((d) => ({
-          id: d.id,
-          semana: Number(d.data().semana) || 0,
-          mensagem: d.data().mensagem || '',
-          titulo: d.data().titulo || '',
-        }));
+        const dados = snapshot.docs.map((d) => {
+          const data = d.data();
+          return normalizarMarco(
+            {
+              semana: data.semana,
+              dia: data.dia,
+              mensagem: data.mensagem,
+              titulo: data.titulo,
+            },
+            'personalizado',
+            d.id
+          );
+        });
         setMarcosBanco(dados);
       },
       (error) => console.log('Erro marcos:', error)
@@ -81,52 +112,68 @@ export default function Ciclo() {
   const dias = calcularDiasVida(lote);
   const semanas = diasParaSemana(dias);
 
-  // Todos os eventos (padrão + personalizados). Vários na mesma semana = ok.
+  // Todos os eventos (padrão + personalizados), com dia definido
   const todosMarcos = useMemo(() => {
     const lista = [];
+
     if (usarPadrao) {
-      MARCOS_PADRAO.forEach((m, i) =>
-        lista.push({ ...m, tipo: 'padrao', id: `padrao-${i}-${m.semana}` })
-      );
+      MARCOS_PADRAO.forEach((m, i) => {
+        lista.push(
+          normalizarMarco(m, 'padrao', `padrao-${i}-${m.semana ?? m.dia}`)
+        );
+      });
     }
-    marcosBanco.forEach((m) => lista.push({ ...m, tipo: 'personalizado' }));
-    return lista.sort((a, b) => a.semana - b.semana || String(a.id).localeCompare(String(b.id)));
+
+    marcosBanco.forEach((m) => lista.push(m));
+
+    return lista.sort(
+      (a, b) =>
+        a.dia - b.dia ||
+        a.semana - b.semana ||
+        String(a.id).localeCompare(String(b.id))
+    );
   }, [usarPadrao, marcosBanco]);
 
-  // Semanas únicas só para bolinhas na borda (sem sobrepor dois pontos no mesmo lugar)
-  const semanasNaBorda = useMemo(() => {
+  // Dias únicos na borda (posição no círculo)
+  const diasNaBorda = useMemo(() => {
     const set = new Set();
     todosMarcos.forEach((m) => {
-      const s = Number(m.semana);
-      if (s > 0) set.add(s);
+      const d = Number(m.dia);
+      if (d > 0 && d <= DIAS_TOTAL) set.add(d);
     });
     return Array.from(set).sort((a, b) => a - b);
   }, [todosMarcos]);
 
-  const semanaDestaque = useMemo(() => {
-    // destaca o marco da semana em que o lote está agora
-    if (semanasNaBorda.some((s) => Number(s) === Number(semanas))) {
-      return semanas;
+  // Destaque na borda só se existir marco neste dia
+  const diaDestaque = useMemo(() => {
+    if (diasNaBorda.some((d) => Number(d) === Number(dias))) {
+      return dias;
     }
-    return null; // se não houver marco nesta semana, nada em destaque
-  }, [semanasNaBorda, semanas]);
+    return null;
+  }, [diasNaBorda, dias]);
 
-  // Marcos da semana atual (slide automático no centro)
-  const marcosDaSemanaAtual = useMemo(() => {
-    return todosMarcos.filter((m) => Number(m.semana) === semanas);
-  }, [todosMarcos, semanas]);
+  // Slide do centro: APENAS marcos deste dia (não a semana inteira)
+  const marcosDoDiaAtual = useMemo(() => {
+    return todosMarcos.filter((m) => Number(m.dia) === Number(dias));
+  }, [todosMarcos, dias]);
 
   return (
     <View style={styles.container}>
       <View style={[styles.relogio, { width: TAMANHO, height: TAMANHO }]}>
         <CicloMarcosBorda
-          semanas={semanasNaBorda}
-          semanaDestaque={semanaDestaque}
+          dias={diasNaBorda}
+          diaDestaque={diaDestaque}
+          // compatível se o componente antigo ainda usar semanas:
+          semanas={diasNaBorda.map((d) => diasParaSemana(d))}
+          semanaDestaque={
+            diaDestaque != null ? diasParaSemana(diaDestaque) : null
+          }
         />
         <CicloCirculo
           dias={dias}
           semanas={semanas}
-          marcosDaSemana={marcosDaSemanaAtual}
+          marcosDoDia={marcosDoDiaAtual}
+          marcosDaSemana={marcosDoDiaAtual}
           loteId={lote?.id}
         />
       </View>
@@ -137,8 +184,8 @@ export default function Ciclo() {
 const styles = StyleSheet.create({
   container: {
     alignItems: 'center',
-    borderRadius:'50%',
-    marginBottom:35
+    borderRadius: 999,
+    marginBottom: 35,
   },
   relogio: {
     justifyContent: 'center',

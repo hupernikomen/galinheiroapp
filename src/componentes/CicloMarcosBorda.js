@@ -1,33 +1,62 @@
 import { View, StyleSheet } from 'react-native';
-import { TAMANHO, semanaParaAngulo } from '../constants/ciclo';
+import { TAMANHO, DIAS_TOTAL } from '../constants/ciclo';
 import { useTheme } from '@react-navigation/native';
 
-/** Uma bolinha por semana que tem marco (padrão ou personalizado). */
+/** Ângulo no relógio: dia 0 = topo, gira no sentido horário ao longo da vida. */
+function diaParaAngulo(dia) {
+  const d = Math.max(0, Math.min(Number(dia) || 0, DIAS_TOTAL));
+  return (d / DIAS_TOTAL) * 360;
+}
+
+/**
+ * Uma marca por dia que tem marco.
+ * Props novas: dias, diaDestaque
+ * (semanas / semanaDestaque ainda aceitos só por compatibilidade)
+ */
 export default function CicloMarcosBorda({
+  dias = [],
+  diaDestaque = null,
   semanas = [],
   semanaDestaque = null,
 }) {
   const { colors } = useTheme();
 
-  if (!semanas?.length) return null;
+  // Preferência: lista por dia. Fallback: semanas antigas → 1º dia da semana
+  const listaDias =
+    dias?.length > 0
+      ? dias
+      : (semanas || []).map((s) => {
+          const semana = Number(s) || 0;
+          return semana <= 0 ? 1 : (semana - 1) * 7 + 1;
+        });
+
+  const destaque =
+    diaDestaque != null
+      ? Number(diaDestaque)
+      : semanaDestaque != null
+        ? (Number(semanaDestaque) - 1) * 7 + 1
+        : null;
+
+  if (!listaDias.length) return null;
 
   return (
     <View
       pointerEvents="none"
       style={[styles.camada, { width: TAMANHO, height: TAMANHO }]}
     >
-      {semanas.map((semana) => {
-        const destaque = Number(semana) === Number(semanaDestaque);
+      {listaDias.map((dia) => {
+        const d = Number(dia);
+        const isDestaque = destaque != null && d === Number(destaque);
 
         return (
           <View
-            key={`borda-${semana}`}
+            key={`borda-dia-${d}`}
             style={[
               styles.marcoContainer,
               {
                 width: TAMANHO,
                 height: TAMANHO,
-                transform: [{ rotate: `${semanaParaAngulo(semana)}deg` }],
+                transform: [{ rotate: `${diaParaAngulo(d)}deg` }],
               },
             ]}
           >
@@ -35,11 +64,11 @@ export default function CicloMarcosBorda({
               style={[
                 styles.marco,
                 {
-                  backgroundColor: destaque
+                  backgroundColor: isDestaque
                     ? colors.destaque
-                    :  '#ddd',
+                    : '#ddd',
                 },
-                destaque && styles.marcoDestaque,
+                isDestaque && styles.marcoDestaque,
               ]}
             />
           </View>

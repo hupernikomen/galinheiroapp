@@ -229,14 +229,6 @@ export default function Custos() {
           keyExtractor={(item) => `${item._origem}-${item.id}`}
           renderItem={renderItem}
           showsVerticalScrollIndicator={false}
-          ItemSeparatorComponent={
-            <View
-              style={{
-                borderColor: colors.neutro,
-                borderBottomWidth: 0.3,
-              }}
-            />
-          }
           contentContainerStyle={{ paddingBottom: 100, paddingTop: 8 }}
           ListEmptyComponent={
             <Text style={styles.vazio}>Nenhum custo neste lote</Text>

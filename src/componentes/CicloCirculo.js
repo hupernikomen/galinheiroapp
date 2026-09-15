@@ -16,24 +16,31 @@ import {
 export default function CicloCirculo({
   dias = 0,
   semanas = 0,
-  marcosDaSemana = [],
+  marcosDoDia = [],
+  marcosDaSemana = [], // compatível com versão antiga
   loteId,
 }) {
   const { colors } = useTheme();
   const [indiceMarco, setIndiceMarco] = useState(0);
   const listaRef = useRef(null);
 
+  // Preferência: marcos do dia; fallback para prop antiga
+  const marcos =
+    marcosDoDia?.length > 0 || marcosDaSemana?.length === 0
+      ? marcosDoDia || []
+      : marcosDaSemana || [];
+
   const diaAlvo = Math.min(Math.max(dias || 1, 1), DIAS_TOTAL);
   const anguloPonteiro = diaParaAngulo(diaAlvo);
 
-  // Slide automático só com os marcos da semana atual
+  // Slide automático só se houver mais de um marco no mesmo dia
   useEffect(() => {
     setIndiceMarco(0);
-    if (marcosDaSemana.length <= 1) return;
+    if (marcos.length <= 1) return;
 
     const id = setInterval(() => {
       setIndiceMarco((prev) => {
-        const next = (prev + 1) % marcosDaSemana.length;
+        const next = (prev + 1) % marcos.length;
         try {
           listaRef.current?.scrollToIndex({ index: next, animated: true });
         } catch (e) {}
@@ -42,12 +49,12 @@ export default function CicloCirculo({
     }, INTERVALO_SLIDER_MS);
 
     return () => clearInterval(id);
-  }, [marcosDaSemana, loteId, semanas]);
+  }, [marcos, loteId, dias]);
 
   function onScrollMarcos(e) {
     const x = e.nativeEvent.contentOffset.x;
     const idx = Math.round(x / TAMANHO);
-    if (idx >= 0 && idx < marcosDaSemana.length) {
+    if (idx >= 0 && idx < marcos.length) {
       setIndiceMarco(idx);
     }
   }
@@ -62,8 +69,8 @@ export default function CicloCirculo({
             height: TAMANHO,
             borderRadius: TAMANHO / 2,
             backgroundColor: colors.principal,
-            borderWidth:5,
-            borderColor:colors.neutro
+            borderWidth: 5,
+            borderColor: colors.neutro,
           },
         ]}
       >
@@ -72,14 +79,14 @@ export default function CicloCirculo({
           {semanas > 0 ? `  ·  Semana ${semanas}` : ''}
         </Text>
 
-        {marcosDaSemana.length === 0 ? (
-          <Text style={styles.mensagem}>Sem eventos nesta semana</Text>
+        {marcos.length === 0 ? (
+          <Text style={styles.mensagem}>Sem eventos neste dia</Text>
         ) : (
           <FlatList
             ref={listaRef}
-            data={marcosDaSemana}
+            data={marcos}
             keyExtractor={(item, i) =>
-              `${item.id || i}-${item.semana}-${item.mensagem}`
+              `${item.id || i}-${item.dia ?? item.semana}-${item.mensagem}`
             }
             horizontal
             pagingEnabled
@@ -104,8 +111,8 @@ export default function CicloCirculo({
             )}
           />
         )}
-        
       </View>
+
       <View
         pointerEvents="none"
         style={[
@@ -118,7 +125,10 @@ export default function CicloCirculo({
         ]}
       >
         <View
-          style={[styles.marcoFocado, { borderBottomColor: colors.destaque,  }]}
+          style={[
+            styles.marcoFocado,
+            { borderBottomColor: colors.destaque },
+          ]}
         />
       </View>
     </View>

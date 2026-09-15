@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useMemo } from 'react';
 import {
   View,
   Text,
@@ -12,34 +12,50 @@ import { useNavigation, useTheme } from '@react-navigation/native';
 import { useAuth } from '../../contexts/AuthContext';
 import InputCampo from '../../componentes/InputCampo';
 
+/** Dia 1–7 → semana 1; 8–14 → semana 2; etc. */
+function semanaDoDia(dia) {
+  const d = Number(dia);
+  if (!d || d < 1) return 0;
+  return Math.ceil(d / 7);
+}
+
 export default function NovoMarco() {
   const { colors } = useTheme();
   const navigation = useNavigation();
   const { uid } = useAuth();
 
-  const [semana, setSemana] = useState('');
+  const [dia, setDia] = useState('');
   const [mensagem, setMensagem] = useState('');
   const [salvando, setSalvando] = useState(false);
+
+  const semana = useMemo(() => semanaDoDia(dia), [dia]);
 
   async function Cadastrar() {
     if (!uid) {
       Alert.alert('Erro', 'Usuário não logado');
       return;
     }
-    if (!semana || !mensagem.trim()) {
-      Alert.alert('Atenção', 'Preencha semana e mensagem');
+
+    const diaNum = Number(dia);
+    if (!diaNum || diaNum < 1) {
+      Alert.alert('Atenção', 'Informe o dia (número a partir de 1)');
+      return;
+    }
+    if (!mensagem.trim()) {
+      Alert.alert('Atenção', 'Informe a mensagem');
       return;
     }
 
     try {
       setSalvando(true);
       await addDoc(collection(db, 'marcos'), {
-        semana: Number(semana),
+        dia: diaNum,
+        semana: semanaDoDia(diaNum),
         mensagem: mensagem.trim(),
         userId: uid,
         criadoEm: Date.now(),
       });
-      setSemana('');
+      setDia('');
       setMensagem('');
       navigation.goBack();
     } catch (e) {
@@ -52,13 +68,19 @@ export default function NovoMarco() {
 
   return (
     <View style={styles.container}>
-
       <InputCampo
-        placeholder="Semana (número)"
-        value={semana}
-        onChangeText={setSemana}
+        placeholder="Dia (ex: 45)"
+        value={dia}
+        onChangeText={setDia}
         keyboardType="numeric"
       />
+
+      {semana > 0 && (
+        <Text style={styles.confirmacao}>
+          Isso corresponde à <Text style={styles.confirmacaoDestaque}>semana {semana}</Text>
+        </Text>
+      )}
+
       <InputCampo
         placeholder="Mensagem"
         value={mensagem}
@@ -79,8 +101,23 @@ export default function NovoMarco() {
 }
 
 const styles = StyleSheet.create({
-  container: { flex: 1, backgroundColor: '#fff', padding: 16 },
- 
+  container: {
+    flex: 1,
+    backgroundColor: '#fff',
+    padding: 16,
+  },
+  confirmacao: {
+    fontFamily: 'Roboto-Light',
+    fontSize: 13,
+    color: '#666',
+    marginTop: -4,
+    marginBottom: 12,
+    marginHorizontal: 4,
+  },
+  confirmacaoDestaque: {
+    fontFamily: 'Roboto-Medium',
+    color: '#333',
+  },
   botao: {
     height: 55,
     borderRadius: 30,

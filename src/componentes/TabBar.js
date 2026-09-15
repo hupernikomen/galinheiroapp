@@ -65,7 +65,7 @@ export default function TabbarPersonalizada({ state, descriptors, navigation }) 
 
   return (
     <View style={styles.container}>
-      <View style={[styles.content, { borderWidth: 1, borderColor: '#ddd' }]}>
+      <View style={[styles.content, { elevation: 7 }]}>
         {/* Bolinha que desliza (cor principal) */}
         <Animated.View
           pointerEvents="none"
@@ -139,6 +139,7 @@ const styles = StyleSheet.create({
     marginBottom: 28,
     padding: 2,
     borderRadius: 35,
+    
   },
   pill: {
     position: 'absolute',

@@ -119,14 +119,7 @@ export default function Ovos() {
           keyExtractor={(item) => item.id}
           renderItem={renderItem}
           showsVerticalScrollIndicator={false}
-          ItemSeparatorComponent={
-            <View
-              style={{
-                borderColor: colors.neutro,
-                borderBottomWidth: 0.3,
-              }}
-            />
-          }
+
           contentContainerStyle={{ paddingVertical:7 }}
           ListEmptyComponent={
             <Text style={styles.vazio}>

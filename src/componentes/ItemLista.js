@@ -133,9 +133,9 @@ const styles = StyleSheet.create({
     paddingHorizontal: 4,
   },
   container: {
-    borderRadius: 18,
+    borderRadius: 14,
     overflow: 'hidden',
-    backgroundColor: '#fafafa',
+    marginVertical:4
   },
   acoes: {
     position: 'absolute',
@@ -161,10 +161,10 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
   },
   frente: {
-    elevation: 5,
-    backgroundColor: '#fff',
     borderRadius: 18,
-    paddingVertical: 10,
+    paddingVertical: 21,
+    backgroundColor:'#f7f7f7',
+    marginHorizontal:14
   },
   item: {
     paddingHorizontal: 21,
