@@ -109,8 +109,14 @@ export default function Home() {
       </View> */}
 
       <View style={[styles.main, { paddingBottom: paddingBottomMain }]}>
-        <Ciclo />
-        <InfoHome />
+        <View style={styles.cicloWrap}>
+          <Ciclo />
+        </View>
+
+        {/* InfoHome ocupa o restante até o fim */}
+        <View style={styles.infoWrap}>
+          <InfoHome />
+        </View>
       </View>
 
       <Modal
@@ -185,8 +191,16 @@ const styles = StyleSheet.create({
   main: {
     flex: 1,
     paddingHorizontal: 18,
-    justifyContent: 'space-evenly',
+  },
+  cicloWrap: {
+    width: '100%',
     alignItems: 'center',
+    marginBottom: 8,
+  },
+  infoWrap: {
+    flex: 1,
+    width: '100%',
+    minHeight: 0, // importante no Android para o filho com scroll
   },
   modalOverlay: {
     flex: 1,

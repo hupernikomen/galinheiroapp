@@ -10,6 +10,13 @@ import {
 } from 'react-native';
 import Ionicons from 'react-native-vector-icons/Ionicons';
 
+
+
+import { useTabBarVisibility } from '../contexts/TabBarVisibility';
+
+
+
+
 if (
   Platform.OS === 'android' &&
   UIManager.setLayoutAnimationEnabledExperimental
@@ -26,6 +33,9 @@ export default function TabbarPersonalizada({ state, descriptors, navigation }) 
   const scales = useRef(
     state.routes.map((_, i) => new Animated.Value(i === state.index ? 1 : 0))
   ).current;
+
+  const { translateY } = useTabBarVisibility();
+
 
   // layouts medidos de cada aba (para o pill seguir o centro real)
   const [layouts, setLayouts] = useState({});
@@ -65,7 +75,7 @@ export default function TabbarPersonalizada({ state, descriptors, navigation }) 
 
   return (
     <View style={styles.container}>
-      <View style={[styles.content, { elevation: 7 }]}>
+      <Animated.View style={[styles.content, { elevation: 7, transform: [{ translateY }], }]}>
         {/* Bolinha que desliza (cor principal) */}
         <Animated.View
           pointerEvents="none"
@@ -74,7 +84,8 @@ export default function TabbarPersonalizada({ state, descriptors, navigation }) 
             {
               backgroundColor: colors.principal,
               transform: [{ translateX: slideX }],
-              elevation: 5
+              elevation: 5,
+              
             },
           ]}
         />
@@ -119,7 +130,7 @@ export default function TabbarPersonalizada({ state, descriptors, navigation }) 
             </TouchableOpacity>
           );
         })}
-      </View>
+      </Animated.View>
     </View>
   );
 }
