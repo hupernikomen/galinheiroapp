@@ -26,31 +26,55 @@ export default function Home() {
 
   const paddingBottomMain = ALTURA_TABBAR + Math.max(insets.bottom, 8);
 
+  const ITENS = [
+    {
+      lista: [
+        {
+          titulo: 'Lotes',
+          subtitulo: 'Cadastro e gestão dos lotes',
+          rota: 'Lote',
+        },
+        {
+          titulo: 'Investimentos',
+          subtitulo: 'Galpão, equipamentos e depreciação',
+          rota: 'Investimentos',
+        },
+        {
+          titulo: 'Estoque de ração',
+          subtitulo: 'Compras e saldo em kg',
+          rota: 'EstoqueRacao',
+        },
+        {
+          titulo: 'Baixas',
+          subtitulo: 'Dar baixas em galinhas mortas ou vendidas',
+          rota: 'Baixas',
+        },
+      ],
+    },
+    {
+      secao: 'Ciclo e ajuda',
+      lista: [
+        {
+          titulo: 'Marcos do ciclo',
+          subtitulo: 'Alertas e fases do relógio',
+          rota: 'Marcos',
+        },
+      ],
+    },
+  ];
+
   useEffect(() => {
     navigation.setOptions({
-      headerLeft: () => (
-        <View style={styles.headerLeft}>
-          <Pressable onPress={() => navigation.navigate('Menu')}>
-            <Ionicons name="menu-outline" size={26} />
-          </Pressable>
-        </View>
-      ),
+
       headerRight: () => (
         <Pressable
           onPress={() => setMenuAberto(true)}
           style={{ marginRight: 12 }}
         >
-          {user?.photoURL ? (
             <View style={{ alignItems: 'center', flexDirection: 'row' }}>
-              <Image source={{ uri: user.photoURL }} style={styles.avatar} />
+             <Ionicons name="menu" size={24}  />
             </View>
-          ) : (
-            <Ionicons
-              name="person-circle"
-              size={36}
-              color={colors.principal || '#66796b'}
-            />
-          )}
+         
         </Pressable>
       ),
     });
@@ -74,39 +98,14 @@ export default function Home() {
     ]);
   }
 
+  function irPara(rota) {
+    navigation.navigate(rota);
+    setMenuAberto(false)
+  }
+
   return (
     <View style={styles.container}>
-      {/* <View
-        style={{
-          paddingHorizontal: 22,
-          backgroundColor: '#f9f9f9',
-          alignItems: 'center',
-        }}
-      >
-        <Picker
-          style={styles.picker}
-          selectedValue={lote?.id || ''}
-          onValueChange={(itemValue) => {
-            if (!itemValue) {
-              setLote(null);
-              return;
-            }
-            const loteSelecionado = (listaLotes || []).find(
-              (l) => l.id === itemValue
-            );
-            if (loteSelecionado) setLote(loteSelecionado);
-          }}
-        >
-          <Picker.Item label="Selecione um lote" value="" />
-          {(listaLotes || []).map((item) => (
-            <Picker.Item
-              key={item.id}
-              label={item?.nome || 'Lote'}
-              value={item.id}
-            />
-          ))}
-        </Picker>
-      </View> */}
+
 
       <View style={[styles.main, { paddingBottom: paddingBottomMain }]}>
         <View style={styles.cicloWrap}>
@@ -154,11 +153,37 @@ export default function Home() {
             <View style={styles.menuDivider} />
 
             <Pressable style={styles.menuItem} onPress={handleSair}>
-              <Ionicons name="log-out-outline" size={20} color="#c0392b" />
-              <Text style={[styles.menuItemTexto, { color: '#c0392b' }]}>
+              <Ionicons name="log-out-outline" size={20} />
+              <Text style={styles.menuItemTexto}>
                 Sair
               </Text>
             </Pressable>
+            <View style={styles.menuDivider} />
+
+            {ITENS.map((bloco, index) => (
+              <View key={index} style={styles.bloco}>
+
+                <View style={styles.listaCard}>
+                  {bloco.lista.map((item, index) => (
+                    <View key={index}>
+                      <Pressable
+                        onPress={() => irPara(item.rota)}
+                        style={({ pressed }) => [
+                          styles.menuItem,
+                          pressed && { backgroundColor: '#f7f7f7' },
+                          index < bloco.lista.length - 1 && styles.separador,
+                        ]}
+                      >
+                        <View style={styles.textos}>
+                          <Text style={styles.itemTitulo}>{item.titulo}</Text>
+                        </View>
+                      </Pressable>
+                      <View style={styles.menuDivider} />
+                    </View>
+                  ))}
+                </View>
+              </View>
+            ))}
           </View>
         </Pressable>
       </Modal>
