@@ -10,7 +10,7 @@ import {
 } from 'react-native';
 import Ionicons from 'react-native-vector-icons/Ionicons';
 
-
+import { BlurView } from '@react-native-community/blur';
 
 import { useTabBarVisibility } from '../contexts/TabBarVisibility';
 
@@ -76,6 +76,13 @@ export default function TabbarPersonalizada({ state, descriptors, navigation }) 
   return (
     <View style={styles.container}>
       <Animated.View style={[styles.content, { elevation: 7, transform: [{ translateY }], }]}>
+        {/* Fundo desfocado */}
+        <BlurView
+          style={StyleSheet.absoluteFill}
+          blurType="light"   // "light", "dark", "xlight"
+          blurAmount={1}    // intensidade maior para parecer Nubank
+          reducedTransparencyFallbackColor="white" // fallback no Android
+        />
         {/* Bolinha que desliza (cor principal) */}
         <Animated.View
           pointerEvents="none"
@@ -85,7 +92,7 @@ export default function TabbarPersonalizada({ state, descriptors, navigation }) 
               backgroundColor: colors.principal,
               transform: [{ translateX: slideX }],
               elevation: 5,
-              
+
             },
           ]}
         />
@@ -141,16 +148,14 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
   },
   content: {
-    backgroundColor:'#fff',
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'center',
-    position: 'absolute',
-    bottom: -10,
-    marginBottom: 28,
-    padding: 2,
-    borderRadius: 35,
-    
+  flexDirection: 'row',
+  alignItems: 'center',
+  justifyContent: 'center',
+  position: 'absolute',
+  bottom: 20,
+  borderRadius: 35,
+  overflow: 'hidden', // importante para o BlurView ficar arredondado
+
   },
   pill: {
     position: 'absolute',

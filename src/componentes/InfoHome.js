@@ -9,11 +9,11 @@ import Ionicons from 'react-native-vector-icons/Ionicons';
 import { useTabBarVisibility } from '../contexts/TabBarVisibility';
 
 export default function InfoHome() {
-  
+
   const navigation = useNavigation();
   const { colors } = useTheme();
 
-    const { onScroll } = useTabBarVisibility();
+  const { onScroll } = useTabBarVisibility();
 
   const { lote, setLote, listaLotes, custoOvo } = useContext(AppContext);
 
@@ -190,7 +190,7 @@ export default function InfoHome() {
   function renderItem({ item }) {
     if (item.tipo === 'picker') {
       return (
-        <View style={[styles.card, { paddingVertical: 0, paddingRight:3, marginBottom: 14, borderColor:colors.neutro }]}>
+        <View style={[styles.card, { paddingVertical: 0, paddingRight: 3, marginVertical: 14, borderColor: colors.neutro }]}>
           <View style={styles.pickerWrap}>
             <Picker
               style={styles.picker}
@@ -216,7 +216,7 @@ export default function InfoHome() {
 
             <Pressable
               onPress={() => navigation.navigate('NovoLote')}
-              style={[styles.botaoAdd,{backgroundColor: colors.neutro}]}
+              style={[styles.botaoAdd, { backgroundColor: colors.neutro }]}
             >
               <Ionicons name="add" size={22} />
             </Pressable>
@@ -270,13 +270,14 @@ export default function InfoHome() {
 
       <FlatList
         data={itens}
-                  onScroll={onScroll}
-  scrollEventThrottle={16}
+        onScroll={onScroll}
+        scrollEventThrottle={16}
         keyExtractor={(item) => item.id}
         renderItem={renderItem}
         showsVerticalScrollIndicator={false}
         contentContainerStyle={styles.lista}
         style={styles.listaScroll}
+    
       />
 
       <View pointerEvents="none" style={styles.fadeBottom}>
@@ -291,12 +292,12 @@ export default function InfoHome() {
 
 const styles = StyleSheet.create({
   container: {
-flex: 1,
-  width: '100%',
-  position: 'relative',
+    flex: 1,
+    width: '100%',
+    position: 'relative',
   },
   listaScroll: {
-    flex: 1,
+     flexGrow: 1 
   },
   lista: {
     paddingHorizontal: 10,
@@ -311,7 +312,7 @@ flex: 1,
     paddingHorizontal: 14,
     borderWidth: StyleSheet.hairlineWidth,
     borderColor: '#ececec',
-    overflow:"hidden"
+    overflow: "hidden"
   },
   itemTopo: {
     flexDirection: 'row',
@@ -348,11 +349,11 @@ flex: 1,
     fontSize: 14,
     color: '#444',
     flex: 1,
-    height: 55,
+    height: 65,
   },
   botaoAdd: {
     width: 65,
-    height:55,
+    height: 55,
     alignItems: 'center',
     justifyContent: 'center',
   },

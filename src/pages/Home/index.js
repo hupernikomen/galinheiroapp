@@ -9,6 +9,7 @@ import { useNavigation, useTheme } from '@react-navigation/native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import Ionicons from 'react-native-vector-icons/Ionicons';
 
+
 const ALTURA_TABBAR = 78;
 
 export default function Home() {
@@ -24,7 +25,6 @@ export default function Home() {
 
   const [menuAberto, setMenuAberto] = useState(false);
 
-  const paddingBottomMain = ALTURA_TABBAR + Math.max(insets.bottom, 8);
 
   const ITENS = [
     {
@@ -69,12 +69,12 @@ export default function Home() {
       headerRight: () => (
         <Pressable
           onPress={() => setMenuAberto(true)}
-          style={{ marginRight: 12 }}
+          style={{ marginRight: 16 }}
         >
-            <View style={{ alignItems: 'center', flexDirection: 'row' }}>
-             <Ionicons name="menu" size={24}  />
-            </View>
-         
+          <View style={{ alignItems: 'center', flexDirection: 'row' }}>
+            <Ionicons name="menu" size={28} />
+          </View>
+
         </Pressable>
       ),
     });
@@ -107,7 +107,7 @@ export default function Home() {
     <View style={styles.container}>
 
 
-      <View style={[styles.main, { paddingBottom: paddingBottomMain }]}>
+      <View style={[styles.main]}>
         <View style={styles.cicloWrap}>
           <Ciclo />
         </View>
@@ -124,68 +124,63 @@ export default function Home() {
         animationType="fade"
         onRequestClose={() => setMenuAberto(false)}
       >
-        <Pressable
-          style={styles.modalOverlay}
-          onPress={() => setMenuAberto(false)}
-        >
-          <View
-            style={[styles.menuBox, { top: insets.top + 48, right: 12 }]}
+
+          <Pressable
+            style={styles.modalOverlay}
+            onPress={() => setMenuAberto(false)}
           >
-            <View style={styles.menuUser}>
-              {user?.photoURL ? (
-                <Image
-                  source={{ uri: user.photoURL }}
-                  style={styles.menuAvatar}
-                />
-              ) : (
-                <Ionicons name="person-circle" size={40} color="#999" />
-              )}
-              <View style={{ flex: 1 }}>
-                <Text style={styles.menuNome} numberOfLines={1}>
-                  {user?.displayName || 'Usuário'}
-                </Text>
-                <Text style={styles.menuEmail} numberOfLines={1}>
-                  {user?.email || ''}
-                </Text>
-              </View>
-            </View>
-
-            <View style={styles.menuDivider} />
-
-            <Pressable style={styles.menuItem} onPress={handleSair}>
-              <Ionicons name="log-out-outline" size={20} />
-              <Text style={styles.menuItemTexto}>
-                Sair
-              </Text>
-            </Pressable>
-            <View style={styles.menuDivider} />
-
-            {ITENS.map((bloco, index) => (
-              <View key={index} style={styles.bloco}>
-
-                <View style={styles.listaCard}>
-                  {bloco.lista.map((item, index) => (
-                    <View key={index}>
-                      <Pressable
-                        onPress={() => irPara(item.rota)}
-                        style={({ pressed }) => [
-                          styles.menuItem,
-                          pressed && { backgroundColor: '#f7f7f7' },
-                          index < bloco.lista.length - 1 && styles.separador,
-                        ]}
-                      >
-                        <View style={styles.textos}>
-                          <Text style={styles.itemTitulo}>{item.titulo}</Text>
-                        </View>
-                      </Pressable>
-                      <View style={styles.menuDivider} />
-                    </View>
-                  ))}
+            <View
+              style={[styles.menuBox, { top: insets.top + 48, right: 12 }]}
+            >
+              <View style={styles.menuUser}>
+                {user?.photoURL ? (
+                  <Image
+                    source={{ uri: user.photoURL }}
+                    style={styles.menuAvatar}
+                  />
+                ) : (
+                  <Ionicons name="person-circle" size={40} color="#999" />
+                )}
+                <View style={{ flex: 1 }}>
+                  <Text style={styles.menuNome} numberOfLines={1}>
+                    {user?.displayName || 'Usuário'}
+                  </Text>
+                  <Text style={styles.menuEmail} numberOfLines={1}>
+                    {user?.email || ''}
+                  </Text>
                 </View>
               </View>
-            ))}
-          </View>
-        </Pressable>
+
+              {/* <View style={styles.menuDivider} /> */}
+
+              <Pressable style={styles.menuItem} onPress={handleSair}>
+                <Ionicons name="log-out-outline" size={20} />
+                <Text style={styles.menuItemTexto}>
+                  Sair
+                </Text>
+              </Pressable>
+              <View style={styles.menuDivider} />
+
+              {ITENS.map((bloco, index) => (
+                <View key={index} style={styles.bloco}>
+
+                  <View style={styles.listaCard}>
+                    {bloco.lista.map((item, index) => (
+                      <View key={index}>
+                        <Pressable
+                          onPress={() => irPara(item.rota)}
+                          style={styles.menuItem}
+                        >
+                          <Text style={styles.menuItemTexto}>{item.titulo}</Text>
+                        </Pressable>
+                        <View style={styles.menuDivider} />
+                      </View>
+                    ))}
+                  </View>
+                </View>
+              ))}
+            </View>
+          </Pressable>
       </Modal>
     </View>
   );
@@ -225,7 +220,6 @@ const styles = StyleSheet.create({
   infoWrap: {
     flex: 1,
     width: '100%',
-    minHeight: 0, // importante no Android para o filho com scroll
   },
   modalOverlay: {
     flex: 1,
@@ -237,11 +231,7 @@ const styles = StyleSheet.create({
     backgroundColor: '#fff',
     borderRadius: 14,
     paddingVertical: 8,
-    elevation: 8,
-    shadowColor: '#000',
-    shadowOpacity: 0.15,
-    shadowRadius: 12,
-    shadowOffset: { width: 0, height: 4 },
+    elevation: 10,
   },
   menuUser: {
     flexDirection: 'row',
@@ -258,12 +248,10 @@ const styles = StyleSheet.create({
   menuNome: {
     fontFamily: 'Roboto-Medium',
     fontSize: 14,
-    color: '#111',
   },
   menuEmail: {
     fontFamily: 'Roboto-Light',
     fontSize: 12,
-    color: '#777',
     marginTop: 2,
   },
   menuDivider: {
@@ -276,11 +264,10 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     gap: 10,
     paddingHorizontal: 14,
-    paddingVertical: 12,
+    paddingVertical: 14,
   },
   menuItemTexto: {
-    fontFamily: 'Roboto-Medium',
+    fontFamily: 'Roboto-Regular',
     fontSize: 14,
-    color: '#333',
   },
 });
