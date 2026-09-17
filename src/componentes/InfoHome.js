@@ -6,9 +6,13 @@ import { AppContext } from '../contexts/AppContext';
 import { qtdAtualLote } from '../services/calculosLote';
 import Ionicons from 'react-native-vector-icons/Ionicons';
 
+
 export default function InfoHome() {
+
   const navigation = useNavigation();
   const { colors } = useTheme();
+
+
   const { lote, setLote, listaLotes, custoOvo } = useContext(AppContext);
 
   const qtInicial = Number(lote?.qt) || 0;
@@ -184,7 +188,7 @@ export default function InfoHome() {
   function renderItem({ item }) {
     if (item.tipo === 'picker') {
       return (
-        <View style={[styles.card, { paddingVertical: 0, paddingRight:3, marginBottom: 14, borderColor:colors.neutro }]}>
+        <View style={[styles.card, { paddingVertical: 0, paddingRight: 3, marginVertical: 14, borderColor: colors.neutro }]}>
           <View style={styles.pickerWrap}>
             <Picker
               style={styles.picker}
@@ -210,7 +214,7 @@ export default function InfoHome() {
 
             <Pressable
               onPress={() => navigation.navigate('NovoLote')}
-              style={[styles.botaoAdd,{backgroundColor: colors.neutro}]}
+              style={[styles.botaoAdd, { backgroundColor: colors.neutro }]}
             >
               <Ionicons name="add" size={22} />
             </Pressable>
@@ -269,6 +273,7 @@ export default function InfoHome() {
         showsVerticalScrollIndicator={false}
         contentContainerStyle={styles.lista}
         style={styles.listaScroll}
+    
       />
 
       <View pointerEvents="none" style={styles.fadeBottom}>
@@ -283,17 +288,22 @@ export default function InfoHome() {
 
 const styles = StyleSheet.create({
   container: {
+    flex: 1,
     width: '100%',
     position: 'relative',
     flex:1,
     marginTop:14
   },
   listaScroll: {
-    flex: 1,
+     flexGrow: 1 
   },
   lista: {
     paddingHorizontal: 10,
+<<<<<<< HEAD
     paddingTop: 28,
+=======
+    paddingTop: 21,
+>>>>>>> 2e9f5f8005f0b04bfcac6891a42040c5a15bf9ac
     paddingBottom: 100,
     gap: 8,
   },
@@ -304,7 +314,7 @@ const styles = StyleSheet.create({
     paddingHorizontal: 14,
     borderWidth: StyleSheet.hairlineWidth,
     borderColor: '#ececec',
-    overflow:"hidden"
+    overflow: "hidden"
   },
   itemTopo: {
     flexDirection: 'row',
@@ -341,7 +351,11 @@ const styles = StyleSheet.create({
   },
   botaoAdd: {
     width: 65,
+<<<<<<< HEAD
     height:65,
+=======
+    height: 65,
+>>>>>>> 2e9f5f8005f0b04bfcac6891a42040c5a15bf9ac
     alignItems: 'center',
     justifyContent: 'center',
   },

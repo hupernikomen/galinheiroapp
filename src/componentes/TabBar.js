@@ -10,7 +10,16 @@ import {
 } from 'react-native';
 import Ionicons from 'react-native-vector-icons/Ionicons';
 
+<<<<<<< HEAD
 import { BlurView } from "@react-native-community/blur";
+=======
+import { BlurView } from '@react-native-community/blur';
+
+// import { useTabBarVisibility } from '../contexts/TabBarVisibility';
+
+
+
+>>>>>>> 2e9f5f8005f0b04bfcac6891a42040c5a15bf9ac
 
 if (
   Platform.OS === 'android' &&
@@ -28,6 +37,9 @@ export default function TabbarPersonalizada({ state, descriptors, navigation }) 
   const scales = useRef(
     state.routes.map((_, i) => new Animated.Value(i === state.index ? 1 : 0))
   ).current;
+
+  // const { translateY } = useTabBarVisibility();
+
 
   // layouts medidos de cada aba (para o pill seguir o centro real)
   const [layouts, setLayouts] = useState({});
@@ -67,6 +79,7 @@ export default function TabbarPersonalizada({ state, descriptors, navigation }) 
 
   return (
     <View style={styles.container}>
+<<<<<<< HEAD
       <View style={styles.content}>
 
         <BlurView
@@ -75,6 +88,19 @@ export default function TabbarPersonalizada({ state, descriptors, navigation }) 
           blurAmount={1}    // intensidade maior para parecer Nubank
         />
 
+=======
+      <Animated.View style={[styles.content, { elevation: 5, 
+        // transform: [{ translateY }],
+         }]}>
+        {/* Fundo desfocado */}
+        <BlurView
+          style={StyleSheet.absoluteFill}
+          blurType="light"
+          blurAmount={1}
+          reducedTransparencyFallbackColor="white"
+        />
+        {/* Bolinha que desliza (cor principal) */}
+>>>>>>> 2e9f5f8005f0b04bfcac6891a42040c5a15bf9ac
         <Animated.View
           pointerEvents="none"
           style={[
@@ -82,6 +108,11 @@ export default function TabbarPersonalizada({ state, descriptors, navigation }) 
             {
               backgroundColor: colors.principal,
               transform: [{ translateX: slideX }],
+<<<<<<< HEAD
+=======
+              elevation: 5,
+
+>>>>>>> 2e9f5f8005f0b04bfcac6891a42040c5a15bf9ac
             },
           ]}
         />
@@ -121,7 +152,7 @@ export default function TabbarPersonalizada({ state, descriptors, navigation }) 
             </TouchableOpacity>
           );
         })}
-      </View>
+      </Animated.View>
     </View>
   );
 }
@@ -132,14 +163,23 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
   },
   content: {
+<<<<<<< HEAD
     elevation: 5,
+=======
+>>>>>>> 2e9f5f8005f0b04bfcac6891a42040c5a15bf9ac
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'center',
     position: 'absolute',
     bottom: 20,
     borderRadius: 35,
+<<<<<<< HEAD
     overflow: 'hidden', // importante para o BlurView ficar arredondado
+=======
+    overflow: 'hidden', // corta o blur fora da barra
+    height: TAB_SIZE + 10, // altura fixa da barra
+    paddingHorizontal: 8,
+>>>>>>> 2e9f5f8005f0b04bfcac6891a42040c5a15bf9ac
   },
 
   pill: {

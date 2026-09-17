@@ -4,8 +4,9 @@ import {
   Text,
   StyleSheet,
   FlatList,
+  Pressable,
 } from 'react-native';
-import { useTheme } from '@react-navigation/native';
+import { useNavigation, useTheme } from '@react-navigation/native';
 import {
   TAMANHO,
   DIAS_TOTAL,
@@ -23,6 +24,8 @@ export default function CicloCirculo({
   const { colors } = useTheme();
   const [indiceMarco, setIndiceMarco] = useState(0);
   const listaRef = useRef(null);
+
+  const navigation = useNavigation()
 
   // Preferência: marcos do dia; fallback para prop antiga
   const marcos =
