@@ -23,13 +23,11 @@ import ItemLista from '../../componentes/ItemLista';
 import useHeaderAdd from '../../componentes/HeaderAdd'
 import { formatarData } from '../../utils/format';
 
-
-
 export default function Ovos() {
   const { lote } = useContext(AppContext);
   const { uid } = useAuth();
   const { colors } = useTheme();
-  
+
   const [lista, setLista] = useState([]);
   const [loading, setLoading] = useState(true);
 
@@ -121,11 +119,7 @@ export default function Ovos() {
           keyExtractor={(item) => item.id}
           renderItem={renderItem}
           showsVerticalScrollIndicator={false}
-<<<<<<< HEAD
           contentContainerStyle={{ paddingTop:8, paddingBottom:100 }}
-=======
-      contentContainerStyle={{ paddingBottom: 100, paddingTop: 8 }}
->>>>>>> 2e9f5f8005f0b04bfcac6891a42040c5a15bf9ac
           ListEmptyComponent={
             <Text style={styles.vazio}>
               {!lote
