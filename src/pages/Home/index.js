@@ -7,15 +7,11 @@ import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import Ionicons from 'react-native-vector-icons/Ionicons';
 
 
-<<<<<<< HEAD
 import { MENU } from '../../constants/menulist';
 
 import Ciclo from '../../componentes/Ciclo';
 import InfoHome from '../../componentes/InfoHome';
 
-=======
-const ALTURA_TABBAR = 78;
->>>>>>> 2e9f5f8005f0b04bfcac6891a42040c5a15bf9ac
 
 export default function Home() {
   const {
@@ -31,45 +27,6 @@ export default function Home() {
   const [menuAberto, setMenuAberto] = useState(false);
 
 
-<<<<<<< HEAD
-=======
-  const ITENS = [
-    {
-      lista: [
-        {
-          titulo: 'Lotes',
-          subtitulo: 'Cadastro e gestão dos lotes',
-          rota: 'Lote',
-        },
-        {
-          titulo: 'Investimentos',
-          subtitulo: 'Galpão, equipamentos e depreciação',
-          rota: 'Investimentos',
-        },
-        {
-          titulo: 'Estoque de ração',
-          subtitulo: 'Compras e saldo em kg',
-          rota: 'EstoqueRacao',
-        },
-        {
-          titulo: 'Baixas',
-          subtitulo: 'Dar baixas em galinhas mortas ou vendidas',
-          rota: 'Baixas',
-        },
-      ],
-    },
-    {
-      secao: 'Ciclo e ajuda',
-      lista: [
-        {
-          titulo: 'Marcos do ciclo',
-          subtitulo: 'Alertas e fases do relógio',
-          rota: 'Marcos',
-        },
-      ],
-    },
-  ];
->>>>>>> 2e9f5f8005f0b04bfcac6891a42040c5a15bf9ac
 
   useEffect(() => {
     navigation.setOptions({
@@ -79,18 +36,11 @@ export default function Home() {
           onPress={() => setMenuAberto(true)}
           style={{ marginRight: 16 }}
         >
-<<<<<<< HEAD
 
           <Ionicons
             name="menu-outline"
             size={22}
           />
-=======
-          <View style={{ alignItems: 'center', flexDirection: 'row' }}>
-            <Ionicons name="menu" size={28} />
-          </View>
-
->>>>>>> 2e9f5f8005f0b04bfcac6891a42040c5a15bf9ac
         </Pressable>
       ),
     });
@@ -114,30 +64,13 @@ export default function Home() {
     ]);
   }
 
-  function irPara(rota) {
-    navigation.navigate(rota);
-    setMenuAberto(false)
-  }
-
   return (
     <View style={styles.container}>
 
 
-<<<<<<< HEAD
       <View style={styles.main}>
         <Ciclo />
         <InfoHome />
-=======
-      <View style={[styles.main]}>
-        <View style={styles.cicloWrap}>
-          <Ciclo />
-        </View>
-
-        {/* InfoHome ocupa o restante até o fim */}
-        <View style={styles.infoWrap}>
-          <InfoHome />
-        </View>
->>>>>>> 2e9f5f8005f0b04bfcac6891a42040c5a15bf9ac
       </View>
 
       <Modal
@@ -146,12 +79,13 @@ export default function Home() {
         animationType="fade"
         onRequestClose={() => setMenuAberto(false)}
       >
-
-          <Pressable
-            style={styles.modalOverlay}
-            onPress={() => setMenuAberto(false)}
+        <Pressable
+          style={styles.modalOverlay}
+          onPress={() => setMenuAberto(false)}
+        >
+          <View
+            style={[styles.menuBox, { top: insets.top + 48, right: 12 }]}
           >
-<<<<<<< HEAD
              <View style={styles.menuUser}>
               {user?.photoURL ? (
                 <Image
@@ -168,60 +102,8 @@ export default function Home() {
                 <Text style={styles.menuEmail} numberOfLines={1}>
                   {user?.email || ''}
                 </Text>
-=======
-            <View
-              style={[styles.menuBox, { top: insets.top + 48, right: 12 }]}
-            >
-              <View style={styles.menuUser}>
-                {user?.photoURL ? (
-                  <Image
-                    source={{ uri: user.photoURL }}
-                    style={styles.menuAvatar}
-                  />
-                ) : (
-                  <Ionicons name="person-circle" size={40} color="#999" />
-                )}
-                <View style={{ flex: 1 }}>
-                  <Text style={styles.menuNome} numberOfLines={1}>
-                    {user?.displayName || 'Usuário'}
-                  </Text>
-                  <Text style={styles.menuEmail} numberOfLines={1}>
-                    {user?.email || ''}
-                  </Text>
-                </View>
->>>>>>> 2e9f5f8005f0b04bfcac6891a42040c5a15bf9ac
               </View>
-
-              {/* <View style={styles.menuDivider} /> */}
-
-              <Pressable style={styles.menuItem} onPress={handleSair}>
-                <Ionicons name="log-out-outline" size={20} />
-                <Text style={styles.menuItemTexto}>
-                  Sair
-                </Text>
-              </Pressable>
-              <View style={styles.menuDivider} />
-
-              {ITENS.map((bloco, index) => (
-                <View key={index} style={styles.bloco}>
-
-                  <View style={styles.listaCard}>
-                    {bloco.lista.map((item, index) => (
-                      <View key={index}>
-                        <Pressable
-                          onPress={() => irPara(item.rota)}
-                          style={styles.menuItem}
-                        >
-                          <Text style={styles.menuItemTexto}>{item.titulo}</Text>
-                        </Pressable>
-                        <View style={styles.menuDivider} />
-                      </View>
-                    ))}
-                  </View>
-                </View>
-              ))}
             </View>
-<<<<<<< HEAD
 
 
             <Pressable style={styles.menuItem} onPress={handleSair}>
@@ -251,9 +133,6 @@ export default function Home() {
             ))}
           </View>
         </Pressable>
-=======
-          </Pressable>
->>>>>>> 2e9f5f8005f0b04bfcac6891a42040c5a15bf9ac
       </Modal>
     </View>
   );
@@ -279,15 +158,8 @@ const styles = StyleSheet.create({
   main: {
     flex: 1,
     paddingHorizontal: 18,
-  },
-  cicloWrap: {
-    width: '100%',
+    justifyContent: 'space-evenly',
     alignItems: 'center',
-    marginBottom: 8,
-  },
-  infoWrap: {
-    flex: 1,
-    width: '100%',
   },
   modalOverlay: {
     flex: 1,
@@ -299,7 +171,11 @@ const styles = StyleSheet.create({
     backgroundColor: '#fff',
     borderRadius: 14,
     paddingVertical: 8,
-    elevation: 10,
+    elevation: 8,
+    shadowColor: '#000',
+    shadowOpacity: 0.15,
+    shadowRadius: 12,
+    shadowOffset: { width: 0, height: 4 },
   },
   menuUser: {
     flexDirection: 'row',
@@ -316,10 +192,12 @@ const styles = StyleSheet.create({
   menuNome: {
     fontFamily: 'Roboto-Medium',
     fontSize: 14,
+    color: '#111',
   },
   menuEmail: {
     fontFamily: 'Roboto-Light',
     fontSize: 12,
+    color: '#777',
     marginTop: 2,
   },
   menuDivider: {
@@ -332,10 +210,11 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     gap: 10,
     paddingHorizontal: 14,
-    paddingVertical: 14,
+    paddingVertical: 12,
   },
   menuItemTexto: {
-    fontFamily: 'Roboto-Regular',
+    fontFamily: 'Roboto-Medium',
     fontSize: 14,
+    color: '#333',
   },
 });
