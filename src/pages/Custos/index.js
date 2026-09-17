@@ -23,7 +23,6 @@ import ItemLista from '../../componentes/ItemLista';
 import HeaderAdd from '../../componentes/HeaderAdd';
 import { formatarData } from '../../utils/format'
 
-import { useTabBarVisibility } from '../../contexts/TabBarVisibility';
 
 function labelTipo(item) {
   if (item._origem === 'racao') return 'Ração';
@@ -36,7 +35,6 @@ function labelTipo(item) {
 }
 
 export default function Custos() {
-  const { onScroll } = useTabBarVisibility();
   const { colors } = useTheme();
   const { uid } = useAuth();
   const { lote } = useContext(AppContext);
@@ -227,8 +225,6 @@ export default function Custos() {
       ) : (
         <FlatList
           data={lista}
-          onScroll={onScroll}
-          scrollEventThrottle={16}
           keyExtractor={(item) => `${item._origem}-${item.id}`}
           renderItem={renderItem}
           showsVerticalScrollIndicator={false}

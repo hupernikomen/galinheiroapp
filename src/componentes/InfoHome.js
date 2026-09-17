@@ -6,14 +6,12 @@ import { AppContext } from '../contexts/AppContext';
 import { qtdAtualLote } from '../services/calculosLote';
 import Ionicons from 'react-native-vector-icons/Ionicons';
 
-import { useTabBarVisibility } from '../contexts/TabBarVisibility';
 
 export default function InfoHome() {
 
   const navigation = useNavigation();
   const { colors } = useTheme();
 
-  const { onScroll } = useTabBarVisibility();
 
   const { lote, setLote, listaLotes, custoOvo } = useContext(AppContext);
 
@@ -270,8 +268,6 @@ export default function InfoHome() {
 
       <FlatList
         data={itens}
-        onScroll={onScroll}
-        scrollEventThrottle={16}
         keyExtractor={(item) => item.id}
         renderItem={renderItem}
         showsVerticalScrollIndicator={false}
@@ -302,7 +298,7 @@ const styles = StyleSheet.create({
   lista: {
     paddingHorizontal: 10,
     paddingTop: 21,
-    paddingBottom: 36,
+    paddingBottom: 100,
     gap: 8,
   },
   card: {

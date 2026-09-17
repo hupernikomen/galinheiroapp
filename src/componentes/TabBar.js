@@ -12,7 +12,7 @@ import Ionicons from 'react-native-vector-icons/Ionicons';
 
 import { BlurView } from '@react-native-community/blur';
 
-import { useTabBarVisibility } from '../contexts/TabBarVisibility';
+// import { useTabBarVisibility } from '../contexts/TabBarVisibility';
 
 
 
@@ -34,7 +34,7 @@ export default function TabbarPersonalizada({ state, descriptors, navigation }) 
     state.routes.map((_, i) => new Animated.Value(i === state.index ? 1 : 0))
   ).current;
 
-  const { translateY } = useTabBarVisibility();
+  // const { translateY } = useTabBarVisibility();
 
 
   // layouts medidos de cada aba (para o pill seguir o centro real)
@@ -75,13 +75,15 @@ export default function TabbarPersonalizada({ state, descriptors, navigation }) 
 
   return (
     <View style={styles.container}>
-      <Animated.View style={[styles.content, { elevation: 7, transform: [{ translateY }], }]}>
+      <Animated.View style={[styles.content, { elevation: 5, 
+        // transform: [{ translateY }],
+         }]}>
         {/* Fundo desfocado */}
         <BlurView
           style={StyleSheet.absoluteFill}
-          blurType="light"   // "light", "dark", "xlight"
-          blurAmount={1}    // intensidade maior para parecer Nubank
-          reducedTransparencyFallbackColor="white" // fallback no Android
+          blurType="light"
+          blurAmount={1}
+          reducedTransparencyFallbackColor="white"
         />
         {/* Bolinha que desliza (cor principal) */}
         <Animated.View
@@ -148,14 +150,15 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
   },
   content: {
-  flexDirection: 'row',
-  alignItems: 'center',
-  justifyContent: 'center',
-  position: 'absolute',
-  bottom: 20,
-  borderRadius: 35,
-  overflow: 'hidden', // importante para o BlurView ficar arredondado
-
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    position: 'absolute',
+    bottom: 20,
+    borderRadius: 35,
+    overflow: 'hidden', // corta o blur fora da barra
+    height: TAB_SIZE + 10, // altura fixa da barra
+    paddingHorizontal: 8,
   },
   pill: {
     position: 'absolute',
