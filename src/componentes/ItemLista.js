@@ -179,7 +179,6 @@ const styles = StyleSheet.create({
   titulo: {
     fontSize: 14,
     fontFamily: 'Roboto-Medium',
-    color: '#1a1a1a',
   },
   sub: {
     fontFamily: 'Roboto-Light',

@@ -353,7 +353,7 @@ const styles = StyleSheet.create({
   },
   botaoAdd: {
     width: 65,
-    height: 55,
+    height: 65,
     alignItems: 'center',
     justifyContent: 'center',
   },

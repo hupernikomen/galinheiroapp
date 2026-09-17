@@ -63,7 +63,7 @@ export default function CicloCirculo({
   }
 
   return (
-    <Pressable onPress={() => navigation.navigate("Marcos")} style={[styles.camada, { width: TAMANHO, height: TAMANHO }]}>
+    <View style={[styles.camada, { width: TAMANHO, height: TAMANHO }]}>
       <View
         style={[
           styles.ciclo,
@@ -134,7 +134,7 @@ export default function CicloCirculo({
           ]}
         />
       </View>
-    </Pressable>
+    </View>
   );
 }
 
