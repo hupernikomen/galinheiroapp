@@ -10,15 +10,11 @@ import Custos from '../pages/Custos';
 const Tab = createBottomTabNavigator();
 
 
-// import { TabBarVisibilityProvider } from '../contexts/TabBarVisibility';
-
-
 
 export default function Tabs() {
   return (
 
     <SafeAreaView style={{ flex: 1 }} edges={['bottom', 'left', 'right']}>
-      {/* <TabBarVisibilityProvider> */}
 
         <Tab.Navigator
           initialRouteName='Home'
@@ -69,7 +65,6 @@ export default function Tabs() {
           />
 
         </Tab.Navigator>
-      {/* </TabBarVisibilityProvider> */}
 
     </SafeAreaView>
   );
