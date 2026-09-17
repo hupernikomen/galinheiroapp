@@ -10,6 +10,8 @@ import {
 } from 'react-native';
 import Ionicons from 'react-native-vector-icons/Ionicons';
 
+import { BlurView } from "@react-native-community/blur";
+
 if (
   Platform.OS === 'android' &&
   UIManager.setLayoutAnimationEnabledExperimental
@@ -65,8 +67,14 @@ export default function TabbarPersonalizada({ state, descriptors, navigation }) 
 
   return (
     <View style={styles.container}>
-      <View style={[styles.content, { elevation: 7 }]}>
-        {/* Bolinha que desliza (cor principal) */}
+      <View style={styles.content}>
+
+        <BlurView
+          style={StyleSheet.absoluteFill}
+          blurType="xlight"   // "light", "dark", "xlight"
+          blurAmount={1}    // intensidade maior para parecer Nubank
+        />
+
         <Animated.View
           pointerEvents="none"
           style={[
@@ -74,7 +82,6 @@ export default function TabbarPersonalizada({ state, descriptors, navigation }) 
             {
               backgroundColor: colors.principal,
               transform: [{ translateX: slideX }],
-              elevation: 5
             },
           ]}
         />
@@ -82,11 +89,6 @@ export default function TabbarPersonalizada({ state, descriptors, navigation }) 
         {state.routes.map((route, index) => {
           const { options } = descriptors[route.key];
           const isFocused = state.index === index;
-
-          const scale = scales[index].interpolate({
-            inputRange: [0, 1],
-            outputRange: [1, 1.10],
-          });
 
           const onPress = () => {
             const event = navigation.emit({
@@ -130,17 +132,16 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
   },
   content: {
-    backgroundColor:'#fff',
+    elevation: 5,
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'center',
     position: 'absolute',
-    bottom: -10,
-    marginBottom: 28,
-    padding: 2,
+    bottom: 20,
     borderRadius: 35,
-    
+    overflow: 'hidden', // importante para o BlurView ficar arredondado
   },
+
   pill: {
     position: 'absolute',
     left: -1,

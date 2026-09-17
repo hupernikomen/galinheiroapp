@@ -1,15 +1,17 @@
 import { StyleSheet, View, Pressable, Text, Image, Modal, Alert } from 'react-native';
-import { Picker } from '@react-native-picker/picker';
 import { AppContext } from '../../contexts/AppContext';
 import { useAuth } from '../../contexts/AuthContext';
 import { useContext, useEffect, useState } from 'react';
-import Ciclo from '../../componentes/Ciclo';
-import InfoHome from '../../componentes/InfoHome';
 import { useNavigation, useTheme } from '@react-navigation/native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import Ionicons from 'react-native-vector-icons/Ionicons';
 
-const ALTURA_TABBAR = 78;
+
+import { MENU } from '../../constants/menulist';
+
+import Ciclo from '../../componentes/Ciclo';
+import InfoHome from '../../componentes/InfoHome';
+
 
 export default function Home() {
   const {
@@ -24,33 +26,21 @@ export default function Home() {
 
   const [menuAberto, setMenuAberto] = useState(false);
 
-  const paddingBottomMain = ALTURA_TABBAR + Math.max(insets.bottom, 8);
+
 
   useEffect(() => {
     navigation.setOptions({
-      headerLeft: () => (
-        <View style={styles.headerLeft}>
-          <Pressable onPress={() => navigation.navigate('Menu')}>
-            <Ionicons name="menu-outline" size={26} />
-          </Pressable>
-        </View>
-      ),
+
       headerRight: () => (
         <Pressable
           onPress={() => setMenuAberto(true)}
-          style={{ marginRight: 12 }}
+          style={{ marginRight: 16 }}
         >
-          {user?.photoURL ? (
-            <View style={{ alignItems: 'center', flexDirection: 'row' }}>
-              <Image source={{ uri: user.photoURL }} style={styles.avatar} />
-            </View>
-          ) : (
-            <Ionicons
-              name="person-circle"
-              size={36}
-              color={colors.principal || '#66796b'}
-            />
-          )}
+
+          <Ionicons
+            name="menu-outline"
+            size={22}
+          />
         </Pressable>
       ),
     });
@@ -76,39 +66,9 @@ export default function Home() {
 
   return (
     <View style={styles.container}>
-      {/* <View
-        style={{
-          paddingHorizontal: 22,
-          backgroundColor: '#f9f9f9',
-          alignItems: 'center',
-        }}
-      >
-        <Picker
-          style={styles.picker}
-          selectedValue={lote?.id || ''}
-          onValueChange={(itemValue) => {
-            if (!itemValue) {
-              setLote(null);
-              return;
-            }
-            const loteSelecionado = (listaLotes || []).find(
-              (l) => l.id === itemValue
-            );
-            if (loteSelecionado) setLote(loteSelecionado);
-          }}
-        >
-          <Picker.Item label="Selecione um lote" value="" />
-          {(listaLotes || []).map((item) => (
-            <Picker.Item
-              key={item.id}
-              label={item?.nome || 'Lote'}
-              value={item.id}
-            />
-          ))}
-        </Picker>
-      </View> */}
 
-      <View style={[styles.main, { paddingBottom: paddingBottomMain }]}>
+
+      <View style={styles.main}>
         <Ciclo />
         <InfoHome />
       </View>
@@ -126,7 +86,7 @@ export default function Home() {
           <View
             style={[styles.menuBox, { top: insets.top + 48, right: 12 }]}
           >
-            <View style={styles.menuUser}>
+             <View style={styles.menuUser}>
               {user?.photoURL ? (
                 <Image
                   source={{ uri: user.photoURL }}
@@ -145,14 +105,32 @@ export default function Home() {
               </View>
             </View>
 
-            <View style={styles.menuDivider} />
 
             <Pressable style={styles.menuItem} onPress={handleSair}>
-              <Ionicons name="log-out-outline" size={20} color="#c0392b" />
-              <Text style={[styles.menuItemTexto, { color: '#c0392b' }]}>
+              <Text style={styles.menuItemTexto}>
                 Sair
               </Text>
             </Pressable>
+
+            <View style={styles.menuDivider} />
+
+            {MENU.map((bloco, index) => (
+              <View key={index} style={styles.bloco}>
+
+                <View style={styles.listaCard}>
+                  {bloco.lista.map((item, index) => (
+                    <Pressable
+                      key={index}
+                      onPress={() => irPara(item.rota)}
+                      style={styles.menuItem}
+                      >
+                        <Text style={styles.menuItemTexto}>{item.titulo}</Text>
+                    </Pressable>
+                  ))}
+                  <View style={styles.menuDivider} />
+                </View>
+              </View>
+            ))}
           </View>
         </Pressable>
       </Modal>
@@ -171,11 +149,6 @@ const styles = StyleSheet.create({
     marginLeft: 8,
     maxWidth: 220,
     justifyContent: 'center',
-  },
-  picker: {
-    backgroundColor: '#f9f9f9',
-    width: '98%',
-    height: 50,
   },
   avatar: {
     width: 40,

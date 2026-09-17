@@ -119,8 +119,7 @@ export default function Ovos() {
           keyExtractor={(item) => item.id}
           renderItem={renderItem}
           showsVerticalScrollIndicator={false}
-
-          contentContainerStyle={{ paddingVertical:7 }}
+          contentContainerStyle={{ paddingTop:8, paddingBottom:100 }}
           ListEmptyComponent={
             <Text style={styles.vazio}>
               {!lote
