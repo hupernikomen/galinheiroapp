@@ -284,7 +284,7 @@ export default function InfoHome() {
 const styles = StyleSheet.create({
   container: {
     width: '100%',
-    height: 350,
+    flex:1,
     position: 'relative',
   },
   listaScroll: {
@@ -293,7 +293,7 @@ const styles = StyleSheet.create({
   lista: {
     paddingHorizontal: 10,
     paddingTop: 21,
-    paddingBottom: 36,
+    paddingBottom: 100,
     gap: 8,
   },
   card: {
@@ -340,11 +340,11 @@ const styles = StyleSheet.create({
     fontSize: 14,
     color: '#444',
     flex: 1,
-    height: 55,
+    height: 65,
   },
   botaoAdd: {
     width: 65,
-    height:55,
+    height:65,
     alignItems: 'center',
     justifyContent: 'center',
   },

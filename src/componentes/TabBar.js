@@ -130,7 +130,7 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
   },
   content: {
-    backgroundColor:'#fff',
+backgroundColor: 'rgba(255,255,255,0.92)',
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'center',
