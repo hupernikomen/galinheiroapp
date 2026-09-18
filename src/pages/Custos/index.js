@@ -21,8 +21,7 @@ import { useAuth } from '../../contexts/AuthContext';
 import { AppContext } from '../../contexts/AppContext';
 import ItemLista from '../../componentes/ItemLista';
 import HeaderAdd from '../../componentes/HeaderAdd';
-import {formatarData} from '../../utils/format'
-
+import { formatarData } from '../../utils/format'
 
 
 function labelTipo(item) {

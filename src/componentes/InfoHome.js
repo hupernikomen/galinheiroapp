@@ -284,15 +284,24 @@ export default function InfoHome() {
 const styles = StyleSheet.create({
   container: {
     width: '100%',
+<<<<<<< HEAD
     flex:1,
+=======
+>>>>>>> 2d230cdf210aa0e3afd7f00bbab44a72742827c4
     position: 'relative',
+    flex:1,
+    marginTop:14
   },
   listaScroll: {
     flex: 1,
   },
   lista: {
     paddingHorizontal: 10,
+<<<<<<< HEAD
     paddingTop: 21,
+=======
+    paddingTop: 28,
+>>>>>>> 2d230cdf210aa0e3afd7f00bbab44a72742827c4
     paddingBottom: 100,
     gap: 8,
   },
@@ -314,20 +323,17 @@ const styles = StyleSheet.create({
   itemLabel: {
     fontFamily: 'Roboto-Regular',
     fontSize: 14,
-    color: '#444',
     flex: 1,
   },
   itemValor: {
     fontFamily: 'Roboto-Medium',
     fontSize: 15,
-    color: '#1a1a1a',
   },
   itemSub: {
     fontFamily: 'Roboto-Light',
     fontSize: 12,
     marginTop: 4,
     textAlign: 'right',
-    color: '#888',
   },
   pickerWrap: {
     marginHorizontal: -8,
@@ -338,7 +344,6 @@ const styles = StyleSheet.create({
   picker: {
     fontFamily: 'Roboto-Regular',
     fontSize: 14,
-    color: '#444',
     flex: 1,
     height: 65,
   },

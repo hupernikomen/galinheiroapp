@@ -141,7 +141,7 @@ export default function Ciclo() {
       const d = Number(m.dia);
       if (d > 0 && d <= DIAS_TOTAL) set.add(d);
     });
-    return Array.from(set).sort((a, b) => a - b);
+    return Array.from(set).sort((a, b) => a - b)
   }, [todosMarcos]);
 
   // Destaque na borda só se existir marco neste dia

@@ -2,13 +2,20 @@ import { StyleSheet, View, Pressable, Text, Image, Modal, Alert } from 'react-na
 import { AppContext } from '../../contexts/AppContext';
 import { useAuth } from '../../contexts/AuthContext';
 import { useContext, useEffect, useState } from 'react';
-import Ciclo from '../../componentes/Ciclo';
-import InfoHome from '../../componentes/InfoHome';
 import { useNavigation, useTheme } from '@react-navigation/native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import Ionicons from 'react-native-vector-icons/Ionicons';
 import { MENU } from '../../constants/menuList';
 
+<<<<<<< HEAD
+=======
+
+import { MENU } from '../../constants/menulist';
+
+import Ciclo from '../../componentes/Ciclo';
+import InfoHome from '../../componentes/InfoHome';
+
+>>>>>>> 2d230cdf210aa0e3afd7f00bbab44a72742827c4
 
 export default function Home() {
   const {
@@ -23,6 +30,10 @@ export default function Home() {
 
   const [menuAberto, setMenuAberto] = useState(false);
 
+<<<<<<< HEAD
+=======
+
+>>>>>>> 2d230cdf210aa0e3afd7f00bbab44a72742827c4
 
   useEffect(() => {
     navigation.setOptions({
@@ -34,8 +45,13 @@ export default function Home() {
         >
 
           <Ionicons
+<<<<<<< HEAD
             name="menu"
             size={26}
+=======
+            name="menu-outline"
+            size={22}
+>>>>>>> 2d230cdf210aa0e3afd7f00bbab44a72742827c4
           />
         </Pressable>
       ),
@@ -87,7 +103,7 @@ export default function Home() {
           <View
             style={[styles.menuBox, { top: insets.top + 48, right: 12 }]}
           >
-            <View style={styles.menuUser}>
+             <View style={styles.menuUser}>
               {user?.photoURL ? (
                 <Image
                   source={{ uri: user.photoURL }}
@@ -112,6 +128,10 @@ export default function Home() {
                 Sair
               </Text>
             </Pressable>
+<<<<<<< HEAD
+=======
+
+>>>>>>> 2d230cdf210aa0e3afd7f00bbab44a72742827c4
             <View style={styles.menuDivider} />
 
             {MENU.map((bloco, index) => (
@@ -119,12 +139,16 @@ export default function Home() {
 
                 <View style={styles.listaCard}>
                   {bloco.lista.map((item, index) => (
+<<<<<<< HEAD
                     <>
+=======
+>>>>>>> 2d230cdf210aa0e3afd7f00bbab44a72742827c4
                     <Pressable
                       key={index}
                       onPress={() => irPara(item.rota)}
                       style={styles.menuItem}
                       >
+<<<<<<< HEAD
                       <View style={styles.textos}>
                         <Text style={styles.menuItemTexto}>{item.titulo}</Text>
                       </View>
@@ -132,6 +156,12 @@ export default function Home() {
                 <View style={styles.menuDivider} />
                       </>
                   ))}
+=======
+                        <Text style={styles.menuItemTexto}>{item.titulo}</Text>
+                    </Pressable>
+                  ))}
+                  <View style={styles.menuDivider} />
+>>>>>>> 2d230cdf210aa0e3afd7f00bbab44a72742827c4
                 </View>
               </View>
             ))}
@@ -153,11 +183,6 @@ const styles = StyleSheet.create({
     marginLeft: 8,
     maxWidth: 220,
     justifyContent: 'center',
-  },
-  picker: {
-    backgroundColor: '#f9f9f9',
-    width: '98%',
-    height: 50,
   },
   avatar: {
     width: 40,
